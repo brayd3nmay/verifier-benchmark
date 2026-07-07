@@ -1,0 +1,14 @@
+#:schema https://conductor.build/schemas/settings.repo.schema.json
+
+[scripts.run.oracle]
+command = "./scripts/harbor-run.sh oracle ${TASK:-samples/my-task}"
+icon = "play"
+default = true
+
+[scripts.run.nop]
+command = "./scripts/harbor-run.sh nop ${TASK:-samples/my-task}"
+icon = "test-tube"
+
+[scripts.run.model]
+command = "./scripts/harbor-run.sh model ${TASK:-samples/my-task}"
+icon = "database"
