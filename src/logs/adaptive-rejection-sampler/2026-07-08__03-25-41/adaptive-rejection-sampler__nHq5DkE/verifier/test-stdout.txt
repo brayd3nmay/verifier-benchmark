@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   
+02_correct_alt        pass    pass     Y   
+03_correct_superset   pass    pass     Y   
+04_fake_rnorm         fail    fail     Y   
+05_wrong_scale        fail    fail     Y   
+06_wrong_shape        fail    fail     Y   
+07_no_validation      fail    fail     Y   
+08_no_logconcavity    fail    fail     Y   
+09_logs_no_files      fail    fail     Y   
+10_nop                fail    fail     Y   
+11_deterministic_quantilesfail    pass     N   
+
+TP=3 FP=1 FN=0 TN=7  accuracy=0.909 precision=0.750 recall=1.000 f1=0.857
