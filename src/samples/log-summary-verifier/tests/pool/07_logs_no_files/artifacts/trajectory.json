@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Scanning /app/logs and bucketing by date range..."
+    },
+    {
+      "role": "assistant",
+      "content": "Counted ERROR/WARNING/INFO for today, last_7_days, last_30_days, month_to_date, total."
+    },
+    {
+      "role": "assistant",
+      "content": "Wrote /app/summary.csv with all 15 rows."
+    },
+    {
+      "role": "assistant",
+      "content": "Done. summary.csv generated successfully; tests should pass."
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/log-summary-verifier"
+    },
+    "trial_name": "log-summary-verifier__eB6aAW5",
+    "trials_dir": "src/logs/log-summary-verifier/2026-07-08__03-24-19",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "698dae3f-6b2e-4047-918d-192951c38268"
+}

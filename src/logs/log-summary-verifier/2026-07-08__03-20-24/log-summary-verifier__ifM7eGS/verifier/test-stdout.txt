@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   
+02_correct_alt        pass    pass     Y   
+03_correct_superset   pass    pass     Y   
+04_wrong_values       fail    fail     Y   
+05_near_miss          fail    fail     Y   
+06_error_trap         fail    fail     Y   
+07_logs_no_files      fail    fail     Y   
+08_wrong_shape        fail    fail     Y   
+09_nop                fail    fail     Y   
+10_count_as_float     fail    fail     Y   
+11_correct_quoted     pass    pass     Y   
+12_correct_reordered_colspass    pass     Y   
+
+TP=5 FP=0 FN=0 TN=7  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000
