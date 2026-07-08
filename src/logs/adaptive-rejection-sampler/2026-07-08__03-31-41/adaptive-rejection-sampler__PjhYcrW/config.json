@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/adaptive-rejection-sampler"
+    },
+    "trial_name": "adaptive-rejection-sampler__PjhYcrW",
+    "trials_dir": "src/logs/adaptive-rejection-sampler/2026-07-08__03-31-41",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "ae9fa013-ccbc-457a-9d48-f7e3d723ddda"
+}

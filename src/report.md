@@ -8,12 +8,21 @@ produce the grader that decides whether a given attempt solved it. That grader i
 scored, deterministically, against a hidden pool of labeled solutions — correct ones must
 pass, adversarial ones must fail.
 
-Scope note: this submission contains **one fully-built, hardened exemplar task**
-(`samples/multi-source-data-verifier`) plus the methodology and tooling to generate the
-rest (`PLAYBOOK.md` at the repo root is the reproducible SOP). I chose depth over breadth
-deliberately — a single task that genuinely isolates a failure mode, with the anti-cheat
-and validation worked all the way through, is more informative than five shallow ones. The
-scale plan (below) is how this becomes 10 and then 1,000.
+Scope note: this submission contains **two fully-built, hardened tasks** spanning two
+distinct archetypes, plus the methodology and tooling to generate the rest (`PLAYBOOK.md`
+at the repo root is the reproducible SOP):
+
+- **`samples/multi-source-data-verifier`** — a *dirty-data ETL* task (merge three
+  inconsistent user exports into one Parquet table + conflict report).
+- **`samples/adaptive-rejection-sampler`** — a *low-level scientific-computing* task
+  (implement an adaptive rejection sampler in R). This one is deliberately different: the
+  graded artifact is **stochastic code**, so a correct verifier must *run* each candidate
+  and judge its behavior statistically, not diff it against a fixed output.
+
+Both clear the < 30% pass@3 bar with a consistent, diagnosable failure mode, and both come
+with the anti-cheat and validation worked all the way through. Two archetypes give a real
+(if short) difficulty curve rather than a point; the scale plan (below) is how this becomes
+10 and then 1,000.
 
 ## 1. Distribution — what I chose to measure, and why this slice
 
@@ -41,12 +50,27 @@ tolerating valid representational variation (order, extra columns); resisting a 
 that merely *claims* success. **Out of scope:** subjective quality, model-building,
 anything needing an LLM judge.
 
+**Second task — a different axis of verification difficulty.** The ETL task tests verifying
+a *deterministic data artifact*. The second task, `adaptive-rejection-sampler`, tests
+verifying *stochastic code*: the underlying task (from Terminal-Bench 2) is to implement an
+adaptive rejection sampler in R — `ars(g, D, n)` draws `n` samples from an arbitrary
+log-concave density, with input validation, log-concavity checking, and generated samples.
+A correct verifier can't diff against a reference; it must run the candidate and test its
+*behavior* — goodness-of-fit against known distributions, rejection of invalid inputs and
+non-log-concave densities, and that the output is actually random. This is a genuinely
+harder verification problem (statistical, behavioral, no fixed answer) and a different slice
+of DS/DE work (numerical / scientific computing rather than ETL). It's included precisely
+because "verify a stochastic algorithm" stresses a different skill than "verify a data
+merge."
+
 **Honest caveat on framing.** "The agent writes the verifier" is a meta-twist on "data
 science task." I think it's defensible and on-brief (the whole take-home is about
 verifiers), but a reviewer expecting a literal analyze-this-dataset task should know it's a
 deliberate reinterpretation, not an oversight.
 
 ## 2. Difficulty profile vs `gemini-3.5-flash`
+
+### Task A — `multi-source-data-verifier`
 
 Three trials of `harbor run -p samples/multi-source-data-verifier -a terminus-2 -m
 gemini/gemini-3.5-flash` (logs in `logs/multi-source-data-verifier/`):
@@ -72,6 +96,55 @@ only values and file containers (8 items). `gemini-3.5-flash` wrote a competent
 reference-implementation verifier and scored **1.0 three times** — no headroom. Diagnosing
 why (Section 5) led to three "right value, wrong declared type" items, which is what opened
 the 0.818 gap. A value-only pool cannot separate a strict verifier from a lenient one.
+
+### Task B — `adaptive-rejection-sampler`
+
+Three trials of `harbor run -p samples/adaptive-rejection-sampler -a terminus-2 -m
+gemini/gemini-3.5-flash` (logs in `logs/adaptive-rejection-sampler/`):
+
+| Trial | reward (accuracy) | all_correct | fp | fn | items missed |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 0.909 (10/11) | 0 | 1 | 0 | `deterministic_quantiles` |
+| 2 | 0.909 (10/11) | 0 | 1 | 0 | `deterministic_quantiles` |
+| 3 | 0.909 (10/11) | 0 | 1 | 0 | `deterministic_quantiles` |
+
+- **pass@1 = 0%, pass@3 = 0%** at the 1.0 bar; mean reward **0.909**. Again identical across
+  three runs — a systematic gap, not variance.
+- Gemini here writes a genuinely *thorough* verifier: it tests standard-normal sampling with
+  a KS goodness-of-fit test, a held-out shifted/scaled normal and an exponential, input
+  validation, and log-concavity rejection — and gets all 3 PASS and 7 of 8 FAIL items right.
+  It fails on exactly one: `deterministic_quantiles`, a submission that returns a fixed table
+  of evenly-spaced quantiles. That table has the *exact* right marginal distribution (mean,
+  sd, and shape all pass), so every verifier that checks the distribution accepts it — but it
+  is not random sampling. Only a verifier that tests that repeated calls differ catches it,
+  and none of the three did.
+- **The road to this number, again, is the finding.** The first pool (10 items, all
+  large-margin errors) let gemini's thorough verifier score a perfect **1.0** — no headroom.
+  Adding the one deterministic-but-perfect-marginal item opened the 0.909 gap. It is the
+  direct analog of Task A's type-coercion items: a correct-looking output that a verifier's
+  natural tool (a statistical fit test / a type coercion) silently waves through.
+
+### Aggregate
+
+| | oracle | gemini-3.5-flash pass@3 (bar = 1.0) | mean reward | dominant failure |
+| --- | --- | --- | --- | --- |
+| `multi-source-data-verifier` | 1.0 | **0%** | 0.818 | coerces declared types |
+| `adaptive-rejection-sampler` | 1.0 | **0%** | 0.909 | checks the distribution, not randomness |
+
+Aggregate pass@3 = **0/2 tasks passed** (0%), against a < 30% target. Both failures are the
+same *shape*: the model writes a competent verifier that checks the obvious properties but
+misses the one place its default tooling (type coercion; a marginal-fit test) silently
+accepts a wrong answer.
+
+**Metric note (be precise about "pass").** The headline `reward` is accuracy over the pool,
+and both pools are deliberately fail-heavy (3 pass / 8 fail) to pack in adversarial cases.
+That has a known consequence: a do-nothing "reject everything" verifier scores 8/11 = 0.727,
+and the intermediate reward band above it is not monotone in verifier quality. So the
+fractional reward is a *difficulty curve*, not the pass criterion — **pass ≡ reward 1.0 /
+`all_correct` = 1** (a perfect verifier), which is what pass@3 uses and what the oracle alone
+achieves. The harness already emits `all_correct` for exactly this reason; for RL training
+one would use `all_correct` (or a chance-corrected metric like balanced accuracy) as the
+signal and keep the fractional accuracy as a diagnostic.
 
 ## 3. Research awareness
 
@@ -119,6 +192,8 @@ hand-labeling the pool. Both are compressible.
 
 ## 5. Failure analysis — genuine difficulty, not a task-design bug
 
+### Task A — `multi-source-data-verifier`: coerces declared types
+
 All three trials fail identically on two items, and the trajectories + the captured
 `verify.py` show exactly why. Gemini's verifier **coerces** the declared types instead of
 enforcing them:
@@ -141,6 +216,39 @@ task-design bug?" check:
 In one line: the model can *write a verifier that checks values*, but not reliably one that
 *enforces a data contract*. That gap is the headroom, and it's the kind of thing better
 models should close — which is exactly what a good eval should surface.
+
+### Task B — `adaptive-rejection-sampler`: checks the distribution, not the sampling
+
+All three trials fail identically on `deterministic_quantiles`, and the captured verifiers
+show why: every one tests the *marginal distribution* (mean, sd, a KS goodness-of-fit test
+against known densities) and the behavioral requirements (validation, log-concavity), but
+none tests that the sampler is actually **random**. A submission returning a fixed table of
+evenly-spaced quantiles has a *perfect* marginal — better than a real sampler — so it sails
+through every distributional check. It is caught only by re-calling `ars` and checking the
+draws differ, which no trial did.
+
+This clears the same "is it a task-design bug?" checks:
+- **Not an ambiguous instruction.** The item violates the core meaning of "adaptive
+  rejection *sampling*" that "returns *n draws*" — a deterministic lookup table is not
+  sampling. The oracle catches it with a two-line repeat-call check.
+- **Not a mislabeled/over-strict pool.** The three PASS items are genuinely correct across
+  many log-concave densities (normal, exponential, gamma, beta, logistic, custom `exp(-x⁴)`,
+  bounded and unbounded domains; verified independently), and gemini passes all three. The
+  oracle scores the pool 1.0.
+- **Not reward hacking.** Same clean-room + `nobody`-sandbox as Task A; a label-reading
+  verifier is denied and collapses to baseline.
+
+**Honest note on the trap's margin.** This gap is thinner than Task A's. A control experiment
+(three extra runs, discarded) with the instruction reworded to state the property more
+loudly — "the draws are random, not a fixed table" — flipped one run to a perfect 1.0 and
+made two others over-strict. The takeaway cuts both ways: (a) it confirms the difficulty is a
+*genuine thoroughness gap*, not a hard limit — the model **can** test randomness, it just
+doesn't by default, which is exactly the capability an eval should probe; and (b) the shipped
+instruction deliberately states the requirement as a property of the sampler ("Sampling is
+stochastic") rather than spelling out the check, because naming the test hands the model its
+checklist. That is the same discipline as Task A (declare the types, don't say "don't coerce
+them"). The result is honest headroom, not a formatting gotcha — but it is more
+wording-sensitive than the type-coercion trap, and a stronger model would likely close it.
 
 ## Appendix — reproduce
 
@@ -173,9 +281,10 @@ Raw notes to self; not yet report-ready.
 - **Producer + verifier-maker pairing is UNTESTED.** It's the scale story but I haven't run
   it. Either pilot it once (run a producer, harvest, label) so it's demonstrated, or clearly
   label it as proposed.
-- **One task, brief wants 5–10.** Be upfront. The playbook is the recipe; realistically
-  build 3–4 total (mix of underlying domains: an ETL merge, a log-aggregation, a dirty-data
-  clean) so the difficulty curve is an actual curve, not a point.
+- **Two tasks now (ETL merge + ARS), brief wants 5–10.** Be upfront. The playbook is the
+  recipe; realistically build 3–4 total (add e.g. a log-aggregation or a dirty-data clean) so
+  the difficulty curve is a real curve. The two archetypes so far (deterministic data vs
+  stochastic code) already probe genuinely different verification skills.
 - **The "original verifier's blind spots → pool items" trick is the most generalizable
   insight** and deserves to be foregrounded, maybe promoted out of the appendix — it's how
   you make adversarial items cheaply for any underlying task.
