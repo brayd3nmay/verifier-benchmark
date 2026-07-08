@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   Verification successful. Setting verdict to 1.
+02_correct_alt        pass    pass     Y     ties should not be present for the Kolmogorov-Smirnov test
+03_correct_superset   pass    pass     Y   Verification successful. Setting verdict to 1.
+04_fake_rnorm         fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+05_wrong_scale        fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+06_wrong_shape        fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+07_no_validation      fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+08_no_logconcavity    fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+09_logs_no_files      fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+10_nop                fail    fail     Y   exit=1 Verification failed. Setting verdict to 0.
+11_deterministic_quantilesfail    pass     N   Verification successful. Setting verdict to 1.
+
+TP=3 FP=1 FN=0 TN=7  accuracy=0.909 precision=0.750 recall=1.000 f1=0.857

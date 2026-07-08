@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   Verification SUCCEEDED. Wrote 1 to /tmp/pool_ddu3blme/verdict
+02_correct_alt        pass    pass     Y   Verification SUCCEEDED. Wrote 1 to /tmp/pool_hqn4zl73/verdict
+03_correct_superset   pass    pass     Y   Verification SUCCEEDED. Wrote 1 to /tmp/pool_zwtnvdhf/verdict
+04_fake_rnorm         fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_ytaa5_oq/verdict
+05_wrong_scale        fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_7ji4m13p/verdict
+06_wrong_shape        fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_si4mzsod/verdict
+07_no_validation      fail    fail     Y   timeout
+08_no_logconcavity    fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_wg1h6vm8/verdict
+09_logs_no_files      fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_67qznney/verdict
+10_nop                fail    fail     Y   Verification FAILED. Wrote 0 to /tmp/pool_f_dtsajh/verdict
+11_deterministic_quantilesfail    pass     N   Verification SUCCEEDED. Wrote 1 to /tmp/pool_6o37mcex/verdict
+
+TP=3 FP=1 FN=0 TN=7  accuracy=0.909 precision=0.750 recall=1.000 f1=0.857
