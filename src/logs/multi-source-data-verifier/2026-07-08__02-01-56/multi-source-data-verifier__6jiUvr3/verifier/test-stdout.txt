@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   Verifier run completed. Verdict: 1 written to /tmp/pool_1gp4jk2u/verdict
+02_correct_alt        pass    pass     Y   Verifier run completed. Verdict: 1 written to /tmp/pool_t4lnkev8/verdict
+03_correct_superset   pass    pass     Y   Verifier run completed. Verdict: 1 written to /tmp/pool_typjxlb_/verdict
+04_wrong_values       fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_csdjgtg1/verdict
+05_near_miss          fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_3ui691ed/verdict
+06_logs_no_files      fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_068h7pq1/verdict
+07_wrong_shape        fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_hi64b529/verdict
+08_nop                fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_13wjfh29/verdict
+09_wrong_dtype_userid fail    pass     N   Verifier run completed. Verdict: 1 written to /tmp/pool_8ayl47_b/verdict
+10_wrong_date_format  fail    pass     N   Verifier run completed. Verdict: 1 written to /tmp/pool_2h946o42/verdict
+11_status_wrong_type  fail    fail     Y   Verifier run completed. Verdict: 0 written to /tmp/pool_hnhwgbm2/verdict
+
+TP=3 FP=2 FN=0 TN=6  accuracy=0.818 precision=0.600 recall=1.000 f1=0.750

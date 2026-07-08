@@ -1,0 +1,790 @@
+[?2004hroot@669fe7925989:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@669fe7925989:/app# clear
+[?2004l[H[J[3J[?2004hroot@669fe7925989:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 05:59 ..
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 data
+[?2004hroot@669fe7925989:/app# ls -la /app/data
+[?2004ltotal 20
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 ..
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_a
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_b
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_c
+[?2004hroot@669fe7925989:/app# ls -la /app/data/source_a /app/data/source_b /app/data/source_c
+[?2004l/app/data/source_a:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  291 Jul  8 04:10 users.json
+
+/app/data/source_b:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  129 Jul  8 04:10 users.csv
+
+/app/data/source_c:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root 3639 Jul  8 04:10 users.parquet
+[?2004hroot@669fe7925989:/app# python3 --version
+[?2004lPython 3.11.15
+[?2004hroot@669fe7925989:/app# python3 -c "import pandas, pyarrow, fastparquet; print('pandas:', pandas.__version__)"
+[?2004lTraceback (most recent call last):
+  File "<string>", line 1, in <module>
+ModuleNotFoundError: No module named 'fastparquet'
+[?2004hroot@669fe7925989:/app# python3 -c "import pandas, pyarrow; print('pandas & pyarrow OK')"
+[?2004lpandas & pyarrow OK
+[?2004hroot@669fe7925989:/app# cat /app/data/source_a/users.json
+[?2004l[
+  {
+    "id": 101,
+    "full_name": "John Doe",
+    "email": "john@a.com",
+    "registration_date": "2024-01-15",
+    "status": "active"
+  },
+  {
+    "id": 102,
+    "full_name": "Jane Smith",
+    "email": "jane@a.com",
+    "registration_date": "2024-02-20",
+    "status": "inactive"
+  }
+]
+[?2004hroot@669fe7925989:/app# cat /app/data/source_b/users.csv
+[?2004luser_id,name,email_address,created_at,is_active
+101,John Doe,john@b.com,2024-01-10,true
+103,Bob Wilson,bob@b.com,2024-03-01,true
+[?2004hroot@669fe7925989:/app# python3 -c "import pandas as pd; df = pd.read_parquet('/app/data/source_c/users.parquet'); print(df.head()); print(df.info())"
+[?2004l   userId     userName        email      joined  active
+0     101      John D.   john@c.com  2024-01-20    True
+1     104  Alice Brown  alice@c.com  2024-04-01    True
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 2 entries, 0 to 1
+Data columns (total 5 columns):
+ #   Column    Non-Null Count  Dtype 
+---  ------    --------------  ----- 
+ 0   userId    2 non-null      int64 
+ 1   userName  2 non-null      object
+ 2   email     2 non-null      object
+ 3   joined    2 non-null      object
+ 4   active    2 non-null      bool  
+dtypes: bool(1), int64(1), object(3)
+memory usage: 198.0+ bytes
+None
+[?2004hroot@669fe7925989:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@669fe7925989:/app# ls -la /app/verifier
+[?2004ltotal 8
+drwxr-xr-x 2 root root 4096 Jul  8 05:59 .
+drwxr-xr-x 1 root root 4096 Jul  8 05:59 ..
+[?2004hroot@669fe7925989:/app# find / -name "*verify.sh*" -o -name "*verifier*" 2>/dev/null
+[?2004l/logs/verifier
+/app/verifier
+[?2004hroot@669fe7925989:/app# python3 -c "import os, glob; print(glob.glob('/app/data/source_*/*'))"
+[?2004l['/app/data/source_a/users.json', '/app/data/source_b/users.csv', '/app/data/source_c/users.parquet']
+[?2004hroot@669fe7925989:/app# cat << 'EOF' > /app/test_merge.py
+[?2004l[?2004h> import os, glob, json
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> 
+[?2004l[?2004h> def standardize_df(df, source_name):
+[?2004l[?2004h>     # Map columns
+[?2004l[?2004h>     col_map = {}
+[?2004l[?2004h>     for col in df.columns:
+[?2004l[?2004h>         if col in ['id', 'user_id', 'userId']:
+[?2004lf[?2004h>             col_map[col] = 'user_id'
+[?2004l[?2004h>         elif col in ['full_name', 'name', 'userName']:
+[?2004l[?2004h>             col_map[col] = 'name'
+[?2004l[?2004h>         elif col in ['email', 'email_address']:
+[?2004l[?2004h>             col_map[col] = 'email'
+[?2004l[?2004h>         elif col in ['registration_date', 'created_at', 'joined']:
+[?2004l[?2004h>             col_map[col] = 'created_date'
+[?2004l[?2004h>         elif col in ['status', 'is_active', 'active']:
+[?2004l[?2004h>             col_map[col] = 'status'
+[?2004l[?2004h>     
+[?2004lq[?2004h>     df = df.rename(columns=col_map)
+[?2004l     [?2004h>     
+[?2004l[?2004h>     # Keep only relevant columns
+[?2004l[?2004h>     valid_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     df = df[[c for c in valid_cols if c in df.columns]].copy()
+[?2004l[?2004h>     
+[?2004l  '[?2004h>     # Standardize data types
+[?2004l[?2004h>     if 'user_id' in df.columns:
+[?2004ld_r[?2004h>         df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>     
+[?2004l     [?2004h>     if 'status' in df.columns:
+[?2004ltaFr[?2004h>         # Map booleans or strings
+[?2004l[?2004h>         def clean_status(val):
+[?2004l[?2004h>             if pd.isna(val):
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l[?2004h>             if isinstance(val, str):
+[?2004l[?2004h>                 v_lower = val.lower().strip()
+[?2004l[?2004h>                 if v_lower in ('true', '1', 'active'):
+[?2004l[?2004h>                     return 'active'
+[?2004l[?2004h>                 elif v_lower in ('false', '0', 'inactive'):
+[?2004l[?2004h>                     return 'inactive'
+[?2004l[?2004h>             # For any other numeric like 1, 0
+[?2004l[?2004h>             if val == 1 or val == 1.0:
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if val == 0 or val == 0.0:
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return str(val)
+[?2004l[?2004h>         df['status'] = df['status'].apply(clean_status)
+[?2004l[?2004h>         
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004l[?2004h>         # Convert to string in YYYY-MM-DD
+[?2004l[?2004h>         df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Convert other columns to string/clean
+[?2004l[?2004h>     for col in ['name', 'email']:
+[?2004l[?2004h>         if col in df.columns:
+[?2004l[?2004h>             df[col] = df[col].astype(str).str.strip()
+[?2004l[?2004h>             
+[?2004l[?2004h>     return df
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     sources = sorted(glob.glob('/app/data/source_*'))
+[?2004l[?2004h>     dfs = {}
+[?2004l[?2004h>     for s_path in sources:
+[?2004l[?2004h>         s_name = os.path.basename(s_path)
+[?2004l[?2004h>         files = glob.glob(os.path.join(s_path, 'users.*'))
+[?2004l[?2004h>         if not files: continue
+[?2004l[?2004h>         file_path = files[0]
+[?2004l[?2004h>         ext = os.path.splitext(file_path)[1].lower()
+[?2004l[?2004h>         if ext == '.json':
+[?2004l[?2004h>             df = pd.read_json(file_path)
+[?2004l[?2004h>         elif ext == '.csv':
+[?2004l[?2004h>             df = pd.read_csv(file_path)
+[?2004l[?2004h>         elif ext in ('.parquet', '.pq'):
+[?2004l[?2004h>             df = pd.read_parquet(file_path)
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             continue
+[?2004l[?2004h>         dfs[s_name] = standardize_df(df, s_name)
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Merge and Conflicts calculation
+[?2004l[?2004h>     # Get all unique user_ids
+[?2004l[?2004h>     all_user_ids = set()
+[?2004l[?2004h>     for df in dfs.values():
+[?2004l[?2004h>         all_user_ids.update(df['user_id'].tolist())
+[?2004l[?2004h>     all_user_ids = sorted(list(all_user_ids))
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Priority order is reverse-sorted sources: source_a, source_b, source_c
+[?2004l[?2004h>     priority_order = sorted(dfs.keys()) # ['source_a', 'source_b', 'source_c']
+[?2004l[?2004h>     
+[?2004l[?2004h>     merged_rows = []
+[?2004l[?2004h>     conflicts = []
+[?2004l[?2004h>     
+[?2004l[?2004h>     for uid in all_user_ids:
+[?2004l[?2004h>         user_sources = {}
+[?2004l[?2004h>         for s_name in priority_order:
+[?2004l[?2004h>             s_df = dfs[s_name]
+[?2004l[?2004h>             row = s_df[s_df['user_id'] == uid]
+[?2004l[?2004h>             if not row.empty:
+[?2004l[?2004h>                 user_sources[s_name] = row.iloc[0].to_dict()
+[?2004l[?2004h>                 
+[?2004l[?2004h>         # Select values based on highest priority
+[?2004l[?2004h>         selected_record = {}
+[?2004l[?2004h>         # Priority is source_a > source_b > source_c
+[?2004l[?2004h>         # So we pick the first available source in priority_order
+[?2004l[?2004h>         for s_name in priority_order:
+[?2004l[?2004h>             if s_name in user_sources:
+[?2004l[?2004h>                 selected_record = user_sources[s_name]
+[?2004l[?2004h>                 break
+[?2004l[?2004h>                 
+[?2004l[?2004h>         merged_rows.append({
+[?2004l[?2004h>             'user_id': uid,
+[?2004l[?2004h>             'name': selected_record.get('name'),
+[?2004l[?2004h>             'email': selected_record.get('email'),
+[?2004l[?2004h>             'created_date': selected_record.get('created_date'),
+[?2004l[?2004h>             'status': selected_record.get('status')
+[?2004l[?2004h>         })
+[?2004l[?2004h>         
+[?2004l[?2004h>         # Check conflicts
+[?2004l[?2004h>         # A conflict exists for a field if the sources containing the user disagree on its value.
+[?2004l[?2004h>         # Only check fields present in at least one of the sources for this user.
+[?2004l[?2004h>         fields = ['name', 'email', 'created_date', 'status']
+[?2004l[?2004h>         for field in fields:
+[?2004l[?2004h>             vals = {}
+[?2004l[?2004h>             for s_name, record in user_sources.items():
+[?2004l[?2004h>                 if field in record:
+[?2004l[?2004h>                     vals[s_name] = record[field]
+[?2004l[?2004h>             
+[?2004l[?2004h>             # If there's more than 1 source, and any of them disagree
+[?2004l[?2004h>             if len(vals) > 1:
+[?2004l[?2004h>                 unique_vals = set(vals.values())
+[?2004l[?2004h>                 if len(unique_vals) > 1:
+[?2004l[?2004h>                     conflicts.append({
+[?2004l[?2004h>                         'user_id': uid,
+[?2004l[?2004h>                         'field': field,
+[?2004l[?2004h>                         'values': vals,
+[?2004l[?2004h>                         'selected': selected_record.get(field)
+[?2004l[?2004h>                     })
+[?2004l[?2004h>                     
+[?2004l[?2004h>     merged_df = pd.DataFrame(merged_rows)
+[?2004l[?2004h>     print("--- MERGED DF ---")
+[?2004l[?2004h>     print(merged_df)
+[?2004l[?2004h>     
+[?2004l[?2004h>     conflicts_json = {
+[?2004l[?2004h>         'total_conflicts': len(conflicts),
+[?2004l[?2004h>         'conflicts': conflicts
+[?2004l[?2004h>     }
+[?2004l[?2004h>     print("--- CONFLICTS JSON ---")
+[?2004l[?2004h>     print(json.dumps(conflicts_json, indent=2))
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@669fe7925989:/app# python3 /app/test_merge.py
+[?2004l--- MERGED DF ---
+   user_id         name        email created_date    status
+0      101     John Doe   john@a.com   2024-01-15    active
+1      102   Jane Smith   jane@a.com   2024-02-20  inactive
+2      103   Bob Wilson    bob@b.com   2024-03-01    active
+3      104  Alice Brown  alice@c.com   2024-04-01    active
+--- CONFLICTS JSON ---
+{
+  "total_conflicts": 3,
+  "conflicts": [
+    {
+      "user_id": 101,
+      "field": "name",
+      "values": {
+        "source_a": "John Doe",
+        "source_b": "John Doe",
+        "source_c": "John D."
+      },
+      "selected": "John Doe"
+    },
+    {
+      "user_id": 101,
+      "field": "email",
+      "values": {
+        "source_a": "john@a.com",
+        "source_b": "john@b.com",
+        "source_c": "john@c.com"
+      },
+      "selected": "john@a.com"
+    },
+    {
+      "user_id": 101,
+      "field": "created_date",
+      "values": {
+        "source_a": "2024-01-15",
+        "source_b": "2024-01-10",
+        "source_c": "2024-01-20"
+      },
+      "selected": "2024-01-15"
+    }
+  ]
+}
+[?2004hroot@669fe7925989:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l[?2004h> # Python verifier
+[?2004l[?2004h> import os, sys, glob, json
+[?2004l.get(field)
+               [?2004h> import pandas as pd
+[?2004l
+            [?2004h> 
+[?2004l[?2004h> def standardize_df(df):
+[?2004l = [?2004h>     col_map = {}
+[?2004lDataFrame(merg[?2004h>     for col in df.columns:
+[?2004l[?2004h>         if col in ['id', 'user_id', 'userId']:
+[?2004l[?2004h>             col_map[col] = 'user_id'
+[?2004l[?2004h>         elif col in ['full_name', 'name', 'userName']:
+[?2004l[?2004h>             col_map[col] = 'name'
+[?2004lifier/reward.txt')
+    os.[?2004h>         elif col in ['email', 'email_address']:
+[?2004l[?2004h>             col_map[col] = 'email'
+[?2004l ref_df[?2004h>         elif col in ['registration_date', 'created_at', 'joined']:
+[?2004l[?2004h>             col_map[col] = 'created_date'
+[?2004l[?2004h>         elif col in ['status', 'is_active', 'active']:
+[?2004l[?2004h>             col_map[col] = 'status'
+[?2004l[?2004h>     
+[?2004l[?2004h>     df = df.rename(columns=col_map)
+[?2004lr[?2004h>     valid_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     df = df[[c for c in valid_cols if c in df.columns]].copy()
+[?2004l.path.exists(attempt_parquet_[?2004h>     
+[?2004l[?2004h>     if 'user_id' in df.columns:
+[?2004l[?2004h>         df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>     
+[?2004l[?2004h>     if 'status' in df.columns:
+[?2004l[?2004h>         def clean_status(val):
+[?2004l[?2004h>             if pd.isna(val):
+[?2004l 
+        att_df = pd.read_pa[?2004h>                 return None
+[?2004l)
+[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l   [?2004h>             if isinstance(val, str):
+[?2004l    [?2004h>                 v_lower = val.lower().strip()
+[?2004l[?2004h>                 if v_lower in ('true', '1', 'active'):
+[?2004las f:
+                [?2004h>                     return 'active'
+[?2004l        ret[?2004h>                 elif v_lower in ('false', '0', 'inactive'):
+[?2004l[?2004h>                     return 'inactive'
+[?2004l[?2004h>             if val == 1 or val == 1.0:
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if val == 0 or val == 0.0:
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return str(val)
+[?2004l [?2004h>         df['status'] = df['status'].apply(clean_status)
+[?2004l[?2004h>         
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004lated_date']).dt.strftime('%Y-%m-%d')
+   [?2004h>         df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004lt_df[col].astype(str).str[?2004h>         
+[?2004l[?2004h>     for col in ['name', 'email']:
+[?2004l[?2004h>         if col in df.columns:
+[?2004l[?2004h>             df[col] = df[col].astype(str).str.strip()
+[?2004l[?2004h>             
+[?2004ler_[?2004h>     return df
+[?2004l[?2004h> 
+[?2004l[?2004h> def compute_reference():
+[?2004l[?2004h>     sources = sorted(glob.glob('/app/data/source_*'))
+[?2004l[?2004h>     dfs = {}
+[?2004l[?2004h>     for s_path in sources:
+[?2004l[?2004h>         s_name = os.path.basename(s_path)
+[?2004l[?2004h>         files = glob.glob(os.path.join(s_path, 'users.*'))
+[?2004las f:
+    [?2004h>         if not files: continue
+[?2004l[?2004h>         file_path = files[0]
+[?2004l[?2004h>         ext = os.path.splitext(file_path)[1].lower()
+[?2004l[?2004h>         if ext == '.json':
+[?2004lo[?2004h>             df = pd.read_json(file_path)
+[?2004l[?2004h>         elif ext == '.csv':
+[?2004l[?2004h>             df = pd.read_csv(file_path)
+[?2004l[?2004h>         elif ext in ('.parquet', '.pq'):
+[?2004l[?2004h>             df = pd.read_parquet(file_path)
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             continue
+[?2004l       with open(verdict_file, 'w') as f[?2004h>         dfs[s_name] = standardize_df(df)
+[?2004l[?2004h>         
+[?2004l[?2004h>     all_user_ids = set()
+[?2004l[?2004h>     for df in dfs.values():
+[?2004l[?2004h>         all_user_ids.update(df['user_id'].tolist())
+[?2004l c fo[?2004h>     all_user_ids = sorted(list(all_user_ids))
+[?2004lues', 'selecte[?2004h>     
+[?2004l[?2004h>     priority_order = sorted(dfs.keys())
+[?2004l[?2004h>     merged_rows = []
+[?2004l[?2004h>     conflicts = []
+[?2004l[?2004h>     
+[?2004l           f.write('0')
+[?2004h>     for uid in all_user_ids:
+[?2004l[?2004h>         user_sources = {}
+[?2004l[?2004h>         for s_name in priority_order:
+[?2004l         'user_id': int(c['[?2004h>             s_df = dfs[s_name]
+[?2004l[?2004h>             row = s_df[s_df['user_id'] == uid]
+[?2004l[?2004h>             if not row.empty:
+[?2004l[?2004h>                 user_sources[s_name] = row.iloc[0].to_dict()
+[?2004l[?2004h>                 
+[?2004llected'][?2004h>         selected_record = {}
+[?2004l[?2004h>         for s_name in priority_order:
+[?2004l[?2004h>             if s_name in user_sources:
+[?2004l[?2004h>                 selected_record = user_sources[s_name]
+[?2004l[?2004h>                 break
+[?2004l[?2004h>                 
+[?2004l[?2004h>         merged_rows.append({
+[?2004l[?2004h>             'user_id': uid,
+[?2004l[?2004h>             'name': selected_record.get('name'),
+[?2004l[?2004h>             'email': selected_record.get('email'),
+[?2004l[?2004h>             'created_date': selected_record.get('created_date'),
+[?2004l[?2004h>             'status': selected_record.get('status')
+[?2004l[?2004h>         })
+[?2004l[?2004h>         
+[?2004l = sort[?2004h>         fields = ['name', 'email', 'created_date', 'status']
+[?2004l[?2004h>         for field in fields:
+[?2004l[?2004h>             vals = {}
+[?2004l[?2004h>             for s_name, record in user_sources.items():
+[?2004lct_file, 'w') as[?2004h>                 if field in record:
+[?2004lte('0')
+   [?2004h>                     vals[s_name] = record[field]
+[?2004l[?2004h>             
+[?2004l[?2004h>             if len(vals) > 1:
+[?2004l [?2004h>                 unique_vals = set(vals.values())
+[?2004l[?2004h>                 if len(unique_vals) > 1:
+[?2004l[?2004h>                     conflicts.append({
+[?2004l[?2004h>                         'user_id': int(uid),
+[?2004l[?2004h>                         'field': field,
+[?2004l[?2004h>                         'values': vals,
+[?2004lerdict_file, '[?2004h>                         'selected': selected_record.get(field)
+[?2004l[?2004h>                     })
+[?2004l op[?2004h>                     
+[?2004l[?2004h>     merged_df = pd.DataFrame(merged_rows)
+[?2004le('1')
+          [?2004h>     return merged_df, conflicts
+[?2004l[?2004h> 
+[?2004l Exception as e:
+   [?2004h> def verify():
+[?2004l     with open[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         ref_df, ref_conflicts = compute_reference()
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         attempt_parquet_path = os.path.join(solution_dir, 'merged_users.parquet')
+[?2004l[?2004h>         attempt_json_path = os.path.join(solution_dir, 'conflicts.json')
+[?2004l[?2004h>         
+[?2004l[?2004h>         if not os.path.exists(attempt_parquet_path) or not os.path.exists(attempt_json_path):
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         att_df = pd.read_parquet(attempt_parquet_path)
+[?2004l[?2004h>         required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>         
+[?2004l[?2004h>         for col in required_cols:
+[?2004l[?2004h>             if col not in att_df.columns:
+[?2004l[?2004h>                 with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                     f.write('0')
+[?2004l[?2004h>                 return
+[?2004l[?2004h>                 
+[?2004l[?2004h>         att_df = att_df[required_cols].copy()
+[?2004l[?2004h>         att_df['user_id'] = att_df['user_id'].astype(int)
+[?2004l[?2004h>         if 'status' in att_df.columns:
+[?2004l[?2004h>             att_df['status'] = att_df['status'].astype(str)
+[?2004l[?2004h>         if 'created_date' in att_df.columns:
+[?2004l[?2004h>             att_df['created_date'] = pd.to_datetime(att_df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>         for col in ['name', 'email']:
+[?2004l[?2004h>             att_df[col] = att_df[col].astype(str).str.strip()
+[?2004l[?2004h>             
+[?2004l[?2004h>         att_df = att_df.sort_values(by='user_id').reset_index(drop=True)
+[?2004l[?2004h>         ref_df = ref_df.sort_values(by='user_id').reset_index(drop=True)
+[?2004l[?2004h>         
+[?2004l[?2004h>         if not att_df.equals(ref_df):
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         with open(attempt_json_path, 'r') as f:
+[?2004l[?2004h>             att_json = json.load(f)
+[?2004l[?2004h>             
+[?2004l[?2004h>         if 'total_conflicts' not in att_json or 'conflicts' not in att_json:
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         att_conflicts = att_json['conflicts']
+[?2004l[?2004h>         if not isinstance(att_conflicts, list):
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         normalized_att = []
+[?2004l[?2004h>         for c in att_conflicts:
+[?2004l[?2004h>             if not all(k in c for k in ['user_id', 'field', 'values', 'selected']):
+[?2004l[?2004h>                 with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                     f.write('0')
+[?2004l[?2004h>                 return
+[?2004l[?2004h>             normalized_att.append({
+[?2004l[?2004h>                 'user_id': int(c['user_id']),
+[?2004l[?2004h>                 'field': str(c['field']).strip(),
+[?2004l[?2004h>                 'values': {k: str(v).strip() for k, v in c['values'].items()},
+[?2004l[?2004h>                 'selected': str(c['selected']).strip()
+[?2004l[?2004h>             })
+[?2004l[?2004h>         normalized_att = sorted(normalized_att, key=lambda x: (x['user_id'], x['field']))
+[?2004l[?2004h>         
+[?2004l[?2004h>         normalized_ref = []
+[?2004l[?2004h>         for c in ref_conflicts:
+[?2004l[?2004h>             normalized_ref.append({
+[?2004l[?2004h>                 'user_id': int(c['user_id']),
+[?2004l[?2004h>                 'field': str(c['field']).strip(),
+[?2004l[?2004h>                 'values': {k: str(v).strip() for k, v in c['values'].items()},
+[?2004l[?2004h>                 'selected': str(c['selected']).strip()
+[?2004l[?2004h>             })
+[?2004l[?2004h>         normalized_ref = sorted(normalized_ref, key=lambda x: (x['user_id'], x['field']))
+[?2004l[?2004h>         
+[?2004l[?2004h>         if len(normalized_att) != len(normalized_ref):
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         for a_c, r_c in zip(normalized_att, normalized_ref):
+[?2004l[?2004h>             if a_c != r_c:
+[?2004l[?2004h>                 with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                     f.write('0')
+[?2004l[?2004h>                 return
+[?2004l[?2004h>                 
+[?2004l[?2004h>         if int(att_json['total_conflicts']) != len(normalized_ref):
+[?2004l[?2004h>             with open(verdict_file, 'w') as f:
+[?2004l[?2004h>                 f.write('0')
+[?2004l[?2004h>             return
+[?2004l[?2004h>             
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('1')
+[?2004l[?2004h>             
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0')
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     verify()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@669fe7925989:/app# python3 -m py_compile /app/verifier/verify.py
+[?2004l[?2004hroot@669fe7925989:/app# cat /app/verifier/verify.py
+[?2004l# Python verifier
+import os, sys, glob, json
+import pandas as pd
+
+def standardize_df(df):
+    col_map = {}
+    for col in df.columns:
+        if col in ['id', 'user_id', 'userId']:
+            col_map[col] = 'user_id'
+        elif col in ['full_name', 'name', 'userName']:
+            col_map[col] = 'name'
+        elif col in ['email', 'email_address']:
+            col_map[col] = 'email'
+        elif col in ['registration_date', 'created_at', 'joined']:
+            col_map[col] = 'created_date'
+        elif col in ['status', 'is_active', 'active']:
+            col_map[col] = 'status'
+    
+    df = df.rename(columns=col_map)
+    valid_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+    df = df[[c for c in valid_cols if c in df.columns]].copy()
+    
+    if 'user_id' in df.columns:
+        df['user_id'] = df['user_id'].astype(int)
+    
+    if 'status' in df.columns:
+        def clean_status(val):
+            if pd.isna(val):
+                return None
+            if isinstance(val, bool):
+                return 'active' if val else 'inactive'
+            if isinstance(val, str):
+                v_lower = val.lower().strip()
+                if v_lower in ('true', '1', 'active'):
+                    return 'active'
+                elif v_lower in ('false', '0', 'inactive'):
+                    return 'inactive'
+            if val == 1 or val == 1.0:
+                return 'active'
+            if val == 0 or val == 0.0:
+                return 'inactive'
+            return str(val)
+        df['status'] = df['status'].apply(clean_status)
+        
+    if 'created_date' in df.columns:
+        df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+        
+    for col in ['name', 'email']:
+        if col in df.columns:
+            df[col] = df[col].astype(str).str.strip()
+            
+    return df
+
+def compute_reference():
+    sources = sorted(glob.glob('/app/data/source_*'))
+    dfs = {}
+    for s_path in sources:
+        s_name = os.path.basename(s_path)
+        files = glob.glob(os.path.join(s_path, 'users.*'))
+        if not files: continue
+        file_path = files[0]
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == '.json':
+            df = pd.read_json(file_path)
+        elif ext == '.csv':
+            df = pd.read_csv(file_path)
+        elif ext in ('.parquet', '.pq'):
+            df = pd.read_parquet(file_path)
+        else:
+            continue
+        dfs[s_name] = standardize_df(df)
+        
+    all_user_ids = set()
+    for df in dfs.values():
+        all_user_ids.update(df['user_id'].tolist())
+    all_user_ids = sorted(list(all_user_ids))
+    
+    priority_order = sorted(dfs.keys())
+    merged_rows = []
+    conflicts = []
+    
+    for uid in all_user_ids:
+        user_sources = {}
+        for s_name in priority_order:
+            s_df = dfs[s_name]
+            row = s_df[s_df['user_id'] == uid]
+            if not row.empty:
+                user_sources[s_name] = row.iloc[0].to_dict()
+                
+        selected_record = {}
+        for s_name in priority_order:
+            if s_name in user_sources:
+                selected_record = user_sources[s_name]
+                break
+                
+        merged_rows.append({
+            'user_id': uid,
+            'name': selected_record.get('name'),
+            'email': selected_record.get('email'),
+            'created_date': selected_record.get('created_date'),
+            'status': selected_record.get('status')
+        })
+        
+        fields = ['name', 'email', 'created_date', 'status']
+        for field in fields:
+            vals = {}
+            for s_name, record in user_sources.items():
+                if field in record:
+                    vals[s_name] = record[field]
+            
+            if len(vals) > 1:
+                unique_vals = set(vals.values())
+                if len(unique_vals) > 1:
+                    conflicts.append({
+                        'user_id': int(uid),
+                        'field': field,
+                        'values': vals,
+                        'selected': selected_record.get(field)
+                    })
+                    
+    merged_df = pd.DataFrame(merged_rows)
+    return merged_df, conflicts
+
+def verify():
+    solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+    verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+    os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+    
+    try:
+        ref_df, ref_conflicts = compute_reference()
+    except Exception as e:
+        with open(verdict_file, 'w') as f:
+            f.write('0')
+        return
+        
+    try:
+        attempt_parquet_path = os.path.join(solution_dir, 'merged_users.parquet')
+        attempt_json_path = os.path.join(solution_dir, 'conflicts.json')
+        
+        if not os.path.exists(attempt_parquet_path) or not os.path.exists(attempt_json_path):
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        att_df = pd.read_parquet(attempt_parquet_path)
+        required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+        
+        for col in required_cols:
+            if col not in att_df.columns:
+                with open(verdict_file, 'w') as f:
+                    f.write('0')
+                return
+                
+        att_df = att_df[required_cols].copy()
+        att_df['user_id'] = att_df['user_id'].astype(int)
+        if 'status' in att_df.columns:
+            att_df['status'] = att_df['status'].astype(str)
+        if 'created_date' in att_df.columns:
+            att_df['created_date'] = pd.to_datetime(att_df['created_date']).dt.strftime('%Y-%m-%d')
+        for col in ['name', 'email']:
+            att_df[col] = att_df[col].astype(str).str.strip()
+            
+        att_df = att_df.sort_values(by='user_id').reset_index(drop=True)
+        ref_df = ref_df.sort_values(by='user_id').reset_index(drop=True)
+        
+        if not att_df.equals(ref_df):
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        with open(attempt_json_path, 'r') as f:
+            att_json = json.load(f)
+            
+        if 'total_conflicts' not in att_json or 'conflicts' not in att_json:
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        att_conflicts = att_json['conflicts']
+        if not isinstance(att_conflicts, list):
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        normalized_att = []
+        for c in att_conflicts:
+            if not all(k in c for k in ['user_id', 'field', 'values', 'selected']):
+                with open(verdict_file, 'w') as f:
+                    f.write('0')
+                return
+            normalized_att.append({
+                'user_id': int(c['user_id']),
+                'field': str(c['field']).strip(),
+                'values': {k: str(v).strip() for k, v in c['values'].items()},
+                'selected': str(c['selected']).strip()
+            })
+        normalized_att = sorted(normalized_att, key=lambda x: (x['user_id'], x['field']))
+        
+        normalized_ref = []
+        for c in ref_conflicts:
+            normalized_ref.append({
+                'user_id': int(c['user_id']),
+                'field': str(c['field']).strip(),
+                'values': {k: str(v).strip() for k, v in c['values'].items()},
+                'selected': str(c['selected']).strip()
+            })
+        normalized_ref = sorted(normalized_ref, key=lambda x: (x['user_id'], x['field']))
+        
+        if len(normalized_att) != len(normalized_ref):
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        for a_c, r_c in zip(normalized_att, normalized_ref):
+            if a_c != r_c:
+                with open(verdict_file, 'w') as f:
+                    f.write('0')
+                return
+                
+        if int(att_json['total_conflicts']) != len(normalized_ref):
+            with open(verdict_file, 'w') as f:
+                f.write('0')
+            return
+            
+        with open(verdict_file, 'w') as f:
+            f.write('1')
+            
+    except Exception as e:
+        with open(verdict_file, 'w') as f:
+            f.write('0')
+
+if __name__ == '__main__':
+    verify()
+[?2004hroot@669fe7925989:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/usr/bin/env bash
+[?2004l[?2004h> python3 /app/verifier/verify.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@669fe7925989:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@669fe7925989:/app# /app/verifier/verify.sh
+[?2004l[?2004hroot@669fe7925989:/app# cat /logs/verifier/reward.txt
+[?2004l0[?2004hroot@669fe7925989:/app# python3 -c "from verifier.verify import compute_reference; ref_df, ref_conflicts = compute_reference(); ref_df.to_parquet('/app/merged_users.parquet'); import json; json.dump({'total_conflicts': len(ref_conflicts), 'conflicts': ref_conflicts}, open('/app/conflicts.json', 'w'))"
+[?2004l[?2004hroot@669fe7925989:/app# /app/verifier/verify.sh
+[?2004l[?2004hroot@669fe7925989:/app# cat /logs/verifier/reward.txt
+[?2004l1[?2004hroot@669fe7925989:/app# python3 -c "import json; d=json.load(open('/app/conflicts.json')); d['total_conflicts'] = 2; json.dump(d, open('/app/conflicts.json', 'w'))"
+[?2004l[?2004hroot@669fe7925989:/app# /app/verifier/verify.sh
+[?2004l[?2004hroot@669fe7925989:/app# cat /logs/verifier/reward.txt
+[?2004l0[?2004hroot@669fe7925989:/app# rm -f /app/merged_users.parquet /app/conflicts.json /app/test_merge.py
+[?2004l[?2004hroot@669fe7925989:/app# ls -la /app/verifier
+[?2004ltotal 28
+drwxr-xr-x 3 root root 4096 Jul  8 06:00 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:00 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:00 __pycache__
+-rw-r--r-- 1 root root 8445 Jul  8 06:00 verify.py
+-rwxr-xr-x 1 root root   52 Jul  8 06:00 verify.sh
+[?2004hroot@669fe7925989:/app# 

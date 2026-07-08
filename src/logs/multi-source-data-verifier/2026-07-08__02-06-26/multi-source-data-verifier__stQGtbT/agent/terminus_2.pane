@@ -1,0 +1,988 @@
+[?2004hroot@27662325eba8:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@27662325eba8:/app# clear
+[?2004l[H[J[3J[?2004hroot@27662325eba8:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:06 ..
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 data
+[?2004hroot@27662325eba8:/app# ls -la /app/data
+[?2004ltotal 20
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 ..
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_a
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_b
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_c
+[?2004hroot@27662325eba8:/app# ls -la /app/data/source_a
+[?2004ltotal 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  291 Jul  8 04:10 users.json
+[?2004hroot@27662325eba8:/app# ls -la /app/data/source_b
+[?2004ltotal 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  129 Jul  8 04:10 users.csv
+[?2004hroot@27662325eba8:/app# ls -la /app/data/source_c
+[?2004ltotal 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root 3639 Jul  8 04:10 users.parquet
+[?2004hroot@27662325eba8:/app# cat /app/data/source_a/users.json
+[?2004l[
+  {
+    "id": 101,
+    "full_name": "John Doe",
+    "email": "john@a.com",
+    "registration_date": "2024-01-15",
+    "status": "active"
+  },
+  {
+    "id": 102,
+    "full_name": "Jane Smith",
+    "email": "jane@a.com",
+    "registration_date": "2024-02-20",
+    "status": "inactive"
+  }
+]
+[?2004hroot@27662325eba8:/app# cat /app/data/source_b/users.csv
+[?2004luser_id,name,email_address,created_at,is_active
+101,John Doe,john@b.com,2024-01-10,true
+103,Bob Wilson,bob@b.com,2024-03-01,true
+[?2004hroot@27662325eba8:/app# python3 -c "import pandas, pyarrow; print('OK')"
+[?2004lOK
+[?2004hroot@27662325eba8:/app# python3 -c "import pandas as pd; df = pd.read_parquet('/app/data/source_c/users.parquet'); print(df.to_string())"
+[?2004l   userId     userName        email      joined  active
+0     101      John D.   john@c.com  2024-01-20    True
+1     104  Alice Brown  alice@c.com  2024-04-01    True
+[?2004hroot@27662325eba8:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@27662325eba8:/app# cat << 'EOF' > /app/verifier/test_solution.py
+[?2004l[?2004h> import os
+[?2004l[?2004h> import glob
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> def load_source(dir_path):
+[?2004l[?2004h>     # find the users.* file
+[?2004l[?2004h>     files = glob.glob(os.path.join(dir_path, "users.*"))
+[?2004l[?2004h>     if not files:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     filepath = files[0]
+[?2004l[?2004h>     ext = os.path.splitext(filepath)[1].lower()
+[?2004l[?2004h>     
+[?2004l[?2004h>     if ext == '.csv':
+[?2004l[?2004h>         df = pd.read_csv(filepath)
+[?2004l[?2004h>     elif ext == '.json':
+[?2004l[?2004h>         df = pd.read_json(filepath)
+[?2004l[?2004h>     elif ext == '.parquet':
+[?2004l[?2004h>         df = pd.read_parquet(filepath)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Normalize columns
+[?2004l[?2004h>     # user id is id, user_id, or userId;
+[?2004l[?2004h>     id_cols = ['id', 'user_id', 'userId']
+[?2004l[?2004h>     # name is full_name, name, or userName;
+[?2004l[?2004h>     name_cols = ['full_name', 'name', 'userName']
+[?2004l[?2004h>     # email is email or email_address;
+[?2004l[?2004h>     email_cols = ['email', 'email_address']
+[?2004l[?2004h>     # created_date is registration_date, created_at, or joined;
+[?2004l[?2004h>     date_cols = ['registration_date', 'created_at', 'joined']
+[?2004l[?2004h>     # status is status, is_active, or active
+[?2004l[?2004h>     status_cols = ['status', 'is_active', 'active']
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Map columns
+[?2004l[?2004h>     col_map = {}
+[?2004l[?2004h>     for c in df.columns:
+[?2004l[?2004h>         if c in id_cols:
+[?2004l[?2004h>             col_map[c] = 'user_id'
+[?2004l[?2004h>         elif c in name_cols:
+[?2004l[?2004h>             col_map[c] = 'name'
+[?2004l[?2004h>         elif c in email_cols:
+[?2004l[?2004h>             col_map[c] = 'email'
+[?2004l[?2004h>         elif c in date_cols:
+[?2004l[?2004h>             col_map[c] = 'created_date'
+[?2004l[?2004h>         elif c in status_cols:
+[?2004l[?2004h>             col_map[c] = 'status'
+[?2004l[?2004h>             
+[?2004l[?2004h>     df = df.rename(columns=col_map)
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Keep only relevant columns
+[?2004l[?2004h>     relevant = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     df = df[[c for c in relevant if c in df.columns]]
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Normalize user_id to int
+[?2004l[?2004h>     if 'user_id' in df.columns:
+[?2004l[?2004h>         df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Normalize status
+[?2004l[?2004h>     if 'status' in df.columns:
+[?2004l[?2004h>         def norm_status(val):
+[?2004l[?2004h>             if pd.isna(val) or val is None:
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l[?2004h>             s = str(val).strip().lower()
+[?2004l[?2004h>             if s in ['true', 'active', '1']:
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if s in ['false', 'inactive', '0']:
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return s
+[?2004l[?2004h>         df['status'] = df['status'].apply(norm_status)
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Normalize created_date to YYYY-MM-DD
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004l[?2004h>         df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>         
+[?2004l[?2004h>     return df
+[?2004l[?2004h> 
+[?2004l[?2004h> # Find all source directories and sort them alphabetically
+[?2004l[?2004h> source_dirs = sorted(glob.glob("/app/data/source_*"))
+[?2004l[?2004h> sources = {}
+[?2004l[?2004h> for sdir in source_dirs:
+[?2004l[?2004h>     sname = os.path.basename(sdir)
+[?2004l[?2004h>     df = load_source(sdir)
+[?2004l[?2004h>     if df is not None:
+[?2004l[?2004h>         sources[sname] = df
+[?2004l[?2004h> 
+[?2004l[?2004h> print("Loaded sources:")
+[?2004l[?2004h> for sname, df in sources.items():
+[?2004l[?2004h>     print(sname)
+[?2004l[?2004h>     print(df)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@27662325eba8:/app# python3 /app/verifier/test_solution.py
+[?2004lLoaded sources:
+source_a
+   user_id        name       email created_date    status
+0      101    John Doe  john@a.com   2024-01-15    active
+1      102  Jane Smith  jane@a.com   2024-02-20  inactive
+source_b
+   user_id        name       email created_date  status
+0      101    John Doe  john@b.com   2024-01-10  active
+1      103  Bob Wilson   bob@b.com   2024-03-01  active
+source_c
+   user_id         name        email created_date  status
+0      101      John D.   john@c.com   2024-01-20  active
+1      104  Alice Brown  alice@c.com   2024-04-01  active
+[?2004hroot@27662325eba8:/app# cat << 'EOF' > /app/verifier/test_solution.py
+[?2004l[?2004h> import os
+[?2004l[?2004h> import glob
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> def load_source(dir_path):
+[?2004l[?2004h>     files = glob.glob(os.path.join(dir_path, "users.*"))
+[?2004l[?2004h>     if not files:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     filepath = files[0]
+[?2004l[?2004h>     ext = os.path.splitext(filepath)[1].lower()
+[?2004l[?2004h>     
+[?2004l[?2004h>     if ext == '.csv':
+[?2004l[?2004h>         df = pd.read_csv(filepath)
+[?2004l[?2004h>     elif ext == '.json':
+[?2004l[?2004h>         df = pd.read_json(filepath)
+[?2004l[?2004h>     elif ext == '.parquet':
+[?2004l[?2004h>         df = pd.read_parquet(filepath)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>         
+[?2004l[?2004h>     id_cols = ['id', 'user_id', 'userId']
+[?2004l[?2004h>     name_cols = ['full_name', 'name', 'userName']
+[?2004l[?2004h>     email_cols = ['email', 'email_address']
+[?2004l[?2004h>     date_cols = ['registration_date', 'created_at', 'joined']
+[?2004l[?2004h>     status_cols = ['status', 'is_active', 'active']
+[?2004l[?2004h>     
+[?2004l[?2004h>     col_map = {}
+[?2004l[?2004h>     for c in df.columns:
+[?2004l[?2004h>         if c in id_cols:
+[?2004l[?2004h>             col_map[c] = 'user_id'
+[?2004l[?2004h>         elif c in name_cols:
+[?2004l[?2004h>             col_map[c] = 'name'
+[?2004l[?2004h>         elif c in email_cols:
+[?2004l[?2004h>             col_map[c] = 'email'
+[?2004l[?2004h>         elif c in date_cols:
+[?2004l[?2004h>             col_map[c] = 'created_date'
+[?2004l[?2004h>         elif c in status_cols:
+[?2004l[?2004h>             col_map[c] = 'status'
+[?2004l[?2004h>             
+[?2004l[?2004h>     df = df.rename(columns=col_map)
+[?2004l[?2004h>     relevant = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     df = df[[c for c in relevant if c in df.columns]]
+[?2004l[?2004h>     
+[?2004l[?2004h>     if 'user_id' in df.columns:
+[?2004l[?2004h>         df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>         
+[?2004l[?2004h>     if 'status' in df.columns:
+[?2004l[?2004h>         def norm_status(val):
+[?2004l[?2004h>             if pd.isna(val) or val is None:
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l[?2004h>             s = str(val).strip().lower()
+[?2004l[?2004h>             if s in ['true', 'active', '1']:
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if s in ['false', 'inactive', '0']:
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return s
+[?2004l[?2004h>         df['status'] = df['status'].apply(norm_status)
+[?2004l[?2004h>         
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004l[?2004h>         df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>         
+[?2004l[?2004h>     return df
+[?2004l[?2004h> 
+[?2004l[?2004h> source_dirs = sorted(glob.glob("/app/data/source_*"))
+[?2004l[?2004h> sources = {}
+[?2004l[?2004h> for sdir in source_dirs:
+[?2004l[?2004h>     sname = os.path.basename(sdir)
+[?2004l[?2004h>     df = load_source(sdir)
+[?2004l[?2004h>     if df is not None:
+[?2004l[?2004h>         sources[sname] = df
+[?2004l[?2004h> 
+[?2004l[?2004h> all_user_ids = set()
+[?2004l[?2004h> for df in sources.values():
+[?2004l[?2004h>     all_user_ids.update(df['user_id'].tolist())
+[?2004l[?2004h> all_user_ids = sorted(list(all_user_ids))
+[?2004l[?2004h> 
+[?2004l[?2004h> merged_rows = []
+[?2004l[?2004h> conflicts = []
+[?2004l[?2004h> fields = ['name', 'email', 'created_date', 'status']
+[?2004l[?2004h> 
+[?2004l[?2004h> for uid in all_user_ids:
+[?2004l[?2004h>     user_sources = {}
+[?2004l[?2004h>     for sname in sorted(sources.keys()):
+[?2004l[?2004h>         df = sources[sname]
+[?2004l[?2004h>         user_row = df[df['user_id'] == uid]
+[?2004l[?2004h>         if not user_row.empty:
+[?2004l[?2004h>             user_sources[sname] = user_row.iloc[0].to_dict()
+[?2004l[?2004h>             
+[?2004l[?2004h>     priority_sources = sorted(user_sources.keys())
+[?2004l[?2004h>     highest_prio_source = priority_sources[0]
+[?2004l[?2004h>     selected_user_data = user_sources[highest_prio_source]
+[?2004l[?2004h>     
+[?2004l[?2004h>     merged_record = {
+[?2004l[?2004h>         'user_id': int(uid),
+[?2004l[?2004h>         'name': selected_user_data.get('name'),
+[?2004l[?2004h>         'email': selected_user_data.get('email'),
+[?2004l[?2004h>         'created_date': selected_user_data.get('created_date'),
+[?2004l[?2004h>         'status': selected_user_data.get('status')
+[?2004l[?2004h>     }
+[?2004l[?2004h>     merged_rows.append(merged_record)
+[?2004l[?2004h>     
+[?2004l[?2004h>     for field in fields:
+[?2004l[?2004h>         field_values = {}
+[?2004l[?2004h>         for sname, udata in user_sources.items():
+[?2004l[?2004h>             val = udata.get(field)
+[?2004l[?2004h>             if pd.isna(val) or val is None:
+[?2004l[?2004h>                 field_values[sname] = None
+[?2004l[?2004h>             else:
+[?2004l[?2004h>                 field_values[sname] = val
+[?2004l[?2004h>                 
+[?2004l[?2004h>         non_null_values = [v for v in field_values.values() if v is not None]
+[?2004l[?2004h>         unique_non_null = set(non_null_values)
+[?2004l[?2004h>         if len(unique_non_null) > 1:
+[?2004l[?2004h>             vals_dict = {}
+[?2004l[?2004h>             for sname in sorted(sources.keys()):
+[?2004l[?2004h>                 if sname in user_sources:
+[?2004l[?2004h>                     vals_dict[sname] = user_sources[sname].get(field)
+[?2004l[?2004h>             
+[?2004l[?2004h>             conflict_entry = {
+[?2004l[?2004h>                 'user_id': int(uid),
+[?2004l[?2004h>                 'field': field,
+[?2004l[?2004h>                 'values': vals_dict,
+[?2004l[?2004h>                 'selected': merged_record[field]
+[?2004l[?2004h>             }
+[?2004l[?2004h>             conflicts.append(conflict_entry)
+[?2004l[?2004h> 
+[?2004l[?2004h> merged_df = pd.DataFrame(merged_rows)
+[?2004l[?2004h> print(merged_df)
+[?2004l[?2004h> conflicts_json = {
+[?2004l[?2004h>     'total_conflicts': len(conflicts),
+[?2004l[?2004h>     'conflicts': conflicts
+[?2004l[?2004h> }
+[?2004l[?2004h> print(json.dumps(conflicts_json, indent=2))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@27662325eba8:/app# python3 /app/verifier/test_solution.py
+[?2004l   user_id         name        email created_date    status
+0      101     John Doe   john@a.com   2024-01-15    active
+1      102   Jane Smith   jane@a.com   2024-02-20  inactive
+2      103   Bob Wilson    bob@b.com   2024-03-01    active
+3      104  Alice Brown  alice@c.com   2024-04-01    active
+{
+  "total_conflicts": 3,
+  "conflicts": [
+    {
+      "user_id": 101,
+      "field": "name",
+      "values": {
+        "source_a": "John Doe",
+        "source_b": "John Doe",
+        "source_c": "John D."
+      },
+      "selected": "John Doe"
+    },
+    {
+      "user_id": 101,
+      "field": "email",
+      "values": {
+        "source_a": "john@a.com",
+        "source_b": "john@b.com",
+        "source_c": "john@c.com"
+      },
+      "selected": "john@a.com"
+    },
+    {
+      "user_id": 101,
+      "field": "created_date",
+      "values": {
+        "source_a": "2024-01-15",
+        "source_b": "2024-01-10",
+        "source_c": "2024-01-20"
+      },
+      "selected": "2024-01-15"
+    }
+  ]
+}
+[?2004hroot@27662325eba8:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l non_null_values = [v for v in field_[?2004h> import os
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import glob
+[?2004l[?2004h> import json
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> 
+[?2004le[?2004h> def load_source(dir_path):
+[?2004l[?2004h>     files = glob.glob(os.path.join(dir_path, "users.*"))
+[?2004l[?2004h>     if not files:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     filepath = files[0]
+[?2004l[?2004h>     ext = os.path.splitext(filepath)[1].lower()
+[?2004l[?2004h>     
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         if ext == '.csv':
+[?2004l[?2004h>             df = pd.read_csv(filepath)
+[?2004l[?2004h>         elif ext == '.json':
+[?2004l[?2004h>             df = pd.read_json(filepath)
+[?2004l[?2004h>         elif ext == '.parquet':
+[?2004l[?2004h>             df = pd.read_parquet(filepath)
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             return None
+[?2004l[?2004h>     except Exception:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>         
+[?2004l[?2004h>     id_cols = ['id', 'user_id', 'userId']
+[?2004l[?2004h>     name_cols = ['full_name', 'name', 'userName']
+[?2004l[?2004h>     email_cols = ['email', 'email_address']
+[?2004l[?2004h>     date_cols = ['registration_date', 'created_at', 'joined']
+[?2004l[?2004h>     status_cols = ['status', 'is_active', 'active']
+[?2004l[?2004h>     
+[?2004l[?2004h>     col_map = {}
+[?2004l[?2004h>     for c in df.columns:
+[?2004l[?2004h>         if c in id_cols:
+[?2004l[?2004h>             col_map[c] = 'user_id'
+[?2004l[?2004h>         elif c in name_cols:
+[?2004le_conflicts([?2004h>             col_map[c] = 'name'
+[?2004l[?2004h>         elif c in email_cols:
+[?2004le(conf_json, dict) or 'conflic[?2004h>             col_map[c] = 'email'
+[?2004l[?2004h>         elif c in date_cols:
+[?2004l[?2004h>             col_map[c] = 'created_date'
+[?2004l[?2004h>         elif c in status_cols:
+[?2004l[?2004h>             col_map[c] = 'status'
+[?2004l[?2004h>             
+[?2004l[?2004h>     df = df.rename(columns=col_map)
+[?2004l[?2004h>     relevant = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     df = df[[c for c in relevant if c in df.columns]]
+[?2004l[?2004h>     
+[?2004l[?2004h>     if 'user_id' in df.columns:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>         except Exception:
+[?2004l   return None
+        
+        # ensure values is a dict and keys are sor[?2004h>             pass
+[?2004l[?2004h>         
+[?2004l[?2004h>     if 'status' in df.columns:
+[?2004l[?2004h>         def norm_status(val):
+[?2004l[?2004h>             if pd.isna(val) or val is None:
+[?2004ll[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l[?2004h>             s = str(val).strip().lower()
+[?2004l[?2004h>             if s in ['true', 'active', '1']:
+[?2004l[?2004h>                 return 'active'
+[?2004lr(entry['field']),
+            '[?2004h>             if s in ['false', 'inactive', '0']:
+[?2004l      'selected'[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return s
+[?2004l: entry['selected']
+        })
+        
+    # Sort by u[?2004h>         df['status'] = df['status'].apply(norm_status)
+[?2004la [?2004h>         
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>         except Exception:
+[?2004l[?2004h>             pass
+[?2004l[?2004h>         
+[?2004l# Compute[?2004h>     return df
+[?2004luth
+[?2004h> 
+[?2004l[?2004h> def compute_ground_truth(data_dir):
+[?2004l[?2004h>     source_dirs = sorted(glob.glob(os.path.join(data_dir, "source_*")))
+[?2004l[?2004h>     sources = {}
+[?2004l[?2004h>     for sdir in source_dirs:
+[?2004lr, "[?2004h>         sname = os.path.basename(sdir)
+[?2004l[?2004h>         df = load_source(sdir)
+[?2004l[?2004h>         if df is not None:
+[?2004l[?2004h>             sources[sname] = df
+[?2004l[?2004h>             
+[?2004l[?2004h>     all_user_ids = set()
+[?2004l[?2004h>     for df in sources.values():
+[?2004l[?2004h>         if 'user_id' in df.columns:
+[?2004l[?2004h>             all_user_ids.update(df['user_id'].tolist())
+[?2004l[?2004h>     all_user_ids = sorted(list(all_user_ids))
+[?2004l p[?2004h>     
+[?2004l[?2004h>     merged_rows = []
+[?2004larquet: {e}", file=sys.std[?2004h>     conflicts = []
+[?2004l[?2004h>     fields = ['name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     
+[?2004l[?2004h>     for uid in all_user_ids:
+[?2004l[?2004h>         user_sources = {}
+[?2004l[?2004h>         for sname in sorted(sources.keys()):
+[?2004l[?2004h>             df = sources[sname]
+[?2004l[?2004h>             user_row = df[df['user_id'] == uid]
+[?2004l[?2004h>             if not user_row.empty:
+[?2004l[?2004h>                 user_sources[sname] = user_row.iloc[0].to_dict()
+[?2004l[?2004h>                 
+[?2004l[?2004h>         priority_sources = sorted(user_sources.keys())
+[?2004l[?2004h>         if not priority_sources:
+[?2004l= cand_df[required_c[?2004h>             continue
+[?2004l[?2004h>         highest_prio_source = priority_sources[0]
+[?2004ldf['user_id'] = cand_df['user[?2004h>         selected_user_data = user_sources[highest_prio_source]
+[?2004l[?2004h>         
+[?2004l[?2004h>         merged_record = {
+[?2004l.astype(str)
+            cand_df['e[?2004h>             'user_id': int(uid),
+[?2004l[?2004h>             'name': selected_user_data.get('name'),
+[?2004l[?2004h>             'email': selected_user_data.get('email'),
+[?2004l[?2004h>             'created_date': selected_user_data.get('created_date'),
+[?2004l[?2004h>             'status': selected_user_data.get('status')
+[?2004l[?2004h>         }
+[?2004l[?2004h>         merged_rows.append(merged_record)
+[?2004l[?2004h>         
+[?2004l[?2004h>         for field in fields:
+[?2004l
+       [?2004h>             field_values = {}
+[?2004l[?2004h>             for sname, udata in user_sources.items():
+[?2004l[?2004h>                 val = udata.get(field)
+[?2004l=True)
+    [?2004h>                 if pd.isna(val) or val is None:
+[?2004l[?2004h>                     field_values[sname] = None
+[?2004lA[?2004h>                 else:
+[?2004l[?2004h>                     field_values[sname] = val
+[?2004l[?2004h>                     
+[?2004l[?2004h>             non_null_values = [v for v in field_values.values() if v is not None]
+[?2004l[?2004h>             unique_non_null = set(non_null_values)
+[?2004l[?2004h>             if len(unique_non_null) > 1:
+[?2004l[?2004h>                 vals_dict = {}
+[?2004l[?2004h>                 for sname in sorted(sources.keys()):
+[?2004l[?2004h>                     if sname in user_sources:
+[?2004l[?2004h>                         vals_dict[sname] = user_sources[sname].get(field)
+[?2004l[?2004h>                 
+[?2004l  [?2004h>                 conflict_entry = {
+[?2004l   
+ [?2004h>                     'user_id': int(uid),
+[?2004l[?2004h>                     'field': field,
+[?2004l[?2004h>                     'values': vals_dict,
+[?2004l[?2004h>                     'selected': merged_record[field]
+[?2004l"Candi[?2004h>                 }
+[?2004ls.jso[?2004h>                 conflicts.append(conflict_entry)
+[?2004lr[?2004h>                 
+[?2004l[?2004h>     merged_df = pd.DataFrame(merged_rows)
+[?2004l[?2004h>     if not merged_df.empty:
+[?2004l[?2004h>         merged_df = merged_df[['user_id', 'name', 'email', 'created_date', 'status']]
+[?2004lp[?2004h>     conflicts_json = {
+[?2004leading ca[?2004h>         'total_conflicts': len(conflicts),
+[?2004l[?2004h>         'conflicts': conflicts
+[?2004l[?2004h>     }
+[?2004l [?2004h>     return merged_df, conflicts_json
+[?2004l[?2004h> 
+[?2004l[?2004h> def normalize_conflicts(conf_json):
+[?2004l normali[?2004h>     if not isinstance(conf_json, dict) or 'conflicts' not in conf_json:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     conflicts = conf_json['conflicts']
+[?2004l[?2004h>     if not isinstance(conflicts, list):
+[?2004l[?2004h>         return None
+[?2004l[?2004h>         
+[?2004l[?2004h>     normalized_list = []
+[?2004l[?2004h>     for entry in conflicts:
+[?2004lsma[?2004h>         if not isinstance(entry, dict):
+[?2004l[?2004h>             return None
+[?2004l[?2004h>         # required keys
+[?2004l[?2004h>         for k in ['user_id', 'field', 'values', 'selected']:
+[?2004l[?2004h>             if k not in entry:
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>         
+[?2004l[?2004h>         # ensure values is a dict and keys are sorted/represented nicely
+[?2004l[?2004h>         vals = entry['values']
+[?2004l[?2004h>         if not isinstance(vals, dict):
+[?2004lf"[?2004h>             return None
+[?2004l[?2004h>         normalized_vals = {}
+[?2004l[?2004h>         for k, v in sorted(vals.items()):
+[?2004l[?2004h>             normalized_vals[k] = v
+[?2004l[?2004h>             
+[?2004l[?2004h>         normalized_list.append({
+[?2004l = [?2004h>             'user_id': int(entry['user_id']),
+[?2004l[?2004h>             'field': str(entry['field']),
+[?2004lata_dir)
+    if result:
+        [?2004h>             'values': normalized_vals,
+[?2004l    else[?2004h>             'selected': entry['selected']
+[?2004l0)
+E[?2004h>         })
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Sort by user_id, then field
+[?2004l[?2004h>     normalized_list.sort(key=lambda x: (x['user_id'], x['field']))
+[?2004l[?2004h>     return {
+[?2004l[?2004h>         'total_conflicts': len(normalized_list),
+[?2004l[?2004h>         'conflicts': normalized_list
+[?2004l[?2004h>     }
+[?2004l[?2004h> 
+[?2004l[?2004h> def compare_results(sol_dir, data_dir):
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         # Compute ground truth
+[?2004l[?2004h>         gt_df, gt_conflicts = compute_ground_truth(data_dir)
+[?2004l[?2004h>         
+[?2004l[?2004h>         # 1. Compare parquet file
+[?2004l[?2004h>         cand_parquet_path = os.path.join(sol_dir, "merged_users.parquet")
+[?2004l[?2004h>         if not os.path.exists(cand_parquet_path):
+[?2004l[?2004h>             print("Candidate merged_users.parquet not found.", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             cand_df = pd.read_parquet(cand_parquet_path)
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Error reading candidate parquet: {e}", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         # Check required columns exist
+[?2004l[?2004h>         required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>         for c in required_cols:
+[?2004l[?2004h>             if c not in cand_df.columns:
+[?2004l[?2004h>                 print(f"Required column {c} missing in candidate parquet.", file=sys.stderr)
+[?2004l[?2004h>                 return False
+[?2004l[?2004h>                 
+[?2004l[?2004h>         # Keep only required columns and normalize types
+[?2004l[?2004h>         cand_df = cand_df[required_cols].copy()
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             cand_df['user_id'] = cand_df['user_id'].astype(int)
+[?2004l[?2004h>             cand_df['name'] = cand_df['name'].astype(str)
+[?2004l[?2004h>             cand_df['email'] = cand_df['email'].astype(str)
+[?2004l[?2004h>             cand_df['created_date'] = pd.to_datetime(cand_df['created_date']).dt.strftime('%Y-%m-%d')
+[?2004l[?2004h>             cand_df['status'] = cand_df['status'].astype(str)
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Error converting column types in candidate: {e}", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         # Sort and compare DataFrames
+[?2004l[?2004h>         gt_df_sorted = gt_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>         cand_df_sorted = cand_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>         
+[?2004l[?2004h>         # Align any float/none representations
+[?2004l[?2004h>         # Replace pd.NA, None with NaN or standard comparison
+[?2004l[?2004h>         if not gt_df_sorted.equals(cand_df_sorted):
+[?2004l[?2004h>             # Let's check with standard comparison or print difference
+[?2004l[?2004h>             print("DataFrame mismatch:", file=sys.stderr)
+[?2004l[?2004h>             print("Ground truth:", file=sys.stderr)
+[?2004l[?2004h>             print(gt_df_sorted, file=sys.stderr)
+[?2004l[?2004h>             print("Candidate:", file=sys.stderr)
+[?2004l[?2004h>             print(cand_df_sorted, file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         # 2. Compare conflicts JSON
+[?2004l[?2004h>         cand_json_path = os.path.join(sol_dir, "conflicts.json")
+[?2004l[?2004h>         if not os.path.exists(cand_json_path):
+[?2004l[?2004h>             print("Candidate conflicts.json not found.", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             with open(cand_json_path, 'r') as f:
+[?2004l[?2004h>                 cand_conflicts = json.load(f)
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Error reading candidate JSON: {e}", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         norm_gt = normalize_conflicts(gt_conflicts)
+[?2004l[?2004h>         norm_cand = normalize_conflicts(cand_conflicts)
+[?2004l[?2004h>         
+[?2004l[?2004h>         if norm_cand is None:
+[?2004l[?2004h>             print("Candidate JSON structure is invalid.", file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         if norm_gt != norm_cand:
+[?2004l[?2004h>             print("Conflicts JSON mismatch:", file=sys.stderr)
+[?2004l[?2004h>             print("Ground truth:", file=sys.stderr)
+[?2004l[?2004h>             print(json.dumps(norm_gt, indent=2), file=sys.stderr)
+[?2004l[?2004h>             print("Candidate:", file=sys.stderr)
+[?2004l[?2004h>             print(json.dumps(norm_cand, indent=2), file=sys.stderr)
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         return True
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Unexpected error during comparison: {e}", file=sys.stderr)
+[?2004l[?2004h>         return False
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     sol_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     data_dir = '/app/data'
+[?2004l[?2004h>     
+[?2004l[?2004h>     result = compare_results(sol_dir, data_dir)
+[?2004l[?2004h>     if result:
+[?2004l[?2004h>         print("1")
+[?2004l[?2004h>         sys.exit(0)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         print("0")
+[?2004l[?2004h>         sys.exit(0)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@27662325eba8:/app# cat /app/verifier/verify.py
+[?2004limport os
+import sys
+import glob
+import json
+import pandas as pd
+
+def load_source(dir_path):
+    files = glob.glob(os.path.join(dir_path, "users.*"))
+    if not files:
+        return None
+    filepath = files[0]
+    ext = os.path.splitext(filepath)[1].lower()
+    
+    try:
+        if ext == '.csv':
+            df = pd.read_csv(filepath)
+        elif ext == '.json':
+            df = pd.read_json(filepath)
+        elif ext == '.parquet':
+            df = pd.read_parquet(filepath)
+        else:
+            return None
+    except Exception:
+        return None
+        
+    id_cols = ['id', 'user_id', 'userId']
+    name_cols = ['full_name', 'name', 'userName']
+    email_cols = ['email', 'email_address']
+    date_cols = ['registration_date', 'created_at', 'joined']
+    status_cols = ['status', 'is_active', 'active']
+    
+    col_map = {}
+    for c in df.columns:
+        if c in id_cols:
+            col_map[c] = 'user_id'
+        elif c in name_cols:
+            col_map[c] = 'name'
+        elif c in email_cols:
+            col_map[c] = 'email'
+        elif c in date_cols:
+            col_map[c] = 'created_date'
+        elif c in status_cols:
+            col_map[c] = 'status'
+            
+    df = df.rename(columns=col_map)
+    relevant = ['user_id', 'name', 'email', 'created_date', 'status']
+    df = df[[c for c in relevant if c in df.columns]]
+    
+    if 'user_id' in df.columns:
+        try:
+            df['user_id'] = df['user_id'].astype(int)
+        except Exception:
+            pass
+        
+    if 'status' in df.columns:
+        def norm_status(val):
+            if pd.isna(val) or val is None:
+                return None
+            if isinstance(val, bool):
+                return 'active' if val else 'inactive'
+            s = str(val).strip().lower()
+            if s in ['true', 'active', '1']:
+                return 'active'
+            if s in ['false', 'inactive', '0']:
+                return 'inactive'
+            return s
+        df['status'] = df['status'].apply(norm_status)
+        
+    if 'created_date' in df.columns:
+        try:
+            df['created_date'] = pd.to_datetime(df['created_date']).dt.strftime('%Y-%m-%d')
+        except Exception:
+            pass
+        
+    return df
+
+def compute_ground_truth(data_dir):
+    source_dirs = sorted(glob.glob(os.path.join(data_dir, "source_*")))
+    sources = {}
+    for sdir in source_dirs:
+        sname = os.path.basename(sdir)
+        df = load_source(sdir)
+        if df is not None:
+            sources[sname] = df
+            
+    all_user_ids = set()
+    for df in sources.values():
+        if 'user_id' in df.columns:
+            all_user_ids.update(df['user_id'].tolist())
+    all_user_ids = sorted(list(all_user_ids))
+    
+    merged_rows = []
+    conflicts = []
+    fields = ['name', 'email', 'created_date', 'status']
+    
+    for uid in all_user_ids:
+        user_sources = {}
+        for sname in sorted(sources.keys()):
+            df = sources[sname]
+            user_row = df[df['user_id'] == uid]
+            if not user_row.empty:
+                user_sources[sname] = user_row.iloc[0].to_dict()
+                
+        priority_sources = sorted(user_sources.keys())
+        if not priority_sources:
+            continue
+        highest_prio_source = priority_sources[0]
+        selected_user_data = user_sources[highest_prio_source]
+        
+        merged_record = {
+            'user_id': int(uid),
+            'name': selected_user_data.get('name'),
+            'email': selected_user_data.get('email'),
+            'created_date': selected_user_data.get('created_date'),
+            'status': selected_user_data.get('status')
+        }
+        merged_rows.append(merged_record)
+        
+        for field in fields:
+            field_values = {}
+            for sname, udata in user_sources.items():
+                val = udata.get(field)
+                if pd.isna(val) or val is None:
+                    field_values[sname] = None
+                else:
+                    field_values[sname] = val
+                    
+            non_null_values = [v for v in field_values.values() if v is not None]
+            unique_non_null = set(non_null_values)
+            if len(unique_non_null) > 1:
+                vals_dict = {}
+                for sname in sorted(sources.keys()):
+                    if sname in user_sources:
+                        vals_dict[sname] = user_sources[sname].get(field)
+                
+                conflict_entry = {
+                    'user_id': int(uid),
+                    'field': field,
+                    'values': vals_dict,
+                    'selected': merged_record[field]
+                }
+                conflicts.append(conflict_entry)
+                
+    merged_df = pd.DataFrame(merged_rows)
+    if not merged_df.empty:
+        merged_df = merged_df[['user_id', 'name', 'email', 'created_date', 'status']]
+    conflicts_json = {
+        'total_conflicts': len(conflicts),
+        'conflicts': conflicts
+    }
+    return merged_df, conflicts_json
+
+def normalize_conflicts(conf_json):
+    if not isinstance(conf_json, dict) or 'conflicts' not in conf_json:
+        return None
+    conflicts = conf_json['conflicts']
+    if not isinstance(conflicts, list):
+        return None
+        
+    normalized_list = []
+    for entry in conflicts:
+        if not isinstance(entry, dict):
+            return None
+        # required keys
+        for k in ['user_id', 'field', 'values', 'selected']:
+            if k not in entry:
+                return None
+        
+        # ensure values is a dict and keys are sorted/represented nicely
+        vals = entry['values']
+        if not isinstance(vals, dict):
+            return None
+        normalized_vals = {}
+        for k, v in sorted(vals.items()):
+            normalized_vals[k] = v
+            
+        normalized_list.append({
+            'user_id': int(entry['user_id']),
+            'field': str(entry['field']),
+            'values': normalized_vals,
+            'selected': entry['selected']
+        })
+        
+    # Sort by user_id, then field
+    normalized_list.sort(key=lambda x: (x['user_id'], x['field']))
+    return {
+        'total_conflicts': len(normalized_list),
+        'conflicts': normalized_list
+    }
+
+def compare_results(sol_dir, data_dir):
+    try:
+        # Compute ground truth
+        gt_df, gt_conflicts = compute_ground_truth(data_dir)
+        
+        # 1. Compare parquet file
+        cand_parquet_path = os.path.join(sol_dir, "merged_users.parquet")
+        if not os.path.exists(cand_parquet_path):
+            print("Candidate merged_users.parquet not found.", file=sys.stderr)
+            return False
+            
+        try:
+            cand_df = pd.read_parquet(cand_parquet_path)
+        except Exception as e:
+            print(f"Error reading candidate parquet: {e}", file=sys.stderr)
+            return False
+            
+        # Check required columns exist
+        required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+        for c in required_cols:
+            if c not in cand_df.columns:
+                print(f"Required column {c} missing in candidate parquet.", file=sys.stderr)
+                return False
+                
+        # Keep only required columns and normalize types
+        cand_df = cand_df[required_cols].copy()
+        try:
+            cand_df['user_id'] = cand_df['user_id'].astype(int)
+            cand_df['name'] = cand_df['name'].astype(str)
+            cand_df['email'] = cand_df['email'].astype(str)
+            cand_df['created_date'] = pd.to_datetime(cand_df['created_date']).dt.strftime('%Y-%m-%d')
+            cand_df['status'] = cand_df['status'].astype(str)
+        except Exception as e:
+            print(f"Error converting column types in candidate: {e}", file=sys.stderr)
+            return False
+            
+        # Sort and compare DataFrames
+        gt_df_sorted = gt_df.sort_values('user_id').reset_index(drop=True)
+        cand_df_sorted = cand_df.sort_values('user_id').reset_index(drop=True)
+        
+        # Align any float/none representations
+        # Replace pd.NA, None with NaN or standard comparison
+        if not gt_df_sorted.equals(cand_df_sorted):
+            # Let's check with standard comparison or print difference
+            print("DataFrame mismatch:", file=sys.stderr)
+            print("Ground truth:", file=sys.stderr)
+            print(gt_df_sorted, file=sys.stderr)
+            print("Candidate:", file=sys.stderr)
+            print(cand_df_sorted, file=sys.stderr)
+            return False
+            
+        # 2. Compare conflicts JSON
+        cand_json_path = os.path.join(sol_dir, "conflicts.json")
+        if not os.path.exists(cand_json_path):
+            print("Candidate conflicts.json not found.", file=sys.stderr)
+            return False
+            
+        try:
+            with open(cand_json_path, 'r') as f:
+                cand_conflicts = json.load(f)
+        except Exception as e:
+            print(f"Error reading candidate JSON: {e}", file=sys.stderr)
+            return False
+            
+        norm_gt = normalize_conflicts(gt_conflicts)
+        norm_cand = normalize_conflicts(cand_conflicts)
+        
+        if norm_cand is None:
+            print("Candidate JSON structure is invalid.", file=sys.stderr)
+            return False
+            
+        if norm_gt != norm_cand:
+            print("Conflicts JSON mismatch:", file=sys.stderr)
+            print("Ground truth:", file=sys.stderr)
+            print(json.dumps(norm_gt, indent=2), file=sys.stderr)
+            print("Candidate:", file=sys.stderr)
+            print(json.dumps(norm_cand, indent=2), file=sys.stderr)
+            return False
+            
+        return True
+    except Exception as e:
+        print(f"Unexpected error during comparison: {e}", file=sys.stderr)
+        return False
+
+if __name__ == '__main__':
+    sol_dir = os.environ.get('SOLUTION_DIR', '/app')
+    data_dir = '/app/data'
+    
+    result = compare_results(sol_dir, data_dir)
+    if result:
+        print("1")
+        sys.exit(0)
+    else:
+        print("0")
+        sys.exit(0)
+[?2004hroot@27662325eba8:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> 
+[?2004l[?2004h> # Set defaults if not provided
+[?2004l[?2004h> export SOLUTION_DIR="${SOLUTION_DIR:-/app}"
+[?2004l[?2004h> VERDICT_FILE="${VERDICT_FILE:-/logs/verifier/reward.txt}"
+[?2004l[?2004h> 
+[?2004l[?2004h> # Ensure the target directory for the verdict file exists
+[?2004l[?2004h> mkdir -p "$(dirname "$VERDICT_FILE")"
+[?2004l[?2004h> 
+[?2004l[?2004h> # Run the python verifier and capture the result
+[?2004l[?2004h> VERDICT=$(python3 /app/verifier/verify.py 2>/dev/null)
+[?2004l[?2004h> 
+[?2004l[?2004h> # If VERDICT is empty (due to some unexpected error), default to 0
+[?2004l[?2004h> if [ -z "$VERDICT" ]; then
+[?2004l[?2004h>     VERDICT="0"
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> # Write the verdict to the verdict file
+[?2004l[?2004h> echo -n "$VERDICT" > "$VERDICT_FILE"
+[?2004l[?2004h> 
+[?2004l[?2004h> echo "Verification completed with verdict: $VERDICT"
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@27662325eba8:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@27662325eba8:/app# /app/verifier/verify.sh
+[?2004lcat /logs/verifier/reward.txt
+Verification completed with verdict: 0
+[?2004hroot@27662325eba8:/app# cat /logs/verifier/reward.txt
+[?2004l0[?2004hroot@27662325eba8:/app# python3 -c "import sys; sys.path.append('/app/verifier'); import verify; gt_df, gt_conflicts = verify.compute_ground_truth('/app/data'); gt_df.to_parquet('/app/merged_users.parquet'); import json; json.dump(gt_conflicts, open('/app/conflicts.json', 'w'))"
+[?2004l[?2004hroot@27662325eba8:/app# ls -la /app
+[?2004ltotal 28
+drwxr-xr-x 1 root root 4096 Jul  8 06:08 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:06 ..
+-rw-r--r-- 1 root root  490 Jul  8 06:08 conflicts.json
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 data
+-rw-r--r-- 1 root root 4212 Jul  8 06:08 merged_users.parquet
+drwxr-xr-x 3 root root 4096 Jul  8 06:08 verifier
+[?2004hroot@27662325eba8:/app# /app/verifier/verify.sh
+[?2004lVerification completed with verdict: 1
+[?2004hroot@27662325eba8:/app# cat /logs/verifier/reward.txt
+[?2004l1[?2004hroot@27662325eba8:/app# rm -f /app/merged_users.parquet /app/conflicts.json /app/verifier/test_solution.py
+[?2004l[?2004hroot@27662325eba8:/app# ls -la /app
+[?2004ltotal 16
+drwxr-xr-x 1 root root 4096 Jul  8 06:08 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:06 ..
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 data
+drwxr-xr-x 3 root root 4096 Jul  8 06:08 verifier
+[?2004hroot@27662325eba8:/app# ls -la /app/verifier
+[?2004ltotal 28
+drwxr-xr-x 3 root root  4096 Jul  8 06:08 .
+drwxr-xr-x 1 root root  4096 Jul  8 06:08 ..
+drwxr-xr-x 2 root root  4096 Jul  8 06:08 __pycache__
+-rw-r--r-- 1 root root 10117 Jul  8 06:07 verify.py
+-rwxr-xr-x 1 root root   594 Jul  8 06:08 verify.sh
+[?2004hroot@27662325eba8:/app# 

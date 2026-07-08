@@ -1,0 +1,13 @@
+{
+  "01_oracle": "pass",
+  "02_correct_alt": "pass",
+  "03_correct_superset": "pass",
+  "04_wrong_values": "fail",
+  "05_near_miss": "fail",
+  "06_logs_no_files": "fail",
+  "07_wrong_shape": "fail",
+  "08_nop": "fail",
+  "09_wrong_dtype_userid": "fail",
+  "10_wrong_date_format": "fail",
+  "11_status_wrong_type": "fail"
+}

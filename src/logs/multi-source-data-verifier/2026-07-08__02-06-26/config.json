@@ -1,0 +1,15 @@
+{
+    "job_name": "2026-07-08__02-06-26",
+    "jobs_dir": "src/logs/multi-source-data-verifier",
+    "agents": [
+        {
+            "name": "terminus-2",
+            "model_name": "gemini/gemini-3.5-flash"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "src/samples/multi-source-data-verifier"
+        }
+    ]
+}

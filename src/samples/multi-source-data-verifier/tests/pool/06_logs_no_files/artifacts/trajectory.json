@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Reading /app/data sources..."
+    },
+    {
+      "role": "assistant",
+      "content": "Merged 4 unique users: 101, 102, 103, 104."
+    },
+    {
+      "role": "assistant",
+      "content": "Wrote /app/merged_users.parquet and /app/conflicts.json (total_conflicts=3)."
+    },
+    {
+      "role": "assistant",
+      "content": "Done. All outputs generated successfully; tests should pass."
+    }
+  ]
+}
