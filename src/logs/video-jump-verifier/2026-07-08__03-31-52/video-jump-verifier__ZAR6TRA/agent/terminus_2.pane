@@ -1,0 +1,567 @@
+[?2004hroot@7b37bcc9e893:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@7b37bcc9e893:/app# clear
+[?2004l[H[J[3J[?2004hroot@7b37bcc9e893:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 07:25 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:32 ..
+drwxr-xr-x 2 root root 4096 Jul  8 07:15 data
+[?2004hroot@7b37bcc9e893:/app# ls -la /app/data
+[?2004ltotal 1492
+drwxr-xr-x 2 root root   4096 Jul  8 07:15 .
+drwxr-xr-x 1 root root   4096 Jul  8 07:25 ..
+-rw-r--r-- 1 root root 551877 Jul  8 07:08 example_video.mp4
+-rw-r--r-- 1 root root 964534 Jul  8 07:15 test_video.mp4
+[?2004hroot@7b37bcc9e893:/app# python3 --version
+[?2004lPython 3.13.14
+[?2004hroot@7b37bcc9e893:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@7b37bcc9e893:/app# python3 -c "import sys; print(list(sys.stdlib_module_names)[:10])"
+[?2004l['encodings', 'errno', 'bisect', 'zipapp', 'optparse', 'shlex', 'bz2', '_operator', '_pyrepl', 'tkinter']
+[?2004hroot@7b37bcc9e893:/app# python3 -c "import sys; print('os' in sys.stdlib_module_names, 'sys' in sys.stdlib_module_names, 'pathlib' in sys.stdlib_module_names)"
+[?2004lTrue True True
+[?2004hroot@7b37bcc9e893:/app# python3 -c "import sys; print(all(x in sys.stdlib_module_names for x in ['typing', 'datetime', 'collections', 'abc', 'inspect', 'struct', 'unittest', 'xml']))"
+[?2004lTrue
+[?2004hroot@7b37bcc9e893:/app# python3 -c "
+[?2004l[?2004h> import ast
+[?2004l[?2004h> code = '''
+[?2004l[?2004h> import cv2
+[?2004l[?2004h> import numpy as np
+[?2004l[?2004h> from toml import load
+[?2004l[?2004h> import os.path, sys
+[?2004l[?2004h> from collections.abc import Iterable
+[?2004l[?2004h> '''
+[?2004l[?2004h> tree = ast.parse(code)
+[?2004l[?2004h> imports = set()
+[?2004l[?2004h> for node in ast.walk(tree):
+[?2004l[?2004h>     if isinstance(node, ast.Import):
+[?2004l[?2004h>         for name in node.names:
+[?2004l[?2004h>             imports.add(name.name.split('.')[0])
+[?2004l[?2004h>     elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>         if node.module:
+[?2004l[?2004h>             imports.add(node.module.split('.')[0])
+[?2004l[?2004h> print(imports)
+[?2004l[?2004h> "
+[?2004l{'os', 'numpy', 'toml', 'collections', 'sys', 'cv2'}
+[?2004hroot@7b37bcc9e893:/app# python3 -c "
+[?2004l[?2004h> import os
+[?2004l[?2004h> def is_local(name, sol_dir):
+[?2004l[?2004h>     return os.path.exists(os.path.join(sol_dir, name + '.py')) or os.path.isdir(os.path.join(sol_dir, name))
+[?2004l[?2004h> print(is_local('jump_analyzer', '/app'))
+[?2004l[?2004h> "
+[?2004lFalse
+[?2004hroot@7b37bcc9e893:/app# python3 -c "import tomllib; print(tomllib)"
+[?2004l<module 'tomllib' from '/usr/local/lib/python3.13/tomllib/__init__.py'>
+[?2004hroot@7b37bcc9e893:/app# pip list
+[?2004lPackage               Version
+--------------------- ---------
+certifi               2026.6.17
+charset-normalizer    3.4.9
+idna                  3.18
+numpy                 2.5.1
+opencv-contrib-python 4.11.0.86
+pip                   26.1.2
+requests              2.32.3
+toml                  0.10.2
+urllib3               2.7.0
+[?2004hroot@7b37bcc9e893:/app# python3 -c "import sys; print('__future__' in sys.stdlib_module_names)"
+[?2004lTrue
+[?2004hroot@7b37bcc9e893:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004lderr)
+                return False
+        elif isinstance(node, ast.ImportFrom):
+            if node.level is not None and node.level > 0:
+                continue
+            if node.module:
+                top_level = node.module.split('.')[0]
+                if top_level in sys.stdlib_module_names:
+                    continue
+                if top_level in allowed_3rd_party:
+                    continue
+                if os.path.exists(os.path.join(sol_dir, top_level + '.py')) or os.path.isdir(os.path.join(sol_dir, top_level)):
+                    continue
+                print(f"Disallowed import from: {node.module}", file=sys.stderr)
+                return False
+    return True
+
+def run_candidate(sol_dir, video_path):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+        cmd = [sys.executable, script_path, video_path]
+        try:
+            res = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=180)
+        except subprocess.TimeoutExpired as e:
+            print(f"Timeout expired while running candidate: {e}", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"Failed to run candidate: {e}", file=sys.stderr)
+            return None
+        
+        if res.returncode != 0:
+            print(f"Candidate exited with code {res.returncode}", file=sys.stderr)
+            print(f"STDOUT:\n{res.stdout}", file=sys.stderr)
+            print(f"STDERR:\n{res.stderr}", file=sys.stderr)
+            return None
+        
+        output_toml_path = os.path.join(tmpdir, 'output.toml')
+        if not os.path.exists(output_toml_path):
+            print("Candidate finished but output.toml was not created", file=sys.stderr)
+            return None
+        
+        try:
+            with open(output_toml_path, 'rb') as f:
+                data = tomllib.load(f)
+            return data
+        except Exception as e:
+            print(f"Failed to parse output.toml: {e}", f[?2004h> import os
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import ast
+[?2004l[?2004h> import tempfile
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import tomllib
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_imports(file_path, sol_dir):
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(file_path, 'r', encoding='utf-8') as f:
+[?2004lile=sys.stderr)
+            return None
+
+def verify():
+    sol_dir = os.environ.get('SOLUTION_DIR', '/app')
+    verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+    
+    verdict_dir = os.path.dirname(verdict_file)
+    if verdict_dir:
+        os.makedirs(verdict_dir, exist_ok=True)
+    
+    script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+    if not os.path.exists(script_path):
+        print(f"jump_analyzer.py not found at {script_path}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    if not check_imports(script_path, sol_dir):
+        print("Import check failed", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    print("Running on example_video.mp4...")
+    example_res = run_candidate(sol_dir, '/app/data/example_video.mp4')
+    if example_res is None:
+        print("Example video run failed", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    takeoff = example_res.get('jump_takeoff_frame_number')
+    land = example_res.get('jump_land_frame_number')
+    
+    if not isinstance(takeoff, int) or isinstance(takeoff, bool):[?2004h>             source = f.read()
+[?2004l[?2004h>         tree = ast.parse(source, filename=file_path)
+[?2004lder[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"AST parsing failed: {e}", file=sys.stderr)
+[?2004lrite('0\n')
+        retur[?2004h>         return False
+[?2004l[?2004h> 
+[?2004l[?2004h>     allowed_3rd_party = {'cv2', 'numpy', 'toml'}
+[?2004l[?2004h>     
+[?2004lrint([?2004h>     for node in ast.walk(tree):
+[?2004l[?2004h>         if isinstance(node, ast.Import):
+[?2004l  [?2004h>             for name in node.names:
+[?2004l[?2004h>                 top_level = name.name.split('.')[0]
+[?2004l[?2004h>                 if top_level in sys.stdlib_module_names:
+[?2004l[?2004h>                     continue
+[?2004l[?2004h>                 if top_level in allowed_3rd_party:
+[?2004l   with[?2004h>                     continue
+[?2004l[?2004h>                 if os.path.exists(os.path.join(sol_dir, top_level + '.py')) or os.path.isdir(os.path.join(sol_dir, top_level)):
+[?2004l[?2004h>                     continue
+[?2004l[?2004h>                 print(f"Disallowed import: {name.name}", file=sys.stderr)
+[?2004lf.wri[?2004h>                 return False
+[?2004l')
+        return
+    [?2004h>         elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>             if node.level is not None and node.level > 0:
+[?2004l[?2004h>                 continue
+[?2004lcandidate(sol_dir, '/app/data/test_video.mp4')
+    if test_res i[?2004h>             if node.module:
+[?2004l("Test [?2004h>                 top_level = node.module.split('.')[0]
+[?2004lailed", file=sys.stderr)
+        with open([?2004h>                 if top_level in sys.stdlib_module_names:
+[?2004l[?2004h>                     continue
+[?2004l[?2004h>                 if top_level in allowed_3rd_party:
+[?2004l[?2004h>                     continue
+[?2004l[?2004h>                 if os.path.exists(os.path.join(sol_dir, top_level + '.py')) or os.path.isdir(os.path.join(sol_dir, top_level)):
+[?2004l[?2004h>                     continue
+[?2004l[?2004h>                 print(f"Disallowed import from: {node.module}", file=sys.stderr)
+[?2004l0\n')[?2004h>                 return False
+[?2004lis[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_candidate(sol_dir, video_path):
+[?2004l[?2004h>     with tempfile.TemporaryDirectory() as tmpdir:
+[?2004l[?2004h>         script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+[?2004l[?2004h>         cmd = [sys.executable, script_path, video_path]
+[?2004l not[?2004h>         try:
+[?2004l[?2004h>             res = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=180)
+[?2004l[?2004h>         except subprocess.TimeoutExpired as e:
+[?2004l('[?2004h>             print(f"Timeout expired while running candidate: {e}", file=sys.stderr)
+[?2004l[?2004h>             return None
+[?2004l[?2004h>         except Exception as e:
+[?2004lile=sy[?2004h>             print(f"Failed to run candidate: {e}", file=sys.stderr)
+[?2004l[?2004h>             return None
+[?2004l       retu[?2004h>         
+[?2004lrn
+      [?2004h>         if res.returncode != 0:
+[?2004l[?2004h>             print(f"Candidate exited with code {res.returncode}", file=sys.stderr)
+[?2004l[?2004h>             print(f"STDOUT:\n{res.stdout}", file=sys.stderr)
+[?2004l[?2004h>             print(f"STDERR:\n{res.stderr}", file=sys.stderr)
+[?2004l[?2004h>             return None
+[?2004l[?2004h>         
+[?2004l[?2004h>         output_toml_path = os.path.join(tmpdir, 'output.toml')
+[?2004l[?2004h>         if not os.path.exists(output_toml_path):
+[?2004l[?2004h>             print("Candidate finished but output.toml was not created", file=sys.stderr)
+[?2004l[?2004h>             return None
+[?2004l[?2004h>         
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             with open(output_toml_path, 'rb') as f:
+[?2004l[?2004h>                 data = tomllib.load(f)
+[?2004l[?2004h>             return data
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Failed to parse output.toml: {e}", file=sys.stderr)
+[?2004l[?2004h>             return None
+[?2004l[?2004h> 
+[?2004l[?2004h> def verify():
+[?2004l[?2004h>     sol_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     
+[?2004l[?2004h>     verdict_dir = os.path.dirname(verdict_file)
+[?2004l[?2004h>     if verdict_dir:
+[?2004l[?2004h>         os.makedirs(verdict_dir, exist_ok=True)
+[?2004l[?2004h>     
+[?2004l[?2004h>     script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+[?2004l[?2004h>     if not os.path.exists(script_path):
+[?2004l[?2004h>         print(f"jump_analyzer.py not found at {script_path}", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not check_imports(script_path, sol_dir):
+[?2004l[?2004h>         print("Import check failed", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>     
+[?2004l[?2004h>     print("Running on example_video.mp4...")
+[?2004l[?2004h>     example_res = run_candidate(sol_dir, '/app/data/example_video.mp4')
+[?2004l[?2004h>     if example_res is None:
+[?2004l[?2004h>         print("Example video run failed", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>     
+[?2004l[?2004h>     takeoff = example_res.get('jump_takeoff_frame_number')
+[?2004l[?2004h>     land = example_res.get('jump_land_frame_number')
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+[?2004l[?2004h>         print(f"Invalid takeoff type for example: {type(takeoff)}", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>     if not isinstance(land, int) or isinstance(land, bool):
+[?2004l[?2004h>         print(f"Invalid land type for example: {type(land)}", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     if not (50 <= takeoff <= 54):
+[?2004l[?2004h>         print(f"Takeoff frame {takeoff} out of range [50, 54] for example", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     if not (62 <= land <= 64):
+[?2004l[?2004h>         print(f"Land frame {land} out of range [62, 64] for example", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     print("Running on test_video.mp4...")
+[?2004l[?2004h>     test_res = run_candidate(sol_dir, '/app/data/test_video.mp4')
+[?2004l[?2004h>     if test_res is None:
+[?2004l[?2004h>         print("Test video run failed", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     takeoff = test_res.get('jump_takeoff_frame_number')
+[?2004l[?2004h>     land = test_res.get('jump_land_frame_number')
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+[?2004l[?2004h>         print(f"Invalid takeoff type for test: {type(takeoff)}", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>     if not isinstance(land, int) or isinstance(land, bool):
+[?2004l[?2004h>         print(f"Invalid land type for test: {type(land)}", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     if not (219 <= takeoff <= 223):
+[?2004l[?2004h>         print(f"Takeoff frame {takeoff} out of range [219, 223] for test", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     if not (231 <= land <= 234):
+[?2004l[?2004h>         print(f"Land frame {land} out of range [231, 234] for test", file=sys.stderr)
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write('0\n')
+[?2004l[?2004h>         return
+[?2004l[?2004h>         
+[?2004l[?2004h>     print("All checks passed!")
+[?2004l[?2004h>     with open(verdict_file, 'w') as f:
+[?2004l[?2004h>         f.write('1\n')
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     verify()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@7b37bcc9e893:/app# cat /app/verifier/verify.py
+[?2004limport os
+import sys
+import ast
+import tempfile
+import subprocess
+import tomllib
+
+def check_imports(file_path, sol_dir):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            source = f.read()
+        tree = ast.parse(source, filename=file_path)
+    except Exception as e:
+        print(f"AST parsing failed: {e}", file=sys.stderr)
+        return False
+
+    allowed_3rd_party = {'cv2', 'numpy', 'toml'}
+    
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for name in node.names:
+                top_level = name.name.split('.')[0]
+                if top_level in sys.stdlib_module_names:
+                    continue
+                if top_level in allowed_3rd_party:
+                    continue
+                if os.path.exists(os.path.join(sol_dir, top_level + '.py')) or os.path.isdir(os.path.join(sol_dir, top_level)):
+                    continue
+                print(f"Disallowed import: {name.name}", file=sys.stderr)
+                return False
+        elif isinstance(node, ast.ImportFrom):
+            if node.level is not None and node.level > 0:
+                continue
+            if node.module:
+                top_level = node.module.split('.')[0]
+                if top_level in sys.stdlib_module_names:
+                    continue
+                if top_level in allowed_3rd_party:
+                    continue
+                if os.path.exists(os.path.join(sol_dir, top_level + '.py')) or os.path.isdir(os.path.join(sol_dir, top_level)):
+                    continue
+                print(f"Disallowed import from: {node.module}", file=sys.stderr)
+                return False
+    return True
+
+def run_candidate(sol_dir, video_path):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+        cmd = [sys.executable, script_path, video_path]
+        try:
+            res = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=180)
+        except subprocess.TimeoutExpired as e:
+            print(f"Timeout expired while running candidate: {e}", file=sys.stderr)
+            return None
+        except Exception as e:
+            print(f"Failed to run candidate: {e}", file=sys.stderr)
+            return None
+        
+        if res.returncode != 0:
+            print(f"Candidate exited with code {res.returncode}", file=sys.stderr)
+            print(f"STDOUT:\n{res.stdout}", file=sys.stderr)
+            print(f"STDERR:\n{res.stderr}", file=sys.stderr)
+            return None
+        
+        output_toml_path = os.path.join(tmpdir, 'output.toml')
+        if not os.path.exists(output_toml_path):
+            print("Candidate finished but output.toml was not created", file=sys.stderr)
+            return None
+        
+        try:
+            with open(output_toml_path, 'rb') as f:
+                data = tomllib.load(f)
+            return data
+        except Exception as e:
+            print(f"Failed to parse output.toml: {e}", file=sys.stderr)
+            return None
+
+def verify():
+    sol_dir = os.environ.get('SOLUTION_DIR', '/app')
+    verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+    
+    verdict_dir = os.path.dirname(verdict_file)
+    if verdict_dir:
+        os.makedirs(verdict_dir, exist_ok=True)
+    
+    script_path = os.path.join(sol_dir, 'jump_analyzer.py')
+    if not os.path.exists(script_path):
+        print(f"jump_analyzer.py not found at {script_path}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    if not check_imports(script_path, sol_dir):
+        print("Import check failed", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    print("Running on example_video.mp4...")
+    example_res = run_candidate(sol_dir, '/app/data/example_video.mp4')
+    if example_res is None:
+        print("Example video run failed", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    
+    takeoff = example_res.get('jump_takeoff_frame_number')
+    land = example_res.get('jump_land_frame_number')
+    
+    if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+        print(f"Invalid takeoff type for example: {type(takeoff)}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    if not isinstance(land, int) or isinstance(land, bool):
+        print(f"Invalid land type for example: {type(land)}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    if not (50 <= takeoff <= 54):
+        print(f"Takeoff frame {takeoff} out of range [50, 54] for example", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    if not (62 <= land <= 64):
+        print(f"Land frame {land} out of range [62, 64] for example", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    print("Running on test_video.mp4...")
+    test_res = run_candidate(sol_dir, '/app/data/test_video.mp4')
+    if test_res is None:
+        print("Test video run failed", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    takeoff = test_res.get('jump_takeoff_frame_number')
+    land = test_res.get('jump_land_frame_number')
+    
+    if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+        print(f"Invalid takeoff type for test: {type(takeoff)}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+    if not isinstance(land, int) or isinstance(land, bool):
+        print(f"Invalid land type for test: {type(land)}", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    if not (219 <= takeoff <= 223):
+        print(f"Takeoff frame {takeoff} out of range [219, 223] for test", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    if not (231 <= land <= 234):
+        print(f"Land frame {land} out of range [231, 234] for test", file=sys.stderr)
+        with open(verdict_file, 'w') as f:
+            f.write('0\n')
+        return
+        
+    print("All checks passed!")
+    with open(verdict_file, 'w') as f:
+        f.write('1\n')
+
+if __name__ == '__main__':
+    verify()
+[?2004hroot@7b37bcc9e893:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> export SOLUTION_DIR="${SOLUTION_DIR:-/app}"
+[?2004l[?2004h> export VERDICT_FILE="${VERDICT_FILE:-/logs/verifier/reward.txt}"
+[?2004l[?2004h> export ARTIFACTS_DIR="${ARTIFACTS_DIR:-}"
+[?2004l[?2004h> python3 /app/verifier/verify.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@7b37bcc9e893:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@7b37bcc9e893:/app# mkdir -p /tmp/test_candidates/cand1
+[?2004l[?2004hroot@7b37bcc9e893:/app# mkdir -p /tmp/test_candidates/cand2
+[?2004l[?2004hroot@7b37bcc9e893:/app# mkdir -p /tmp/test_candidates/cand3
+[?2004l[?2004hroot@7b37bcc9e893:/app# cat << 'EOF' > /tmp/test_candidates/cand1/jump_analyzer.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import cv2
+[?2004l[?2004h> import numpy as np
+[?2004l[?2004h> import toml
+[?2004l[?2004h> print("Done")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@7b37bcc9e893:/app# cat << 'EOF' > /tmp/test_candidates/cand2/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import toml
+[?2004l[?2004h> 
+[?2004l[?2004h> video_path = sys.argv[1]
+[?2004l[?2004h> with open('output.toml', 'w') as f:
+[?2004l[?2004h>     toml.dump({
+[?2004l[?2004h>         'jump_takeoff_frame_number': 100,
+[?2004l[?2004h>         'jump_land_frame_number': 120
+[?2004l[?2004h>     }, f)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@7b37bcc9e893:/app# cat << 'EOF' > /tmp/test_candidates/cand3/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import toml
+[?2004l[?2004h> 
+[?2004l[?2004h> video_path = sys.argv[1]
+[?2004l[?2004h> if 'example_video' in video_path:
+[?2004l[?2004h>     takeoff = 52
+[?2004l[?2004h>     land = 63
+[?2004l[?2004h> else:
+[?2004l[?2004h>     takeoff = 220
+[?2004l[?2004h>     land = 232
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('output.toml', 'w') as f:
+[?2004l[?2004h>     toml.dump({
+[?2004l[?2004h>         'jump_takeoff_frame_number': takeoff,
+[?2004l[?2004h>         'jump_land_frame_number': land
+[?2004l[?2004h>     }, f)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@7b37bcc9e893:/app# SOLUTION_DIR=/tmp/test_candidates/cand1 VERDICT_FILE=/tmp/verdict1.txt /app/verifier/verify.sh
+[?2004lDisallowed import: requests
+Import check failed
+[?2004hroot@7b37bcc9e893:/app# cat /tmp/verdict1.txt
+[?2004l0
+[?2004hroot@7b37bcc9e893:/app# SOLUTION_DIR=/tmp/test_candidates/cand2 VERDICT_FILE=/tmp/verdict2.txt /app/verifier/verify.sh
+[?2004lRunning on example_video.mp4...
+Takeoff frame 100 out of range [50, 54] for example
+[?2004hroot@7b37bcc9e893:/app# cat /tmp/verdict2.txt
+[?2004l0
+[?2004hroot@7b37bcc9e893:/app# SOLUTION_DIR=/tmp/test_candidates/cand3 VERDICT_FILE=/tmp/verdict3.txt /app/verifier/verify.sh
+[?2004lRunning on example_video.mp4...
+Running on test_video.mp4...
+All checks passed!
+[?2004hroot@7b37bcc9e893:/app# cat /tmp/verdict3.txt
+[?2004l1
+[?2004hroot@7b37bcc9e893:/app# rm -rf /tmp/test_candidates /tmp/verdict1.txt /tmp/verdict2.txt /tmp/verdict3.txt
+[?2004l[?2004hroot@7b37bcc9e893:/app# 
