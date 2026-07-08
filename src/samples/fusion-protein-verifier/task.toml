@@ -1,0 +1,58 @@
+schema_version = "1.3"
+# The agent's verifier is collected from the agent container and injected into the
+# separate verifier environment (lands under /logs/artifacts/verifier/).
+artifacts = [
+    { source = "/app/verifier", destination = "verifier" },
+]
+
+[task]
+name = "verifier-bench/fusion-protein-verifier"
+description = "Write a verifier for a fusion-protein gBlock design task; the verifier is graded against a hidden pool of labeled correct and adversarial gBlock solutions."
+keywords = ["verifier-synthesis", "meta-benchmark", "bioinformatics", "protein-design", "dna", "grading"]
+[[task.authors]]
+name = "Brayden May"
+email = "brayd3nmay@gmail.com"
+
+[metadata]
+author_name = "Brayden May"
+author_email = "brayd3nmay@gmail.com"
+difficulty = "hard"
+category = "verifier-synthesis"
+tags = ["verifier-synthesis", "meta-benchmark", "bioinformatics", "grading"]
+
+[verifier]
+timeout_sec = 1800.0
+# Grade in a clean container the agent never touched. The pool, labels, harness, and a
+# pristine copy of the inputs all live in this image; the agent's verifier is injected as
+# an artifact and run unprivileged.
+environment_mode = "separate"
+collect = []
+
+[verifier.env]
+
+[verifier.environment]
+# Runtime egress is required here: a candidate verifier may resolve the reference proteins
+# live against PDB/FPBase/PubChem at grade time.
+network_mode = "public"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+mcp_servers = []
+
+[agent]
+timeout_sec = 1800.0
+
+[environment]
+network_mode = "public"
+build_timeout_sec = 900.0
+os = "linux"
+cpus = 1
+memory_mb = 4096
+storage_mb = 10240
+mcp_servers = []
+
+[environment.env]
+
+[solution.env]

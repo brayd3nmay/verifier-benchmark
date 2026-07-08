@@ -1,0 +1,1113 @@
+[?2004hroot@12447c16b972:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@12447c16b972:/app# clear
+[?2004l[H[J[3J[?2004hroot@12447c16b972:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 06:52 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:47 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 data
+[?2004hroot@12447c16b972:/app# ls -la /app/data
+[?2004ltotal 24
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:52 ..
+-rw-r--r-- 1 root root  475 Jul  8 06:40 antibody.fasta
+-rw-r--r-- 1 root root  100 Jul  8 06:40 pdb_ids.txt
+-rw-r--r-- 1 root root 6053 Jul  8 06:40 plasmid.gb
+[?2004hroot@12447c16b972:/app# cat /app/data/pdb_ids.txt
+[?2004l2IB5
+4KGE
+4Q7T
+1KFD
+5JZL
+6AA7
+3ADF
+5WJ2
+3M22
+2H5Q
+3MGF
+5Y01
+2VZX
+4CQH
+1YZW
+2CHA
+3KZY
+1AK4
+5P21
+1H6R
+[?2004hroot@12447c16b972:/app# cat /app/data/antibody.fasta
+[?2004l>heavy chain
+QVQLQQSAAELARPGASVKMSCKASGYSFTTYTIHWVKQRPGQGLEWIGYINPSSGYAAYNQNFKDETTLTADPSSSTAYMELNSLTSEDSAVYYCAREKFYGYDYWGQGATLTVSSASTTPPSVYPLAPGSAAQTNSMVTLGCLVKGYFPEPVTVTWNSGSLSSGVHTFPAVLQSDLYTLSSSVTVPSSTWPSQTVTCNVAHPASSTKVDKKIVPRAAAHHHHHHHH
+>light chain
+DVLMTQIPLSLPVSLGDQASISCRSSQSIVHRNGNTYLEWYLLKPGQSPKLLIYKVSNRFSGVPDRFSGSGSGTDFTLKISRVEAEDLGVYYCFQGSHVPYTFGGGTKLEIRRADAAPTVSIFPPSSEQLTSGGASVVCFLNNFYPKDINVKWKIDGSERQNGVLNSWTDQDSKDSTYSMSSTLTLTKDEYERHNSYTCEATHKTSTSPIVKSFNRNQC
+[?2004hroot@12447c16b972:/app# head -n 50 /app/data/plasmid.gb
+[?2004lLOCUS       DHFR_Control_Template   2727 bp    DNA     circular     30-DEC-2009
+DEFINITION  Control vector DHFR_Control_Template, complete sequence.
+ACCESSION
+VERSION
+KEYWORDS    .
+SOURCE      Control vector DHFR_Control_Template
+  ORGANISM  Control vector DHFR_Control_Template
+            other sequences; artificial sequences; vectors.
+REFERENCE   1  (bases 1 to 2727)
+  AUTHORS   Cantor,E.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (30-DEC-2009) Research Department, New England Biolabs,
+            240 County Road, Ipswich, MA 01938, USA
+FEATURES             Location/Qualifiers
+     source          1..2727
+                     /organism="Control vector DHFR_Control_Template"
+                     /mol_type="other DNA"
+     promoter        26..43
+                     /note="T7 promoter (transcript start 43 clockwise)"
+     gene            88..567
+                     /gene="folA"
+     CDS             88..567
+                     /gene="folA"
+                     /codon_start=1
+                     /product="dihydrofolate reductase (DHFR)"
+                     /translation="MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGR
+                     HTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQ
+                     FLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR"
+     terminator      663..785
+                     /note="T7 Tphi transcription terminator"
+     rep_origin      complement(984..1572)
+                     /note="pUC19 origin of replication (counter-clockwise)
+                     (RNAII -35 to RNA/DNA switch point)"
+     gene            complement(1744..2604)
+                     /gene="bla"
+     CDS             complement(1744..2604)
+                     /gene="bla"
+                     /note="ampR (confers resistance to ampicillin)"
+                     /codon_start=1
+                     /product="beta-lactamase"
+                     /translation="MSIQHFRVALIPFFAAFCLPVFAHPETLVKVKDAEDQLGARVGY
+                     IELDLNSGKILESFRPEERFPMMSTFKVLLCGAVLSRIDAGQEQLGRRIHYSQNDLVE
+                     YSPVTEKHLTDGMTVRELCSAAITMSDNTAANLLLTTIGGPKELTAFLHNMGDHVTRL
+                     DRWEPELNEAIPNDERDTTMPVAMATTLRKLLTGELLTLASRQQLIDWMEADKVAGPL
+                     LRSALPAGWFIADKSGAGERGSRGIIAALGPDGKPSRIVVIYTTGSQATMDERNRQIA
+                     EIGASLIKHW"
+     sig_peptide     complement(2536..2604)
+                     /gene="bla"
+                     /note="Required for secretion to the periplasm; cleaved
+                     off to form the mature beta-lactamase protein."
+[?2004hroot@12447c16b972:/app# python3 -c '
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> import xml.etree.ElementTree as ET
+[?2004l[?2004h> '
+[?2004l[?2004hroot@12447c16b972:/app# python3 -c '
+[?2004l[?2004h> import urllib.request, json
+[?2004l[?2004h> smiles = "Nc3nc(OCc1ccccc1)c2nc[nH]c2n3"
+[?2004l[?2004h> url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{urllib.parse.quote(smiles)}/property/Title,IUPACName,CID/JSON"
+[?2004l[?2004h> try:
+[?2004l[?2004h>     req = urllib.request.urlopen(url)
+[?2004l[?2004h>     res = json.loads(req.read().decode())
+[?2004l[?2004h>     print(res)
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print(e)
+[?2004l[?2004h> '
+[?2004lHTTP Error 503: PUGREST.ServerBusy
+[?2004hroot@12447c16b972:/app# python3 -c '
+[?2004l[?2004h> import urllib.request, json
+[?2004l[?2004h> smiles = "Nc3nc(OCc1ccccc1)c2nc[nH]c2n3"
+[?2004l[?2004h> headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+[?2004l[?2004h> url = f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{urllib.parse.quote(smiles)}/property/Title,IUPACName,CID/JSON"
+[?2004l[?2004h> try:
+[?2004l[?2004h>     req = urllib.request.Request(url, headers=headers)
+[?2004l[?2004h>     with urllib.request.urlopen(req) as response:
+[?2004l[?2004h>         res = json.loads(response.read().decode())
+[?2004l[?2004h>         print(res)
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print(e)
+[?2004l[?2004h> '
+[?2004lHTTP Error 503: PUGREST.ServerBusy
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_pdbs.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> import sys
+[?2004l[?2004h> 
+[?2004l[?2004h> pdb_ids = open("/app/data/pdb_ids.txt").read().split()
+[?2004l[?2004h> for pdb_id in pdb_ids:
+[?2004l[?2004h>     url = f"https://data.rcsb.org/rest/v1/core/entry/{pdb_id}"
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         req = urllib.request.urlopen(url)
+[?2004l[?2004h>         res = json.loads(req.read().decode())
+[?2004l[?2004h>         title = res.get("struct", {}).get("title", "No title")
+[?2004l[?2004h>         print(f"{pdb_id}: {title}")
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"{pdb_id}: Error: {e}")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_pdbs.py
+[?2004l2IB5: Structural characterization of a blue chromoprotein and its yellow mutant from the sea anemone cnidopus japonicus
+4KGE: Crystal structure of near-infrared fluorescent protein with an extended stokes shift, pH 4.5
+4Q7T: Crystal structure of photoswitchable fluorescent protein PSmOrange
+1KFD: CRYSTAL STRUCTURES OF THE KLENOW FRAGMENT OF DNA POLYMERASE I COMPLEXED WITH DEOXYNUCLEOSIDE TRIPHOSPHATE AND PYROPHOSPHATE
+5JZL: The Structure of Monomeric Ultra Stable Green Fluorescent Protein
+6AA7: Fluorescent protein from Acropora digitifera
+3ADF: Crystal structure of a monomeric green fluorescent protein, Azami-Green (mAG)
+5WJ2: Crystal structure of the green fluorescent protein Clover
+3M22: Crystal structure of TagRFP fluorescent protein
+2H5Q: Crystal structure of mCherry
+3MGF: Crystal Structure of Monomeric Kusabira-Orange (MKO), Orange-Emitting GFP-like Protein, at pH 7.5
+5Y01: Acid-tolerant monomeric GFP, Gamillus, non-fluorescence (OFF) state
+2VZX: Structural and spectroscopic characterization of photoconverting fluorescent protein Dendra2
+4CQH: Structure of Infrared Fluorescent Protein IFP2.0
+1YZW: The 2.1A Crystal Structure of the Far-red Fluorescent Protein HcRed: Inherent Conformational Flexibility of the Chromophore
+2CHA: THE STRUCTURE OF CRYSTALLINE ALPHA-CHYMOTRYPSIN, $V.THE ATOMIC STRUCTURE OF TOSYL-ALPHA-CHYMOTRYPSIN AT 2 ANGSTROMS RESOLUTION
+3KZY: Crystal structure of SNAP-tag
+1AK4: HUMAN CYCLOPHILIN A BOUND TO THE AMINO-TERMINAL DOMAIN OF HIV-1 CAPSID
+5P21: REFINED CRYSTAL STRUCTURE OF THE TRIPHOSPHATE CONFORMATION OF H-RAS P21 AT 1.35 ANGSTROMS RESOLUTION: IMPLICATIONS FOR THE MECHANISM OF GTP HYDROLYSIS
+1H6R: The oxidized state of a redox sensitive variant of green fluorescent protein
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_fpbase.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's search fpbase. The FPBase API is GraphQL or we can do REST?
+[?2004l[?2004h> # Let's see if we can query FPBase via its REST API (e.g. https://www.fpbase.org/api/proteins/) or similar.
+[?2004l[?2004h> # Let's check what endpoints FPBase has. Often, https://www.fpbase.org/api/proteins/ gives a list of proteins.
+[?2004l[?2004h> # Or we can search for names or look at pdb IDs in FPBase.
+[?2004l[?2004h> 
+[?2004l[?2004h> url = "https://www.fpbase.org/api/proteins/?format=json"
+[?2004l[?2004h> try:
+[?2004l[?2004h>     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+[?2004l[?2004h>     with urllib.request.urlopen(req) as res:
+[?2004l[?2004h>         data = json.loads(res.read().decode())
+[?2004l[?2004h>         print(f"Found {len(data)} proteins")
+[?2004l[?2004h>         # Let's save the data to a file for parsing
+[?2004l[?2004h>         with open("fpbase_proteins.json", "w") as f:
+[?2004l[?2004h>             json.dump(data, f, indent=2)
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print("Error:", e)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_fpbase.py
+[?2004lFound 1041 proteins
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > parse_fps.py
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> pdb_ids = set(open("/app/data/pdb_ids.txt").read().split())
+[?2004l[?2004h> 
+[?2004l[?2004h> with open("fpbase_proteins.json") as f:
+[?2004l[?2004h>     fps = json.load(f)
+[?2004l[?2004h> 
+[?2004l[?2004h> for fp in fps:
+[?2004l[?2004h>     # check if any pdb matches
+[?2004l[?2004h>     fp_pdbs = fp.get("pdbs", [])
+[?2004l[?2004h>     matched_pdbs = [p for p in fp_pdbs if p.upper() in pdb_ids]
+[?2004l[?2004h>     if matched_pdbs or fp.get("name") in ["Clover", "mCherry", "TagRFP", "Dendra2", "mKO", "Gamillus", "Azami-Green"]:
+[?2004l[?2004h>         # Let's print name, pdbs, ex, em
+[?2004l[?2004h>         # In FPBase REST API response, let's see how ex (excitation) and em (emission) peaks are structured.
+[?2004l[?2004h>         # Often there is an array of states, or keys like "ex_max", "em_max"
+[?2004l[?2004h>         states = fp.get("states", [])
+[?2004l[?2004h>         for s in states:
+[?2004l[?2004h>             ex = s.get("ex_max")
+[?2004l[?2004h>             em = s.get("em_max")
+[?2004l[?2004h>             print(f"Name: {fp.get('name')}, PDBs: {fp_pdbs}, State: {s.get('name')}, Ex: {ex}, Em: {em}")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 parse_fps.py
+[?2004lName: Clover, PDBs: [], State: default, Ex: 505, Em: 515
+Name: Dendra2, PDBs: [], State: Green, Ex: 490, Em: 507
+Name: Dendra2, PDBs: [], State: Red, Ex: 553, Em: 573
+Name: Gamillus, PDBs: [], State: On, Ex: 504, Em: 519
+Name: Gamillus, PDBs: [], State: Off, Ex: None, Em: None
+Name: mCherry, PDBs: [], State: default, Ex: 587, Em: 610
+Name: mKO, PDBs: [], State: default, Ex: 548, Em: 559
+Name: TagRFP, PDBs: [], State: default, Ex: 555, Em: 584
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_sequences.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> def get_pdb_sequence(pdb_id):
+[?2004l[?2004h>     # We can fetch via https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/1
+[?2004l[?2004h>     # or via fasta from https://www.rcsb.org/fasta/entry/{pdb_id}
+[?2004l[?2004h>     url = f"https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/1"
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         req = urllib.request.urlopen(url)
+[?2004l[?2004h>         res = json.loads(req.read().decode())
+[?2004l[?2004h>         # The sequence is under entity_poly.pdbx_seq_one_letter_code
+[?2004l[?2004h>         seq = res.get("entity_poly", {}).get("pdbx_seq_one_letter_code", "")
+[?2004l[?2004h>         return seq
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         return f"Error: {e}"
+[?2004l[?2004h> 
+[?2004l[?2004h> for pdb_id in ["3KZY", "5WJ2", "2H5Q"]:
+[?2004l[?2004h>     print(f">{pdb_id}")
+[?2004l[?2004h>     print(get_pdb_sequence(pdb_id))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_sequences.py
+[?2004l>3KZY
+GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR
+>5WJ2
+MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTF(CR2)VACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+>2H5Q
+MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQF(CH6)SKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_fastas.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> 
+[?2004l[?2004h> for pdb_id in ["3KZY", "5WJ2", "2H5Q"]:
+[?2004l[?2004h>     url = f"https://www.rcsb.org/fasta/entry/{pdb_id}"
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         req = urllib.request.urlopen(url)
+[?2004l[?2004h>         print(f">>>{pdb_id}")
+[?2004l[?2004h>         print(req.read().decode())
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"{pdb_id} Error: {e}")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_fastas.py
+[?2004l>>>3KZY
+>3KZY_1|Chains A, B|Methylated-DNA--protein-cysteine methyltransferase|Homo sapiens (9606)
+GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR
+
+>>>5WJ2
+>5WJ2_1|Chains A, B|Green fluorescent protein|Aequorea victoria (6100)
+MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+
+>>>2H5Q
+>2H5Q_1|Chain A|mCherry|Discosoma sp. (86600)
+MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_chromophore_details.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's check the polymer entity info or get the sequence from PDB API
+[?2004l[?2004h> # Under rcsb_polymer_entity_container_identifiers, is there reference to uniprot?
+[?2004l[?2004h> # Let's fetch https://data.rcsb.org/rest/v1/core/polymer_entity/5WJ2/1
+[?2004l[?2004h> # and https://data.rcsb.org/rest/v1/core/polymer_entity/2H5Q/1
+[?2004l[?2004h> 
+[?2004l[?2004h> for pdb_id in ["5WJ2", "2H5Q"]:
+[?2004l[?2004h>     url = f"https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/1"
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         req = urllib.request.urlopen(url)
+[?2004l[?2004h>         data = json.loads(req.read().decode())
+[?2004l[?2004h>         print(f"=== {pdb_id} ===")
+[?2004l[?2004h>         print("uniprot ids:", data.get("rcsb_polymer_entity_container_identifiers", {}).get("uniprot_ids"))
+[?2004l[?2004h>         print("one_letter_code:", data.get("entity_poly", {}).get("pdbx_seq_one_letter_code"))
+[?2004l[?2004h>         print("one_letter_code_can:", data.get("entity_poly", {}).get("pdbx_seq_one_letter_code_can"))
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(pdb_id, e)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_chromophore_details.py
+[?2004l=== 5WJ2 ===
+uniprot ids: ['P42212']
+one_letter_code: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTF(CR2)VACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+one_letter_code_can: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+=== 2H5Q ===
+uniprot ids: ['Q5S3G8']
+one_letter_code: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQF(CH6)SKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+one_letter_code_can: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > get_fpbase_seqs.py
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> with open("fpbase_proteins.json") as f:
+[?2004l[?2004h>     fps = json.load(f)
+[?2004l[?2004h> 
+[?2004l[?2004h> for fp in fps:
+[?2004l[?2004h>     if fp.get("name") in ["Clover", "mCherry"]:
+[?2004l[?2004h>         print(f"=== {fp.get('name')} ===")
+[?2004l[?2004h>         print(fp.get("seq"))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 get_fpbase_seqs.py
+[?2004l=== Clover ===
+MVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFGYGVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+=== mCherry ===
+MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFMYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > search_antibody.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> import xml.etree.ElementTree as ET
+[?2004l[?2004h> import time
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's use NCBI BLAST API to blast the heavy chain sequence or light chain sequence.
+[?2004l[?2004h> # Sequence:
+[?2004l[?2004h> heavy = "QVQLQQSAAELARPGASVKMSCKASGYSFTTYTIHWVKQRPGQGLEWIGYINPSSGYAAYNQNFKDETTLTADPSSSTAYMELNSLTSEDSAVYYCAREKFYGYDYWGQGATLTVSS"
+[?2004l[?2004h> 
+[?2004l[?2004h> # We submit a BLAST job
+[?2004l[?2004h> url = f"https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Put&DATABASE=nr&PROGRAM=blastp&QUERY={heavy}"
+[?2004l[?2004h> try:
+[?2004l[?2004h>     req = urllib.request.urlopen(url)
+[?2004l[?2004h>     res = req.read().decode()
+[?2004l[?2004h>     # We need to extract the RID
+[?2004l[?2004h>     rid = ""
+[?2004l[?2004h>     for line in res.splitlines():
+[?2004l[?2004h>         if "RID =" in line:
+[?2004l[?2004h>             rid = line.split("=")[1].strip()
+[?2004l[?2004h>             break
+[?2004l[?2004h>     print("RID:", rid)
+[?2004l[?2004h>     if rid:
+[?2004l[?2004h>         # Poll for results
+[?2004l[?2004h>         while True:
+[?2004l[?2004h>             time.sleep(5)
+[?2004l[?2004h>             check_url = f"https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_OBJECT=SearchInfo&RID={rid}"
+[?2004l[?2004h>             check_req = urllib.request.urlopen(check_url)
+[?2004l[?2004h>             check_res = check_req.read().decode()
+[?2004l[?2004h>             if "Status=WAITING" in check_res:
+[?2004l[?2004h>                 print("Waiting...")
+[?2004l[?2004h>                 continue
+[?2004l[?2004h>             elif "Status=FAILED" in check_res:
+[?2004l[?2004h>                 print("Failed")
+[?2004l[?2004h>                 break
+[?2004l[?2004h>             elif "Status=UNKNOWN" in check_res:
+[?2004l[?2004h>                 print("Unknown")
+[?2004l[?2004h>                 break
+[?2004l[?2004h>             elif "Status=READY" in check_res:
+[?2004l[?2004h>                 print("Ready!")
+[?2004l[?2004h>                 if "ThereAreHits=yes" in check_res:
+[?2004l[?2004h>                     # Get hits
+[?2004l[?2004h>                     hits_url = f"https://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Get&FORMAT_TYPE=XML&RID={rid}"
+[?2004l[?2004h>                     hits_req = urllib.request.urlopen(hits_url)
+[?2004l[?2004h>                     hits_res = hits_req.read().decode()
+[?2004l[?2004h>                     # Let's parse XML or print a part of it
+[?2004l[?2004h>                     print(hits_res[:2000])
+[?2004l[?2004h>                 else:
+[?2004l[?2004h>                     print("No hits")
+[?2004l[?2004h>                 break
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print("Error:", e)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 search_antibody.py
+[?2004lRID: 4W08F9CW014
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Waiting...
+Ready!
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE BlastOutput PUBLIC "-//NCBI//NCBI BlastOutput/EN" "http://www.ncbi.nlm.nih.gov/dtd/NCBI_BlastOutput.dtd">
+<BlastOutput>
+  <BlastOutput_program>blastp</BlastOutput_program>
+  <BlastOutput_version>BLASTP 2.17.0+</BlastOutput_version>
+  <BlastOutput_reference>Stephen F. Altschul, Thomas L. Madden, Alejandro A. Sch&amp;auml;ffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997), &quot;Gapped BLAST and PSI-BLAST: a new generation of protein database search programs&quot;, Nucleic Acids Res. 25:3389-3402.</BlastOutput_reference>
+  <BlastOutput_db>nr</BlastOutput_db>
+  <BlastOutput_query-ID>Query_2444995</BlastOutput_query-ID>
+  <BlastOutput_query-def>unnamed protein product</BlastOutput_query-def>
+  <BlastOutput_query-len>117</BlastOutput_query-len>
+  <BlastOutput_param>
+    <Parameters>
+      <Parameters_matrix>BLOSUM62</Parameters_matrix>
+      <Parameters_expect>10</Parameters_expect>
+      <Parameters_gap-open>11</Parameters_gap-open>
+      <Parameters_gap-extend>1</Parameters_gap-extend>
+      <Parameters_filter>F</Parameters_filter>
+    </Parameters>
+  </BlastOutput_param>
+<BlastOutput_iterations>
+<Iteration>
+  <Iteration_iter-num>1</Iteration_iter-num>
+  <Iteration_query-ID>Query_2444995</Iteration_query-ID>
+  <Iteration_query-def>unnamed protein product</Iteration_query-def>
+  <Iteration_query-len>117</Iteration_query-len>
+<Iteration_hits>
+<Hit>
+  <Hit_num>1</Hit_num>
+  <Hit_id>pdb|7BG1|H</Hit_id>
+  <Hit_def>Chain H, anti-FLAG M2 heavy chain [Mus musculus]</Hit_def>
+  <Hit_accession>7BG1_H</Hit_accession>
+  <Hit_len>222</Hit_len>
+  <Hit_hsps>
+    <Hsp>
+      <Hsp_num>1</Hsp_num>
+      <Hsp_bit-score>244.973</Hsp_bit-score>
+      <Hsp_score>624</Hsp_score>
+      <Hsp_evalue>8.7562e-80</Hsp_evalue>
+      <Hsp_query-from>1</Hsp_query-from>
+      <Hsp_query-to>117</Hsp_query-to>
+      <Hsp_hit-from>4</Hsp_hit-from>
+      <Hsp_hit-to>120</Hsp_hit-to>
+      <Hsp_query-frame>0</Hsp_query-frame>
+      
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > check_flag.py
+[?2004l[?2004h> import urllib.request
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's see if we can query some information about FLAG tag. 
+[?2004l[?2004h> # The FLAG-tag or FLAG octapeptide is N-Asp-Tyr-Lys-Asp-Asp-Asp-Asp-Lys-C (DYKDDDDK).
+[?2004l[?2004h> # Some sources say it can also be DYKDDDK.
+[?2004l[?2004h> # But "only the most common variant of that protein, encoded once..."
+[?2004l[?2004h> # Let's verify standard FLAG tag sequence: DYKDDDDK.
+[?2004l[?2004h> print("FLAG tag standard sequence is DYKDDDDK")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 check_flag.py
+[?2004lFLAG tag standard sequence is DYKDDDDK
+[?2004hroot@12447c16b972:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@12447c16b972:/app# cat << 'EOF' > /app/verifier/verify_logic_plan.txt
+[?2004l[?2004h> Verification Logic details:
+[?2004l[?2004h> 1. Read SOLUTION_DIR (default: /app), VERDICT_FILE (default: /logs/verifier/reward.txt)
+[?2004l[?2004h> 2. Read gblock.txt from SOLUTION_DIR
+[?2004l[?2004h> 3. Check if gblock.txt exists. If not, write 0 and exit.
+[?2004l[?2004h> 4. Read and strip/clean the sequence. Check that it is on a single line and contains only A, T, C, G (case-insensitive? The prompt says 'uses only the DNA bases A, T, C, and G'. Let's convert to uppercase or handle both uppercase/lowercase, but DNA is usually uppercase. Let's make sure it's uppercase/lowercase A,T,C,G and we convert to uppercase for translation).
+[?2004l[?2004h> 5. Check length <= 3000.
+[?2004l[?2004h> 6. Check every 50-nucleotide window has GC content between 30% and 70%. (Number of G+C divided by 50 is between 0.30 and 0.70 inclusive? Or strictly between? Usually 30% and 70% are inclusive: 15 to 35 GC bases in every 50-nt window. Let's make sure we check all windows of length 50, so indices from 0 to len-50 inclusive).
+[?2004l[?2004h> 7. No start or stop codons in the DNA (in any frame? Or in the encoded frame? The prompt says 'No start or stop codons (the plasmid supplies those)'. This means in the reading frame of the gBlock itself!). Let's make sure our translation has no start (M, ATG) or stop (*, TAA, TAG, TGA) in its reading frame!
+[?2004l[?2004h> Wait! Let's check: 'No start or stop codons'. This means in the reading frame of the gBlock. So when we translate the gBlock starting at index 0 (reading frame 1), the resulting amino acid sequence must not contain 'M' (start) or '*' (stop) codon. Wait, does a start codon only translate to 'M' (ATG)? Yes. And stop codons are TAA, TAG, TGA which translate to '*'. So the translated amino acid sequence must not contain 'M' or '*'. Let's check if 'M' can appear inside the protein sequence. Wait! Yes, mCherry, Clover, and DHFR contain internal methionines! For example, mCherry has `MVSKGEEDNMAIIKEFMRFKVHME...`. Those internal methionines are coded by ATG. Does 'no start codon' mean there can be no ATG at all, or does it mean the translated protein does not start with a start codon (or have an N-terminal M), or that there is no start codon (ATG) in the reading frame that initiates translation? 
+[?2004l[?2004h> Let's re-read carefully:
+[?2004l[?2004h> 'No start or stop codons (the plasmid supplies those).'
+[?2004l[?2004h> 'The N-terminal methionine is removed from every subprotein (the plasmid supplies it).'
+[?2004l[?2004h> Ah! If the plasmid supplies the start and stop codons, then the gBlock itself should NOT have a start codon at its beginning, nor a stop codon at its end. Or does it mean the whole sequence has no start (ATG) or stop (TAA, TAG, TGA) codons at all? No, internal ATG is definitely allowed because mCherry/Clover have internal methionines (which must be coded by ATG). Also, can there be stop codons in other frames? Usually 'no start or stop codons' in this context means: the sequence has no stop codons in its reading frame (so it is a single open reading frame), and it doesn't start with ATG or end with a stop codon. Let's verify if there can be any internal stop codon (which would terminate translation prematurely, so obviously no stop codons in-frame). What about start codon (ATG)? Can it have internal ATG? Yes, since standard methionines are encoded by ATG. What about ATG at the very start of the gBlock? Since the N-terminal methionine is removed from the first subprotein, the gBlock does not start with ATG.
+[?2004l[?2004h> Let's write a script to check this carefully.
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# cat /app/verifier/verify_logic_plan.txt
+[?2004lVerification Logic details:
+1. Read SOLUTION_DIR (default: /app), VERDICT_FILE (default: /logs/verifier/reward.txt)
+2. Read gblock.txt from SOLUTION_DIR
+3. Check if gblock.txt exists. If not, write 0 and exit.
+4. Read and strip/clean the sequence. Check that it is on a single line and contains only A, T, C, G (case-insensitive? The prompt says 'uses only the DNA bases A, T, C, and G'. Let's convert to uppercase or handle both uppercase/lowercase, but DNA is usually uppercase. Let's make sure it's uppercase/lowercase A,T,C,G and we convert to uppercase for translation).
+5. Check length <= 3000.
+6. Check every 50-nucleotide window has GC content between 30% and 70%. (Number of G+C divided by 50 is between 0.30 and 0.70 inclusive? Or strictly between? Usually 30% and 70% are inclusive: 15 to 35 GC bases in every 50-nt window. Let's make sure we check all windows of length 50, so indices from 0 to len-50 inclusive).
+7. No start or stop codons in the DNA (in any frame? Or in the encoded frame? The prompt says 'No start or stop codons (the plasmid supplies those)'. This means in the reading frame of the gBlock itself!). Let's make sure our translation has no start (M, ATG) or stop (*, TAA, TAG, TGA) in its reading frame!
+Wait! Let's check: 'No start or stop codons'. This means in the reading frame of the gBlock. So when we translate the gBlock starting at index 0 (reading frame 1), the resulting amino acid sequence must not contain 'M' (start) or '*' (stop) codon. Wait, does a start codon only translate to 'M' (ATG)? Yes. And stop codons are TAA, TAG, TGA which translate to '*'. So the translated amino acid sequence must not contain 'M' or '*'. Let's check if 'M' can appear inside the protein sequence. Wait! Yes, mCherry, Clover, and DHFR contain internal methionines! For example, mCherry has `MVSKGEEDNMAIIKEFMRFKVHME...`. Those internal methionines are coded by ATG. Does 'no start codon' mean there can be no ATG at all, or does it mean the translated protein does not start with a start codon (or have an N-terminal M), or that there is no start codon (ATG) in the reading frame that initiates translation? 
+Let's re-read carefully:
+'No start or stop codons (the plasmid supplies those).'
+'The N-terminal methionine is removed from every subprotein (the plasmid supplies it).'
+Ah! If the plasmid supplies the start and stop codons, then the gBlock itself should NOT have a start codon at its beginning, nor a stop codon at its end. Or does it mean the whole sequence has no start (ATG) or stop (TAA, TAG, TGA) codons at all? No, internal ATG is definitely allowed because mCherry/Clover have internal methionines (which must be coded by ATG). Also, can there be stop codons in other frames? Usually 'no start or stop codons' in this context means: the sequence has no stop codons in its reading frame (so it is a single open reading frame), and it doesn't start with ATG or end with a stop codon. Let's verify if there can be any internal stop codon (which would terminate translation prematurely, so obviously no stop codons in-frame). What about start codon (ATG)? Can it have internal ATG? Yes, since standard methionines are encoded by ATG. What about ATG at the very start of the gBlock? Since the N-terminal methionine is removed from the first subprotein, the gBlock does not start with ATG.
+Let's write a script to check this carefully.
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > print_subproteins.py
+[?2004l[?2004h> import json
+[?2004l[?2004h> 
+[?2004l[?2004h> # 1. Antibody binder
+[?2004l[?2004h> antibody_binder = "DYKDDDDK"
+[?2004l[?2004h> 
+[?2004l[?2004h> # 2. Donor: Clover from PDB 5WJ2
+[?2004l[?2004h> # Original PDB 5WJ2 polymer 1 sequence:
+[?2004l[?2004h> # MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTF(CR2)VACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+[?2004l[?2004h> # Replace (CR2) with GYG:
+[?2004l[?2004h> clover_raw = "MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFGYGVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK"
+[?2004l[?2004h> # Remove N-terminal M:
+[?2004l[?2004h> donor = clover_raw[1:]
+[?2004l[?2004h> 
+[?2004l[?2004h> # 3. DHFR: from plasmid.gb, remove N-terminal M
+[?2004l[?2004h> # Original DHFR translation:
+[?2004l[?2004h> # MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR
+[?2004l[?2004h> dhfr_raw = "MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR"
+[?2004l[?2004h> dhfr = dhfr_raw[1:]
+[?2004l[?2004h> 
+[?2004l[?2004h> # 4. Acceptor: mCherry from PDB 2H5Q
+[?2004l[?2004h> # Original PDB 2H5Q sequence:
+[?2004l[?2004h> # MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQF(CH6)SKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004l[?2004h> # Replace (CH6) with MYG:
+[?2004l[?2004h> mcherry_raw = "MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFMYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK"
+[?2004l[?2004h> # Remove N-terminal M:
+[?2004l[?2004h> acceptor = mcherry_raw[1:]
+[?2004l[?2004h> 
+[?2004l[?2004h> # 5. Molecule binder: SNAP-tag from PDB 3KZY
+[?2004l[?2004h> # Sequence starts with G, so no N-terminal M to remove
+[?2004l[?2004h> snap_raw = "GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR"
+[?2004l[?2004h> molecule_binder = snap_raw
+[?2004l[?2004h> 
+[?2004l[?2004h> subproteins = {
+[?2004l[?2004h>     "antibody_binder": antibody_binder,
+[?2004l[?2004h>     "donor": donor,
+[?2004l[?2004h>     "dhfr": dhfr,
+[?2004l[?2004h>     "acceptor": acceptor,
+[?2004l[?2004h>     "molecule_binder": molecule_binder
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> with open("/app/verifier/subproteins.json", "w") as f:
+[?2004l[?2004h>     json.dump(subproteins, f, indent=2)
+[?2004l[?2004h> 
+[?2004l[?2004h> for k, v in subproteins.items():
+[?2004l[?2004h>     print(f"{k}: {len(v)} AA, starts with {v[:10]}... ends with {v[-10:]}")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 print_subproteins.py
+[?2004lantibody_binder: 8 AA, starts with DYKDDDDK... ends with DYKDDDDK
+donor: 259 AA, starts with GSSHHHHHHS... ends with ITHGMDELYK
+dhfr: 158 AA, starts with ISLIAALAVD... ends with SYCFEILERR
+acceptor: 235 AA, starts with VSKGEEDNMA... ends with STGGMDELYK
+molecule_binder: 182 AA, starts with GPGSDKDCEM... ends with AHEGHRLGKR
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > translate.py
+[?2004l[?2004h> CODON_TABLE = {
+[?2004l[?2004h>     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+[?2004l[?2004h>     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+[?2004l[?2004h>     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+[?2004l[?2004h>     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+[?2004l[?2004h>     'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+[?2004l[?2004h>     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+[?2004l[?2004h>     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+[?2004l[?2004h>     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+[?2004l[?2004h>     'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+[?2004l[?2004h>     'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+[?2004l[?2004h>     'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+[?2004l[?2004h>     'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+[?2004l[?2004h>     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+[?2004l[?2004h>     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+[?2004l[?2004h>     'TAC':'Y', 'TAT':'Y', 'TAA':'*','TAG':'*',
+[?2004l[?2004h>     'TGC':'C', 'TGT':'C', 'TGA':'*','TGG':'W',
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> def translate(dna):
+[?2004l[?2004h>     dna = dna.upper()
+[?2004l[?2004h>     protein = []
+[?2004l[?2004h>     for i in range(0, len(dna) - 2, 3):
+[?2004l[?2004h>         codon = dna[i:i+3]
+[?2004l[?2004h>         protein.append(CODON_TABLE.get(codon, 'X'))
+[?2004l[?2004h>     return "".join(protein)
+[?2004l[?2004h> 
+[?2004l[?2004h> print("Translation:", translate("ATGGTG"))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 translate.py
+[?2004lTranslation: MV
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l[?2004h> import os
+[?2004lwrite("0\n[?2004h> import sys
+[?2004l[?2004h> import json
+[?2004lreturn
+
+[?2004h> 
+[?2004l[?2004h> CODON_TABLE = {
+[?2004l   # No start or[?2004h>     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+[?2004l[?2004h>     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+[?2004lny stop codons in-frame?
+    # Also, does it hav[?2004h>     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+[?2004l[?2004h>     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+[?2004l[?2004h>     'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+[?2004l[?2004h>     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+[?2004l[?2004h>     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+[?2004ln = se[?2004h>     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+[?2004l[?2004h>     'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+[?2004l[?2004h>     'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+[?2004le[?2004h>     'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+[?2004l       f.wri[?2004h>     'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+[?2004l[?2004h>     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+[?2004l.s[?2004h>     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+[?2004l w[?2004h>     'TAC':'Y', 'TAT':'Y', 'TAA':'*','TAG':'*',
+[?2004lrdict[?2004h>     'TGC':'C', 'TGT':'C', 'TGA':'*','TGG':'W',
+[?2004l [?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> def translate(dna):
+[?2004l[?2004h>     protein = []
+[?2004lce
+ [?2004h>     for i in range(0, len(dna) - 2, 3):
+[?2004l[?2004h>         codon = dna[i:i+3]
+[?2004lpr[?2004h>         protein.append(CODON_TABLE.get(codon, 'X'))
+[?2004l[?2004h>     return "".join(protein)
+[?2004las f:[?2004h> 
+[?2004l
+[?2004h> def verify():
+[?2004l[?2004h>     solution_dir = os.environ.get("SOLUTION_DIR", "/app")
+[?2004l[?2004h>     verdict_file = os.environ.get("VERDICT_FILE", "/logs/verifier/reward.txt")
+[?2004l[?2004h> 
+[?2004lo[?2004h>     # Ensure the directory of verdict file exists
+[?2004l[?2004h>     verdict_dir = os.path.dirname(verdict_file)
+[?2004l[?2004h>     if verdict_dir and not os.path.exists(verdict_dir):
+[?2004l[?2004h>         os.makedirs(verdict_dir, exist_ok=True)
+[?2004l[?2004h> 
+[?2004l[?2004h>     gblock_path = os.path.join(solution_dir, "gblock.txt")
+[?2004li[?2004h>     if not os.path.exists(gblock_path):
+[?2004l[?2004h>         print(f"gblock.txt not found at {gblock_path}")
+[?2004lb[?2004h>         with open(verdict_file, "w") as f:
+[?2004lr"]
+
+   [?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     try:
+[?2004l [?2004h>         with open(gblock_path, "r") as f:
+[?2004l[?2004h>             lines = f.readlines()
+[?2004l[?2004h>     except Exception as e:
+[?2004lor — molecu[?2004h>         print("Error reading file:", e)
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004ltein does not [?2004h>     # Check format rules:
+[?2004l[?2004h>     # "contains only the gBlock sequence, on a single line — nothing else, no empty lines."
+[?2004l[?2004h>     if len(lines) != 1:
+[?2004l[?2004h>         print(f"Expected exactly 1 line, got {len(lines)}")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     line = lines[0]
+[?2004l[?2004h>     # Ensure no trailing newline or carriage return or whitespace EXCEPT a single standard newline is fine
+[?2004l[?2004h>     # wait, the file can end with a newline but it must be only a single line.
+[?2004lrect[?2004h>     # Let's clean the line. Standard text editors might append a single \n.
+[?2004l[?2004h>     # Let's check if there is an empty line at the end, or what. 
+[?2004l[?2004h>     # "on a single line — nothing else, no empty lines"
+[?2004l[?2004h>     raw_seq = line.strip()
+[?2004l[?2004h>     if not raw_seq:
+[?2004l[?2004h>         print("Empty sequence")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l
+[?2004h>     # Check that sequence uses only bases A, T, C, G
+[?2004l[?2004h>     allowed_bases = set("ATCG")
+[?2004l[?2004h>     # DNA bases can be lowercase/uppercase, but let's check uppercase conversion
+[?2004lr[?2004h>     seq = raw_seq.upper()
+[?2004l[?2004h>     if not all(c in allowed_bases for c in seq):
+[?2004l[?2004h>         print("Invalid characters in DNA sequence")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004ln[?2004h> 
+[?2004ls[?2004h>     # gBlock must be at most 3000 nucleotides
+[?2004ltor + len[?2004h>     if len(seq) > 3000:
+[?2004l[?2004h>         print(f"gBlock too long: {len(seq)} nt")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l([?2004h>     # gBlock length must be a multiple of 3 to encode a complete protein
+[?2004l_b[?2004h>     if len(seq) % 3 != 0:
+[?2004l[?2004h>         print(f"gBlock length {len(seq)} is not a multiple of 3")
+[?2004le_b[?2004h>         with open(verdict_file, "w") as f:
+[?2004l(translated):
+        print("E[?2004h>             f.write("0\n")
+[?2004lter molecul[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Every 50-nucleotide window has GC content between 30% and 70%
+[?2004l[?2004h>     if len(seq) < 50:
+[?2004l[?2004h>         print("gBlock is less than 50 nt")
+[?2004leptor[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004llink[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     for i in range(len(seq) - 49):
+[?2004l)[?2004h>         window = seq[i:i+50]
+[?2004l[?2004h>         gc_count = window.count('G') + window.count('C')
+[?2004l[?2004h>         gc_pct = gc_count / 50.0
+[?2004l(f"Linker {i} ha[?2004h>         if gc_pct < 0.30 or gc_pct > 0.70:
+[?2004l[?2004h>             print(f"Window {i} to {i+50} has invalid GC content: {gc_pct:.1%}")
+[?2004l[?2004h>             with open(verdict_file, "w") as f:
+[?2004l[?2004h>                 f.write("0\n")
+[?2004l[?2004h>             return
+[?2004l[?2004h> 
+[?2004li[?2004h>     # No start or stop codons
+[?2004l[?2004h>     # First, does the DNA contain any stop codons in-frame?
+[?2004l[?2004h>     # Also, does it have a start codon (ATG) at the beginning?
+[?2004l[?2004h>     # We also check that the translation does not contain '*'
+[?2004lrdi[?2004h>     # Let's check stop codons in the reading frame of the gBlock (frame 1, index 0)
+[?2004l[?2004h>     for i in range(0, len(seq), 3):
+[?2004l[?2004h>         codon = seq[i:i+3]
+[?2004l[?2004h>         if codon in ['TAA', 'TAG', 'TGA']:
+[?2004l[?2004h>             print(f"In-frame stop codon {codon} found at position {i}")
+[?2004l[?2004h>             with open(verdict_file, "w") as f:
+[?2004l[?2004h>                 f.write("0\n")
+[?2004l[?2004h>             return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Does the gBlock start with a start codon (ATG)?
+[?2004l[?2004h>     if seq.startswith("ATG"):
+[?2004l[?2004h>         print("gBlock starts with start codon ATG")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Translate sequence
+[?2004l[?2004h>     translated = translate(seq)
+[?2004l[?2004h>     if 'X' in translated:
+[?2004l[?2004h>         print("Unrecognized codon in sequence")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Load subproteins
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open("/app/verifier/subproteins.json") as sf:
+[?2004l[?2004h>             subproteins = json.load(sf)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print("Failed to load subproteins list:", e)
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     antibody_binder = subproteins["antibody_binder"]
+[?2004l[?2004h>     donor = subproteins["donor"]
+[?2004l[?2004h>     dhfr = subproteins["dhfr"]
+[?2004l[?2004h>     acceptor = subproteins["acceptor"]
+[?2004l[?2004h>     molecule_binder = subproteins["molecule_binder"]
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check that it encodes only the 5 subproteins and GS linkers in the correct order
+[?2004l[?2004h>     # Order: antibody binder — donor — DHFR — acceptor — molecule binder
+[?2004l[?2004h>     # No N or C terminal linkers
+[?2004l[?2004h>     if not translated.startswith(antibody_binder):
+[?2004l[?2004h>         print("Protein does not start with antibody binder")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not translated.endswith(molecule_binder):
+[?2004l[?2004h>         print("Protein does not end with molecule binder")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Find the positions
+[?2004l[?2004h>     idx_ab = 0
+[?2004l[?2004h>     len_ab = len(antibody_binder)
+[?2004l[?2004h> 
+[?2004l[?2004h>     idx_donor = translated.find(donor, len_ab)
+[?2004l[?2004h>     if idx_donor == -1:
+[?2004l[?2004h>         print("Donor not found in correct position")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     linker1 = translated[len_ab : idx_donor]
+[?2004l[?2004h> 
+[?2004l[?2004h>     idx_dhfr = translated.find(dhfr, idx_donor + len(donor))
+[?2004l[?2004h>     if idx_dhfr == -1:
+[?2004l[?2004h>         print("DHFR not found in correct position")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     linker2 = translated[idx_donor + len(donor) : idx_dhfr]
+[?2004l[?2004h> 
+[?2004l[?2004h>     idx_acceptor = translated.find(acceptor, idx_dhfr + len(dhfr))
+[?2004l[?2004h>     if idx_acceptor == -1:
+[?2004l[?2004h>         print("Acceptor not found in correct position")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     linker3 = translated[idx_dhfr + len(dhfr) : idx_acceptor]
+[?2004l[?2004h> 
+[?2004l[?2004h>     idx_mb = translated.find(molecule_binder, idx_acceptor + len(acceptor))
+[?2004l[?2004h>     if idx_mb == -1:
+[?2004l[?2004h>         print("Molecule binder not found in correct position")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Since we already checked endswith(molecule_binder), idx_mb + len(molecule_binder) must be len(translated)
+[?2004l[?2004h>     if idx_mb + len(molecule_binder) != len(translated):
+[?2004l[?2004h>         print("Extra sequence after molecule binder")
+[?2004l[?2004h>         with open(verdict_file, "w") as f:
+[?2004l[?2004h>             f.write("0\n")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     linker4 = translated[idx_acceptor + len(acceptor) : idx_mb]
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check linkers
+[?2004l[?2004h>     linkers = [linker1, linker2, linker3, linker4]
+[?2004l[?2004h>     for i, l in enumerate(linkers, 1):
+[?2004l[?2004h>         # Length between 5 and 20 amino acids
+[?2004l[?2004h>         if len(l) < 5 or len(l) > 20:
+[?2004l[?2004h>             print(f"Linker {i} has invalid length {len(l)}: '{l}'")
+[?2004l[?2004h>             with open(verdict_file, "w") as f:
+[?2004l[?2004h>                 f.write("0\n")
+[?2004l[?2004h>             return
+[?2004l[?2004h>         # Contains only G and S
+[?2004l[?2004h>         if not all(c in "GS" for c in l):
+[?2004l[?2004h>             print(f"Linker {i} contains non-GS amino acids: '{l}'")
+[?2004l[?2004h>             with open(verdict_file, "w") as f:
+[?2004l[?2004h>                 f.write("0\n")
+[?2004l[?2004h>             return
+[?2004l[?2004h> 
+[?2004l[?2004h>     print("All checks passed successfully!")
+[?2004l[?2004h>     with open(verdict_file, "w") as f:
+[?2004l[?2004h>         f.write("1\n")
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     verify()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# head -n 50 /app/verifier/verify.py
+[?2004limport os
+import sys
+import json
+
+CODON_TABLE = {
+    'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+    'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+    'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+    'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+    'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+    'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+    'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+    'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+    'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+    'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+    'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+    'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+    'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+    'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+    'TAC':'Y', 'TAT':'Y', 'TAA':'*','TAG':'*',
+    'TGC':'C', 'TGT':'C', 'TGA':'*','TGG':'W',
+}
+
+def translate(dna):
+    protein = []
+    for i in range(0, len(dna) - 2, 3):
+        codon = dna[i:i+3]
+        protein.append(CODON_TABLE.get(codon, 'X'))
+    return "".join(protein)
+
+def verify():
+    solution_dir = os.environ.get("SOLUTION_DIR", "/app")
+    verdict_file = os.environ.get("VERDICT_FILE", "/logs/verifier/reward.txt")
+
+    # Ensure the directory of verdict file exists
+    verdict_dir = os.path.dirname(verdict_file)
+    if verdict_dir and not os.path.exists(verdict_dir):
+        os.makedirs(verdict_dir, exist_ok=True)
+
+    gblock_path = os.path.join(solution_dir, "gblock.txt")
+    if not os.path.exists(gblock_path):
+        print(f"gblock.txt not found at {gblock_path}")
+        with open(verdict_file, "w") as f:
+            f.write("0\n")
+        return
+
+    try:
+        with open(gblock_path, "r") as f:
+            lines = f.readlines()
+    except Exception as e:
+[?2004hroot@12447c16b972:/app# tail -n 50 /app/verifier/verify.py
+[?2004l
+    linker2 = translated[idx_donor + len(donor) : idx_dhfr]
+
+    idx_acceptor = translated.find(acceptor, idx_dhfr + len(dhfr))
+    if idx_acceptor == -1:
+        print("Acceptor not found in correct position")
+        with open(verdict_file, "w") as f:
+            f.write("0\n")
+        return
+
+    linker3 = translated[idx_dhfr + len(dhfr) : idx_acceptor]
+
+    idx_mb = translated.find(molecule_binder, idx_acceptor + len(acceptor))
+    if idx_mb == -1:
+        print("Molecule binder not found in correct position")
+        with open(verdict_file, "w") as f:
+            f.write("0\n")
+        return
+
+    # Since we already checked endswith(molecule_binder), idx_mb + len(molecule_binder) must be len(translated)
+    if idx_mb + len(molecule_binder) != len(translated):
+        print("Extra sequence after molecule binder")
+        with open(verdict_file, "w") as f:
+            f.write("0\n")
+        return
+
+    linker4 = translated[idx_acceptor + len(acceptor) : idx_mb]
+
+    # Check linkers
+    linkers = [linker1, linker2, linker3, linker4]
+    for i, l in enumerate(linkers, 1):
+        # Length between 5 and 20 amino acids
+        if len(l) < 5 or len(l) > 20:
+            print(f"Linker {i} has invalid length {len(l)}: '{l}'")
+            with open(verdict_file, "w") as f:
+                f.write("0\n")
+            return
+        # Contains only G and S
+        if not all(c in "GS" for c in l):
+            print(f"Linker {i} contains non-GS amino acids: '{l}'")
+            with open(verdict_file, "w") as f:
+                f.write("0\n")
+            return
+
+    print("All checks passed successfully!")
+    with open(verdict_file, "w") as f:
+        f.write("1\n")
+
+if __name__ == "__main__":
+    verify()
+[?2004hroot@12447c16b972:/app# wc -l /app/verifier/verify.py
+[?2004l245 /app/verifier/verify.py
+[?2004hroot@12447c16b972:/app# python3 -m py_compile /app/verifier/verify.py
+[?2004l[?2004hroot@12447c16b972:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> python3 /app/verifier/verify.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@12447c16b972:/app# cat << 'EOF' > generate_test_gblock.py
+[?2004l[?2004h> import json
+[?2004l[?2004h> import random
+[?2004l[?2004h> 
+[?2004l[?2004h> # Standard codon table (excluding stop codons unless needed, but we don't need stop codons)
+[?2004l[?2004h> # We can select codons with ~50% GC content to keep GC content within 30-70%.
+[?2004l[?2004h> CODON_MAP = {
+[?2004l[?2004h>     'A': ['GCT', 'GCC', 'GCA', 'GCG'],
+[?2004l[?2004h>     'C': ['TGT', 'TGC'],
+[?2004l[?2004h>     'D': ['GAT', 'GAC'],
+[?2004l[?2004h>     'E': ['GAA', 'GAG'],
+[?2004l[?2004h>     'F': ['TTT', 'TTC'],
+[?2004l[?2004h>     'G': ['GGT', 'GGC', 'GGA', 'GGG'],
+[?2004l[?2004h>     'H': ['CAT', 'CAC'],
+[?2004l[?2004h>     'I': ['ATT', 'ATC', 'ATA'],
+[?2004l[?2004h>     'K': ['AAA', 'AAG'],
+[?2004l[?2004h>     'L': ['TTA', 'TTG', 'CTT', 'CTC', 'CTA', 'CTG'],
+[?2004l[?2004h>     'M': ['ATG'],
+[?2004l[?2004h>     'N': ['AAT', 'AAC'],
+[?2004l[?2004h>     'P': ['CCT', 'CCC', 'CCA', 'CCG'],
+[?2004l[?2004h>     'Q': ['CAA', 'CAG'],
+[?2004l[?2004h>     'R': ['CGT', 'CGC', 'CGA', 'CGG', 'AGA', 'AGG'],
+[?2004l[?2004h>     'S': ['TCT', 'TCC', 'TCA', 'TCG', 'AGT', 'AGC'],
+[?2004l[?2004h>     'T': ['ACT', 'ACC', 'ACA', 'ACG'],
+[?2004l[?2004h>     'V': ['GTT', 'GTC', 'GTA', 'GTG'],
+[?2004l[?2004h>     'W': ['TGG'],
+[?2004l[?2004h>     'Y': ['TAT', 'TAC'],
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> with open("/app/verifier/subproteins.json") as f:
+[?2004l[?2004h>     subproteins = json.load(f)
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's create a fusion protein sequence
+[?2004l[?2004h> # Antibody binder - linker1 - donor - linker2 - DHFR - linker3 - acceptor - linker4 - molecule binder
+[?2004l[?2004h> linker1 = "GSGSGSGSGS"
+[?2004l[?2004h> linker2 = "GSGSGSGSGS"
+[?2004l[?2004h> linker3 = "GSGSGSGSGS"
+[?2004l[?2004h> linker4 = "GSGSGSGSGS"
+[?2004l[?2004h> 
+[?2004l[?2004h> fusion_protein = (
+[?2004l[?2004h>     subproteins["antibody_binder"] +
+[?2004l[?2004h>     linker1 +
+[?2004l[?2004h>     subproteins["donor"] +
+[?2004l[?2004h>     linker2 +
+[?2004l[?2004h>     subproteins["dhfr"] +
+[?2004l[?2004h>     linker3 +
+[?2004l[?2004h>     subproteins["acceptor"] +
+[?2004l[?2004h>     linker4 +
+[?2004l[?2004h>     subproteins["molecule_binder"]
+[?2004l[?2004h> )
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's back-translate using a simple codon choice
+[?2004l[?2004h> # We'll choose codons that balance GC content.
+[?2004l[?2004h> # Let's write a simple deterministic or randomized selection.
+[?2004l[?2004h> dna_list = []
+[?2004l[?2004h> for aa in fusion_protein:
+[?2004l[?2004h>     codons = CODON_MAP.get(aa)
+[?2004l[?2004h>     if not codons:
+[?2004l[?2004h>         raise ValueError(f"Unknown amino acid {aa}")
+[?2004l[?2004h>     # Pick a codon with balanced GC content
+[?2004l[?2004h>     # For GC optimization, we can pick a codon whose GC count is closer to 1.5 out of 3
+[?2004l[?2004h>     best_codon = codons[0]
+[?2004l[?2004h>     best_diff = 100
+[?2004l[?2004h>     for codon in codons:
+[?2004l[?2004h>         gc = codon.count('G') + codon.count('C')
+[?2004l[?2004h>         diff = abs(gc - 1.5)
+[?2004l[?2004h>         if diff < best_diff:
+[?2004l[?2004h>             best_diff = diff
+[?2004l[?2004h>             best_codon = codon
+[?2004l[?2004h>     dna_list.append(best_codon)
+[?2004l[?2004h> 
+[?2004l[?2004h> dna_seq = "".join(dna_list)
+[?2004l[?2004h> print("Generated DNA of length:", len(dna_seq))
+[?2004l[?2004h> 
+[?2004l[?2004h> # Check GC content of every 50 nt window
+[?2004l[?2004h> valid = True
+[?2004l[?2004h> for i in range(len(dna_seq) - 49):
+[?2004l[?2004h>     window = dna_seq[i:i+50]
+[?2004l[?2004h>     gc = window.count('G') + window.count('C')
+[?2004l[?2004h>     pct = gc / 50.0
+[?2004l[?2004h>     if pct < 0.30 or pct > 0.70:
+[?2004l[?2004h>         print(f"Invalid window {i}: {pct:.1%}")
+[?2004l[?2004h>         valid = False
+[?2004l[?2004h> 
+[?2004l[?2004h> if valid:
+[?2004l[?2004h>     print("GC content is valid!")
+[?2004l[?2004h> 
+[?2004l[?2004h> with open("/app/gblock.txt", "w") as f:
+[?2004l[?2004h>     f.write(dna_seq + "\n")
+[?2004l[?2004h> 
+[?2004l[?2004h> print("Written to /app/gblock.txt")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 generate_test_gblock.py
+[?2004lGenerated DNA of length: 2646
+GC content is valid!
+Written to /app/gblock.txt
+[?2004hroot@12447c16b972:/app# SOLUTION_DIR=/app VERDICT_FILE=/logs/verifier/reward.txt /app/verifier/verify.sh
+[?2004lAll checks passed successfully!
+[?2004hroot@12447c16b972:/app# cat /logs/verifier/reward.txt
+[?2004l1
+[?2004hroot@12447c16b972:/app# cat << 'EOF' > test_verifier.py
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_verify():
+[?2004l[?2004h>     res = subprocess.run(["/app/verifier/verify.sh"], capture_output=True, text=True)
+[?2004l[?2004h>     with open("/logs/verifier/reward.txt") as f:
+[?2004l[?2004h>         verdict = f.read().strip()
+[?2004l[?2004h>     return verdict, res.stdout
+[?2004l[?2004h> 
+[?2004l[?2004h> # Backup original valid gblock
+[?2004l[?2004h> with open("/app/gblock.txt") as f:
+[?2004l[?2004h>     orig_dna = f.read().strip()
+[?2004l[?2004h> 
+[?2004l[?2004h> # Test 1: valid gblock
+[?2004l[?2004h> print("Test 1: Valid gblock...", end=" ")
+[?2004l[?2004h> verdict, out = run_verify()
+[?2004l[?2004h> assert verdict == "1", f"Expected 1, got {verdict}. Output: {out}"
+[?2004l[?2004h> print("PASS")
+[?2004l[?2004h> 
+[?2004l[?2004h> # Test 2: gblock with invalid base
+[?2004l[?2004h> print("Test 2: Invalid base...", end=" ")
+[?2004l[?2004h> with open("/app/gblock.txt", "w") as f:
+[?2004l[?2004h>     f.write(orig_dna + "N\n")
+[?2004l[?2004h> verdict, out = run_verify()
+[?2004l[?2004h> assert verdict == "0", f"Expected 0, got {verdict}. Output: {out}"
+[?2004l[?2004h> print("PASS")
+[?2004l[?2004h> 
+[?2004l[?2004h> # Test 3: gblock with start codon at beginning
+[?2004l[?2004h> print("Test 3: Start codon...", end=" ")
+[?2004l[?2004h> with open("/app/gblock.txt", "w") as f:
+[?2004l[?2004h>     f.write("ATG" + orig_dna[3:] + "\n")
+[?2004l[?2004h> verdict, out = run_verify()
+[?2004l[?2004h> assert verdict == "0", f"Expected 0, got {verdict}. Output: {out}"
+[?2004l[?2004h> print("PASS")
+[?2004l[?2004h> 
+[?2004l[?2004h> # Test 4: gblock with stop codon in-frame
+[?2004l[?2004h> print("Test 4: Stop codon...", end=" ")
+[?2004l[?2004h> with open("/app/gblock.txt", "w") as f:
+[?2004l[?2004h>     # Replace first codon (GAC/GAT) with TAA
+[?2004l[?2004h>     f.write("TAA" + orig_dna[3:] + "\n")
+[?2004l[?2004h> verdict, out = run_verify()
+[?2004l[?2004h> assert verdict == "0", f"Expected 0, got {verdict}. Output: {out}"
+[?2004l[?2004h> print("PASS")
+[?2004l[?2004h> 
+[?2004l[?2004h> # Restore original gblock
+[?2004l[?2004h> with open("/app/gblock.txt", "w") as f:
+[?2004l[?2004h>     f.write(orig_dna + "\n")
+[?2004l[?2004h> print("Test suite completed successfully!")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@12447c16b972:/app# python3 test_verifier.py
+[?2004lTest 1: Valid gblock... PASS
+Test 2: Invalid base... PASS
+Test 3: Start codon... PASS
+Test 4: Stop codon... PASS
+Test suite completed successfully!
+[?2004hroot@12447c16b972:/app# rm -f get_pdbs.py get_fpbase.py parse_fps.py get_sequences.py get_fastas.py get_chromophore_details.py get_fpbase_seqs.py check_flag.py print_subproteins.py translate.py generate_test_gblock.py test_verifier.py fpbase_proteins.json
+[?2004l[?2004hroot@12447c16b972:/app# ls -la /app/verifier
+[?2004ltotal 36
+drwxr-xr-x 3 root root 4096 Jul  8 07:54 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:55 ..
+drwxr-xr-x 2 root root 4096 Jul  8 07:54 __pycache__
+-rw-r--r-- 1 root root  941 Jul  8 07:54 subproteins.json
+-rw-r--r-- 1 root root 8522 Jul  8 07:54 verify.py
+-rwxr-xr-x 1 root root   44 Jul  8 07:54 verify.sh
+-rw-r--r-- 1 root root 3374 Jul  8 07:53 verify_logic_plan.txt
+[?2004hroot@12447c16b972:/app# 
