@@ -7,6 +7,9 @@ PLAYBOOK.md
 trials/
 jobs/
 
+# Secrets
+.env
+
 # Junk
 __pycache__/
 *.pyc

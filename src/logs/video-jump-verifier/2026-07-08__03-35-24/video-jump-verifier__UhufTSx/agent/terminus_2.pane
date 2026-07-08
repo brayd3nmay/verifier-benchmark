@@ -1,0 +1,714 @@
+[?2004hroot@8dfe1beca753:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@8dfe1beca753:/app# clear
+[?2004l[H[J[3J[?2004hroot@8dfe1beca753:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 07:25 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:35 ..
+drwxr-xr-x 2 root root 4096 Jul  8 07:15 data
+[?2004hroot@8dfe1beca753:/app# ls -la /app/data
+[?2004ltotal 1492
+drwxr-xr-x 2 root root   4096 Jul  8 07:15 .
+drwxr-xr-x 1 root root   4096 Jul  8 07:25 ..
+-rw-r--r-- 1 root root 551877 Jul  8 07:08 example_video.mp4
+-rw-r--r-- 1 root root 964534 Jul  8 07:15 test_video.mp4
+[?2004hroot@8dfe1beca753:/app# python3 --version
+[?2004lPython 3.13.14
+[?2004hroot@8dfe1beca753:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@8dfe1beca753:/app# pip list
+[?2004lPackage               Version
+--------------------- ---------
+certifi               2026.6.17
+charset-normalizer    3.4.9
+idna                  3.18
+numpy                 2.5.1
+opencv-contrib-python 4.11.0.86
+pip                   26.1.2
+requests              2.32.3
+toml                  0.10.2
+urllib3               2.7.0
+[?2004hroot@8dfe1beca753:/app# python3 -c "import sys; print('sys' in sys.stdlib_module_names)"
+[?2004lTrue
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > test_ast.py
+[?2004l[?2004h> import ast
+[?2004l[?2004h> import sys
+[?2004l[?2004h> 
+[?2004l[?2004h> code = """
+[?2004l[?2004h> import os
+[?2004l[?2004h> import numpy.linalg as la
+[?2004l[?2004h> from cv2 import imread
+[?2004l[?2004h> import requests
+[?2004l[?2004h> from . import local
+[?2004l[?2004h> """
+[?2004l[?2004h> 
+[?2004l[?2004h> tree = ast.parse(code)
+[?2004l[?2004h> allowed = {'cv2', 'numpy', 'toml'}
+[?2004l[?2004h> 
+[?2004l[?2004h> for node in ast.walk(tree):
+[?2004l[?2004h>     if isinstance(node, ast.Import):
+[?2004l[?2004h>         for alias in node.names:
+[?2004l[?2004h>             parts = alias.name.split('.')
+[?2004l[?2004h>             top = parts[0]
+[?2004l[?2004h>             is_std = top in sys.stdlib_module_names
+[?2004l[?2004h>             is_allowed_3rd = top in allowed
+[?2004l[?2004h>             print(f"Import {alias.name}: top={top}, std={is_std}, allowed={is_allowed_3rd}")
+[?2004l[?2004h>     elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>         if node.level > 0:
+[?2004l[?2004h>             print(f"ImportFrom relative (level={node.level}): {node.module}")
+[?2004l[?2004h>             continue
+[?2004l[?2004h>         if node.module:
+[?2004l[?2004h>             parts = node.module.split('.')
+[?2004l[?2004h>             top = parts[0]
+[?2004l[?2004h>             is_std = top in sys.stdlib_module_names
+[?2004l[?2004h>             is_allowed_3rd = top in allowed
+[?2004l[?2004h>             print(f"ImportFrom {node.module}: top={top}, std={is_std}, allowed={is_allowed_3rd}")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# python3 test_ast.py
+[?2004lImport os: top=os, std=True, allowed=False
+Import numpy.linalg: top=numpy, std=False, allowed=True
+ImportFrom cv2: top=cv2, std=False, allowed=True
+Import requests: top=requests, std=False, allowed=False
+ImportFrom relative (level=1): None
+[?2004hroot@8dfe1beca753:/app# rm -f test_ast.py
+[?2004l[?2004hroot@8dfe1beca753:/app# python3 -c "import tomllib; print(tomllib)"
+[?2004l<module 'tomllib' from '/usr/local/lib/python3.13/tomllib/__init__.py'>
+[?2004hroot@8dfe1beca753:/app# python3 -c "import sys; print('os' in sys.stdlib_module_names, 'sys' in sys.stdlib_module_names, 'math' in sys.stdlib_module_names)"
+[?2004lTrue True True
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/verifier/check_candidate.py
+[?2004l     return False, f"Disallowed import from: {node.module}"
+    return True, "Imports are fine"
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Usage: python3 check_candidate.py <candidate_path>")
+        sys.exit(1)
+    res, msg = check_imports(sys.argv[1])
+    print(res, msg)
+EOF
+[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> import ast
+[?2004l[?2004h> import tomllib
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import tempfile
+[?2004l[?2004h> import shutil
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_imports(filepath):
+[?2004l[?2004h>     with open(filepath, 'r', encoding='utf-8') as f:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             tree = ast.parse(f.read())
+[?2004l[?2004h>         except SyntaxError:
+[?2004l[?2004h>             return False, "Syntax error in candidate file"
+[?2004l[?2004h>             
+[?2004l[?2004h>     allowed_3rd = {'cv2', 'numpy', 'toml'}
+[?2004l[?2004h>     for node in ast.walk(tree):
+[?2004l[?2004h>         if isinstance(node, ast.Import):
+[?2004l[?2004h>             for alias in node.names:
+[?2004l[?2004h>                 top = alias.name.split('.')[0]
+[?2004l[?2004h>                 if top not in sys.stdlib_module_names and top not in allowed_3rd:
+[?2004l[?2004h>                     return False, f"Disallowed import: {alias.name}"
+[?2004l[?2004h>         elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>             if node.level > 0:  # relative import
+[?2004l[?2004h>                 continue
+[?2004l[?2004h>             if node.module:
+[?2004l[?2004h>                 top = node.module.split('.')[0]
+[?2004l[?2004h>                 if top not in sys.stdlib_module_names and top not in allowed_3rd:
+[?2004l[?2004h>                     return False, f"Disallowed import from: {node.module}"
+[?2004l[?2004h>     return True, "Imports are fine"
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     if len(sys.argv) < 2:
+[?2004l[?2004h>         print("Usage: python3 check_candidate.py <candidate_path>")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h>     res, msg = check_imports(sys.argv[1])
+[?2004l[?2004h>     print(res, msg)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# cat /app/verifier/check_candidate.py
+[?2004limport sys
+import os
+import ast
+import tomllib
+import subprocess
+import tempfile
+import shutil
+
+def check_imports(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        try:
+            tree = ast.parse(f.read())
+        except SyntaxError:
+            return False, "Syntax error in candidate file"
+            
+    allowed_3rd = {'cv2', 'numpy', 'toml'}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                top = alias.name.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import: {alias.name}"
+        elif isinstance(node, ast.ImportFrom):
+            if node.level > 0:  # relative import
+                continue
+            if node.module:
+                top = node.module.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import from: {node.module}"
+    return True, "Imports are fine"
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Usage: python3 check_candidate.py <candidate_path>")
+        sys.exit(1)
+    res, msg = check_imports(sys.argv[1])
+    print(res, msg)
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/verifier/check_candidate.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> import ast
+[?2004l[?2004h> import tomllib
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import tempfile
+[?2004l[?2004h> import shutil
+[?2004l[?2004h> 
+[?2004l     return False, f"Disallowed import from: {node.module}"
+    return True, "Imports are fine"
+
+def check_video(candidate_path, video_path, expected_takeoff_range, expected_land_range):
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Candidate is run as `python3 jump_analyzer.py <video_path>`
+        # and writes output.toml in the working directory it runs in.
+        cmd = ["python3", candidate_path, video_path]
+        try:
+            res = subprocess.run(cmd, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, text=True)
+            if res.returncode != 0:
+                return False, f"Candidate execution failed with code {res.returncode}. Stderr: {res.stderr}"
+        except subprocess.TimeoutExpired:
+            return False, "Candidate execution timed out after 60 seconds"
+
+        output_toml_path = os.path.join(temp_dir, "output.toml")
+        if not os.path.exists(output_toml_path):
+            return False, f"Candidate did not produc[?2004h> def check_imports(filepath):
+[?2004l[?2004h>     with open(filepath, 'r', encoding='utf-8') as f:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             tree = ast.parse(f.read())
+[?2004l[?2004h>         except SyntaxError:
+[?2004l[?2004h>             return False, "Syntax error in candidate file"
+[?2004l[?2004h>             
+[?2004l[?2004h>     allowed_3rd = {'cv2', 'numpy', 'toml'}
+[?2004l[?2004h>     for node in ast.walk(tree):
+[?2004l, msg = check_video(candidate_path, "/app/data/example_video.mp4", (50, 54), (62, 64))
+    if not res:
+        print(f"Verification failed (example video): {msg}")
+        print("VERDICT: 0")
+        return
+
+    # 3. Check test video
+    # test_video.mp4: takeoff range [219, 223], landing range [231, 234]
+    res, msg = check_video(candidate_path, "/app/data/test_video.mp4", (219, 223), (231, 234))
+    if not res:
+        print(f"Verification faile[?2004h>         if isinstance(node, ast.Import):
+[?2004l[?2004h>             for alias in node.names:
+[?2004leturn
+
+    print([?2004h>                 top = alias.name.split('.')[0]
+[?2004l[?2004h>                 if top not in sys.stdlib_module_names and top not in allowed_3rd:
+[?2004l[?2004h>                     return False, f"Disallowed import: {alias.name}"
+[?2004l[?2004h>         elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>             if node.level > 0:  # relative import
+[?2004l[?2004h>                 continue
+[?2004l[?2004h>             if node.module:
+[?2004l[?2004h>                 top = node.module.split('.')[0]
+[?2004l[?2004h>                 if top not in sys.stdlib_module_names and top not in allowed_3rd:
+[?2004l[?2004h>                     return False, f"Disallowed import from: {node.module}"
+[?2004l[?2004h>     return True, "Imports are fine"
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_video(candidate_path, video_path, expected_takeoff_range, expected_land_range):
+[?2004l[?2004h>     # Create a temporary directory
+[?2004l[?2004h>     temp_dir = tempfile.mkdtemp()
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         # Candidate is run as `python3 jump_analyzer.py <video_path>`
+[?2004l[?2004h>         # and writes output.toml in the working directory it runs in.
+[?2004l[?2004h>         cmd = ["python3", candidate_path, video_path]
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             res = subprocess.run(cmd, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, text=True)
+[?2004l[?2004h>             if res.returncode != 0:
+[?2004l[?2004h>                 return False, f"Candidate execution failed with code {res.returncode}. Stderr: {res.stderr}"
+[?2004l[?2004h>         except subprocess.TimeoutExpired:
+[?2004l[?2004h>             return False, "Candidate execution timed out after 60 seconds"
+[?2004l[?2004h> 
+[?2004l[?2004h>         output_toml_path = os.path.join(temp_dir, "output.toml")
+[?2004l[?2004h>         if not os.path.exists(output_toml_path):
+[?2004l[?2004h>             return False, f"Candidate did not produce output.toml in working directory"
+[?2004l[?2004h> 
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             with open(output_toml_path, 'rb') as f:
+[?2004l[?2004h>                 data = tomllib.load(f)
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             return False, f"Failed to parse output.toml: {e}"
+[?2004l[?2004h> 
+[?2004l[?2004h>         if 'jump_takeoff_frame_number' not in data:
+[?2004l[?2004h>             return False, "Missing 'jump_takeoff_frame_number' in output.toml"
+[?2004l[?2004h>         if 'jump_land_frame_number' not in data:
+[?2004l[?2004h>             return False, "Missing 'jump_land_frame_number' in output.toml"
+[?2004l[?2004h> 
+[?2004l[?2004h>         takeoff = data['jump_takeoff_frame_number']
+[?2004l[?2004h>         land = data['jump_land_frame_number']
+[?2004l[?2004h> 
+[?2004l[?2004h>         if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+[?2004l[?2004h>             return False, f"jump_takeoff_frame_number is not a valid TOML integer: {type(takeoff)}"
+[?2004l[?2004h>         if not isinstance(land, int) or isinstance(land, bool):
+[?2004l[?2004h>             return False, f"jump_land_frame_number is not a valid TOML integer: {type(land)}"
+[?2004l[?2004h> 
+[?2004l[?2004h>         min_t, max_t = expected_takeoff_range
+[?2004l[?2004h>         min_l, max_l = expected_land_range
+[?2004l[?2004h> 
+[?2004l[?2004h>         if not (min_t <= takeoff <= max_t):
+[?2004l[?2004h>             return False, f"jump_takeoff_frame_number ({takeoff}) is outside correct range [{min_t}, {max_t}]"
+[?2004l[?2004h>         if not (min_l <= land <= max_l):
+[?2004l[?2004h>             return False, f"jump_land_frame_number ({land}) is outside correct range [{min_l}, {max_l}]"
+[?2004l[?2004h> 
+[?2004l[?2004h>         return True, "Video analysis is correct"
+[?2004l[?2004h>     finally:
+[?2004l[?2004h>         # Clean up temp dir
+[?2004l[?2004h>         shutil.rmtree(temp_dir, ignore_errors=True)
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     if len(sys.argv) < 2:
+[?2004l[?2004h>         print("Usage: python3 check_candidate.py <candidate_path>")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h> 
+[?2004l[?2004h>     candidate_path = os.path.abspath(sys.argv[1])
+[?2004l[?2004h>     if not os.path.isfile(candidate_path):
+[?2004l[?2004h>         print(f"Candidate file not found: {candidate_path}")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 1. Check imports
+[?2004l[?2004h>     res, msg = check_imports(candidate_path)
+[?2004l[?2004h>     if not res:
+[?2004l[?2004h>         print(f"Verification failed (imports): {msg}")
+[?2004l[?2004h>         print("VERDICT: 0")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 2. Check example video
+[?2004l[?2004h>     # example_video.mp4: takeoff range [50, 54], landing range [62, 64]
+[?2004l[?2004h>     res, msg = check_video(candidate_path, "/app/data/example_video.mp4", (50, 54), (62, 64))
+[?2004l[?2004h>     if not res:
+[?2004l[?2004h>         print(f"Verification failed (example video): {msg}")
+[?2004l[?2004h>         print("VERDICT: 0")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 3. Check test video
+[?2004l[?2004h>     # test_video.mp4: takeoff range [219, 223], landing range [231, 234]
+[?2004l[?2004h>     res, msg = check_video(candidate_path, "/app/data/test_video.mp4", (219, 223), (231, 234))
+[?2004l[?2004h>     if not res:
+[?2004l[?2004h>         print(f"Verification failed (test video): {msg}")
+[?2004l[?2004h>         print("VERDICT: 0")
+[?2004l[?2004h>         return
+[?2004l[?2004h> 
+[?2004l[?2004h>     print("VERDICT: 1")
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# cat /app/verifier/check_candidate.py
+[?2004limport sys
+import os
+import ast
+import tomllib
+import subprocess
+import tempfile
+import shutil
+
+def check_imports(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        try:
+            tree = ast.parse(f.read())
+        except SyntaxError:
+            return False, "Syntax error in candidate file"
+            
+    allowed_3rd = {'cv2', 'numpy', 'toml'}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                top = alias.name.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import: {alias.name}"
+        elif isinstance(node, ast.ImportFrom):
+            if node.level > 0:  # relative import
+                continue
+            if node.module:
+                top = node.module.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import from: {node.module}"
+    return True, "Imports are fine"
+
+def check_video(candidate_path, video_path, expected_takeoff_range, expected_land_range):
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Candidate is run as `python3 jump_analyzer.py <video_path>`
+        # and writes output.toml in the working directory it runs in.
+        cmd = ["python3", candidate_path, video_path]
+        try:
+            res = subprocess.run(cmd, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, text=True)
+            if res.returncode != 0:
+                return False, f"Candidate execution failed with code {res.returncode}. Stderr: {res.stderr}"
+        except subprocess.TimeoutExpired:
+            return False, "Candidate execution timed out after 60 seconds"
+
+        output_toml_path = os.path.join(temp_dir, "output.toml")
+        if not os.path.exists(output_toml_path):
+            return False, f"Candidate did not produce output.toml in working directory"
+
+        try:
+            with open(output_toml_path, 'rb') as f:
+                data = tomllib.load(f)
+        except Exception as e:
+            return False, f"Failed to parse output.toml: {e}"
+
+        if 'jump_takeoff_frame_number' not in data:
+            return False, "Missing 'jump_takeoff_frame_number' in output.toml"
+        if 'jump_land_frame_number' not in data:
+            return False, "Missing 'jump_land_frame_number' in output.toml"
+
+        takeoff = data['jump_takeoff_frame_number']
+        land = data['jump_land_frame_number']
+
+        if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+            return False, f"jump_takeoff_frame_number is not a valid TOML integer: {type(takeoff)}"
+        if not isinstance(land, int) or isinstance(land, bool):
+            return False, f"jump_land_frame_number is not a valid TOML integer: {type(land)}"
+
+        min_t, max_t = expected_takeoff_range
+        min_l, max_l = expected_land_range
+
+        if not (min_t <= takeoff <= max_t):
+            return False, f"jump_takeoff_frame_number ({takeoff}) is outside correct range [{min_t}, {max_t}]"
+        if not (min_l <= land <= max_l):
+            return False, f"jump_land_frame_number ({land}) is outside correct range [{min_l}, {max_l}]"
+
+        return True, "Video analysis is correct"
+    finally:
+        # Clean up temp dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 check_candidate.py <candidate_path>")
+        sys.exit(1)
+
+    candidate_path = os.path.abspath(sys.argv[1])
+    if not os.path.isfile(candidate_path):
+        print(f"Candidate file not found: {candidate_path}")
+        sys.exit(1)
+
+    # 1. Check imports
+    res, msg = check_imports(candidate_path)
+    if not res:
+        print(f"Verification failed (imports): {msg}")
+        print("VERDICT: 0")
+        return
+
+    # 2. Check example video
+    # example_video.mp4: takeoff range [50, 54], landing range [62, 64]
+    res, msg = check_video(candidate_path, "/app/data/example_video.mp4", (50, 54), (62, 64))
+    if not res:
+        print(f"Verification failed (example video): {msg}")
+        print("VERDICT: 0")
+        return
+
+    # 3. Check test video
+    # test_video.mp4: takeoff range [219, 223], landing range [231, 234]
+    res, msg = check_video(candidate_path, "/app/data/test_video.mp4", (219, 223), (231, 234))
+    if not res:
+        print(f"Verification failed (test video): {msg}")
+        print("VERDICT: 0")
+        return
+
+    print("VERDICT: 1")
+
+if __name__ == '__main__':
+    main()
+[?2004hroot@8dfe1beca753:/app# python3 -m py_compile /app/verifier/check_candidate.py
+[?2004l[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/usr/bin/env bash
+[?2004l[?2004h> set -u
+[?2004l[?2004h> 
+[?2004l[?2004h> SOLUTION_DIR=${SOLUTION_DIR:-/app}
+[?2004l[?2004h> VERDICT_FILE=${VERDICT_FILE:-/logs/verifier/reward.txt}
+[?2004l[?2004h> 
+[?2004l[?2004h> echo "=== Running Verification ==="
+[?2004l[?2004h> echo "SOLUTION_DIR: $SOLUTION_DIR"
+[?2004l[?2004h> echo "VERDICT_FILE: $VERDICT_FILE"
+[?2004l[?2004h> 
+[?2004l[?2004h> candidate_file="$SOLUTION_DIR/jump_analyzer.py"
+[?2004l[?2004h> if [ ! -f "$candidate_file" ]; then
+[?2004l[?2004h>     echo "Candidate file $candidate_file not found."
+[?2004l[?2004h>     verdict="0"
+[?2004l[?2004h> else
+[?2004l[?2004h>     # Run python check
+[?2004l[?2004h>     output=$(python3 /app/verifier/check_candidate.py "$candidate_file")
+[?2004l[?2004h>     echo "$output"
+[?2004l[?2004h>     if echo "$output" | grep -q "VERDICT: 1"; then
+[?2004l[?2004h>         verdict="1"
+[?2004l[?2004h>     else
+[?2004l[?2004h>         verdict="0"
+[?2004l[?2004h>     fi
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> echo "Final Verdict: $verdict"
+[?2004l[?2004h> mkdir -p "$(dirname "$VERDICT_FILE")"
+[?2004l[?2004h> echo "$verdict" > "$VERDICT_FILE"
+[?2004l[?2004h> echo "=== Verification Completed ==="
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@8dfe1beca753:/app# mkdir -p /app/test_workspace
+[?2004l[?2004hroot@8dfe1beca753:/app# export SOLUTION_DIR=/app/test_workspace
+[?2004l[?2004hroot@8dfe1beca753:/app# export VERDICT_FILE=/app/test_workspace/verdict.txt
+[?2004l[?2004hroot@8dfe1beca753:/app# /app/verifier/verify.sh
+[?2004l=== Running Verification ===
+SOLUTION_DIR: /app/test_workspace
+VERDICT_FILE: /app/test_workspace/verdict.txt
+Candidate file /app/test_workspace/jump_analyzer.py not found.
+Final Verdict: 0
+=== Verification Completed ===
+[?2004hroot@8dfe1beca753:/app# cat $VERDICT_FILE
+[?2004l0
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/test_workspace/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import numpy
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# /app/verifier/verify.sh
+[?2004l=== Running Verification ===
+SOLUTION_DIR: /app/test_workspace
+VERDICT_FILE: /app/test_workspace/verdict.txt
+Verification failed (imports): Disallowed import: requests
+VERDICT: 0
+Final Verdict: 0
+=== Verification Completed ===
+[?2004hroot@8dfe1beca753:/app# cat $VERDICT_FILE
+[?2004l0
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/test_workspace/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import cv2
+[?2004l[?2004h> sys.exit(1)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# /app/verifier/verify.sh
+[?2004l=== Running Verification ===
+SOLUTION_DIR: /app/test_workspace
+VERDICT_FILE: /app/test_workspace/verdict.txt
+Verification failed (example video): Candidate execution failed with code 1. Stderr: 
+VERDICT: 0
+Final Verdict: 0
+=== Verification Completed ===
+[?2004hroot@8dfe1beca753:/app# cat $VERDICT_FILE
+[?2004l0
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/test_workspace/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import toml
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('output.toml', 'w') as f:
+[?2004l[?2004h>     toml.dump({'jump_takeoff_frame_number': 49, 'jump_land_frame_number': 63}, f)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# /app/verifier/verify.sh
+[?2004l=== Running Verification ===
+SOLUTION_DIR: /app/test_workspace
+VERDICT_FILE: /app/test_workspace/verdict.txt
+Verification failed (example video): jump_takeoff_frame_number (49) is outside correct range [50, 54]
+VERDICT: 0
+Final Verdict: 0
+=== Verification Completed ===
+[?2004hroot@8dfe1beca753:/app# cat $VERDICT_FILE
+[?2004l0
+[?2004hroot@8dfe1beca753:/app# cat << 'EOF' > /app/test_workspace/jump_analyzer.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import toml
+[?2004l[?2004h> 
+[?2004l[?2004h> video_path = sys.argv[1]
+[?2004l[?2004h> if 'example_video' in video_path:
+[?2004l[?2004h>     takeoff = 52
+[?2004l[?2004h>     land = 63
+[?2004l[?2004h> elif 'test_video' in video_path:
+[?2004l[?2004h>     takeoff = 221
+[?2004l[?2004h>     land = 232
+[?2004l[?2004h> else:
+[?2004l[?2004h>     takeoff = 0
+[?2004l[?2004h>     land = 0
+[?2004l[?2004h> 
+[?2004l[?2004h> with open('output.toml', 'w') as f:
+[?2004l[?2004h>     toml.dump({
+[?2004l[?2004h>         'jump_takeoff_frame_number': takeoff,
+[?2004l[?2004h>         'jump_land_frame_number': land
+[?2004l[?2004h>     }, f)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@8dfe1beca753:/app# /app/verifier/verify.sh
+[?2004l=== Running Verification ===
+SOLUTION_DIR: /app/test_workspace
+VERDICT_FILE: /app/test_workspace/verdict.txt
+VERDICT: 1
+Final Verdict: 1
+=== Verification Completed ===
+[?2004hroot@8dfe1beca753:/app# cat $VERDICT_FILE
+[?2004l1
+[?2004hroot@8dfe1beca753:/app# rm -rf /app/test_workspace
+[?2004l[?2004hroot@8dfe1beca753:/app# ls -la /app/verifier
+[?2004ltotal 24
+drwxr-xr-x 3 root root 4096 Jul  8 07:37 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:37 ..
+drwxr-xr-x 2 root root 4096 Jul  8 07:36 __pycache__
+-rw-r--r-- 1 root root 4631 Jul  8 07:36 check_candidate.py
+-rwxr-xr-x 1 root root  752 Jul  8 07:37 verify.sh
+[?2004hroot@8dfe1beca753:/app# cat /app/verifier/verify.sh
+[?2004l#!/usr/bin/env bash
+set -u
+
+SOLUTION_DIR=${SOLUTION_DIR:-/app}
+VERDICT_FILE=${VERDICT_FILE:-/logs/verifier/reward.txt}
+
+echo "=== Running Verification ==="
+echo "SOLUTION_DIR: $SOLUTION_DIR"
+echo "VERDICT_FILE: $VERDICT_FILE"
+
+candidate_file="$SOLUTION_DIR/jump_analyzer.py"
+if [ ! -f "$candidate_file" ]; then
+    echo "Candidate file $candidate_file not found."
+    verdict="0"
+else
+    # Run python check
+    output=$(python3 /app/verifier/check_candidate.py "$candidate_file")
+    echo "$output"
+    if echo "$output" | grep -q "VERDICT: 1"; then
+        verdict="1"
+    else
+        verdict="0"
+    fi
+fi
+
+echo "Final Verdict: $verdict"
+mkdir -p "$(dirname "$VERDICT_FILE")"
+echo "$verdict" > "$VERDICT_FILE"
+echo "=== Verification Completed ==="
+[?2004hroot@8dfe1beca753:/app# cat /app/verifier/check_candidate.py
+[?2004limport sys
+import os
+import ast
+import tomllib
+import subprocess
+import tempfile
+import shutil
+
+def check_imports(filepath):
+    with open(filepath, 'r', encoding='utf-8') as f:
+        try:
+            tree = ast.parse(f.read())
+        except SyntaxError:
+            return False, "Syntax error in candidate file"
+            
+    allowed_3rd = {'cv2', 'numpy', 'toml'}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                top = alias.name.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import: {alias.name}"
+        elif isinstance(node, ast.ImportFrom):
+            if node.level > 0:  # relative import
+                continue
+            if node.module:
+                top = node.module.split('.')[0]
+                if top not in sys.stdlib_module_names and top not in allowed_3rd:
+                    return False, f"Disallowed import from: {node.module}"
+    return True, "Imports are fine"
+
+def check_video(candidate_path, video_path, expected_takeoff_range, expected_land_range):
+    # Create a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    try:
+        # Candidate is run as `python3 jump_analyzer.py <video_path>`
+        # and writes output.toml in the working directory it runs in.
+        cmd = ["python3", candidate_path, video_path]
+        try:
+            res = subprocess.run(cmd, cwd=temp_dir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=60, text=True)
+            if res.returncode != 0:
+                return False, f"Candidate execution failed with code {res.returncode}. Stderr: {res.stderr}"
+        except subprocess.TimeoutExpired:
+            return False, "Candidate execution timed out after 60 seconds"
+
+        output_toml_path = os.path.join(temp_dir, "output.toml")
+        if not os.path.exists(output_toml_path):
+            return False, f"Candidate did not produce output.toml in working directory"
+
+        try:
+            with open(output_toml_path, 'rb') as f:
+                data = tomllib.load(f)
+        except Exception as e:
+            return False, f"Failed to parse output.toml: {e}"
+
+        if 'jump_takeoff_frame_number' not in data:
+            return False, "Missing 'jump_takeoff_frame_number' in output.toml"
+        if 'jump_land_frame_number' not in data:
+            return False, "Missing 'jump_land_frame_number' in output.toml"
+
+        takeoff = data['jump_takeoff_frame_number']
+        land = data['jump_land_frame_number']
+
+        if not isinstance(takeoff, int) or isinstance(takeoff, bool):
+            return False, f"jump_takeoff_frame_number is not a valid TOML integer: {type(takeoff)}"
+        if not isinstance(land, int) or isinstance(land, bool):
+            return False, f"jump_land_frame_number is not a valid TOML integer: {type(land)}"
+
+        min_t, max_t = expected_takeoff_range
+        min_l, max_l = expected_land_range
+
+        if not (min_t <= takeoff <= max_t):
+            return False, f"jump_takeoff_frame_number ({takeoff}) is outside correct range [{min_t}, {max_t}]"
+        if not (min_l <= land <= max_l):
+            return False, f"jump_land_frame_number ({land}) is outside correct range [{min_l}, {max_l}]"
+
+        return True, "Video analysis is correct"
+    finally:
+        # Clean up temp dir
+        shutil.rmtree(temp_dir, ignore_errors=True)
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 check_candidate.py <candidate_path>")
+        sys.exit(1)
+
+    candidate_path = os.path.abspath(sys.argv[1])
+    if not os.path.isfile(candidate_path):
+        print(f"Candidate file not found: {candidate_path}")
+        sys.exit(1)
+
+    # 1. Check imports
+    res, msg = check_imports(candidate_path)
+    if not res:
+        print(f"Verification failed (imports): {msg}")
+        print("VERDICT: 0")
+        return
+
+    # 2. Check example video
+    # example_video.mp4: takeoff range [50, 54], landing range [62, 64]
+    res, msg = check_video(candidate_path, "/app/data/example_video.mp4", (50, 54), (62, 64))
+    if not res:
+        print(f"Verification failed (example video): {msg}")
+        print("VERDICT: 0")
+        return
+
+    # 3. Check test video
+    # test_video.mp4: takeoff range [219, 223], landing range [231, 234]
+    res, msg = check_video(candidate_path, "/app/data/test_video.mp4", (219, 223), (231, 234))
+    if not res:
+        print(f"Verification failed (test video): {msg}")
+        print("VERDICT: 0")
+        return
+
+    print("VERDICT: 1")
+
+if __name__ == '__main__':
+    main()
+[?2004hroot@8dfe1beca753:/app# 
