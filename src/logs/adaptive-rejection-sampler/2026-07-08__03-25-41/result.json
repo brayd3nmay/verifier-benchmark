@@ -1,0 +1,99 @@
+{
+    "id": "8b91f92b-63c4-4c88-97c3-dd3175c8e0cc",
+    "started_at": "2026-07-08T03:25:43.016673",
+    "updated_at": "2026-07-08T03:31:37.023118",
+    "finished_at": "2026-07-08T03:31:37.023118",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 0.9091,
+                        "all_correct": 0.0,
+                        "f1": 0.8571,
+                        "fn": 0.0,
+                        "fp": 1.0,
+                        "n": 11.0,
+                        "precision": 0.75,
+                        "recall": 1.0,
+                        "reward": 0.9091,
+                        "tn": 7.0,
+                        "tp": 3.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "0.9091": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "accuracy": {
+                        "0.9091": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "precision": {
+                        "0.75": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "f1": {
+                        "0.8571": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "all_correct": {
+                        "0": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "tp": {
+                        "3": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "fp": {
+                        "1": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "tn": {
+                        "7": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    },
+                    "n": {
+                        "11": [
+                            "adaptive-rejection-sampler__nHq5DkE"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 462312,
+        "n_cache_tokens": 301392,
+        "n_output_tokens": 20629,
+        "cost_usd": 0.47224979999999994
+    }
+}

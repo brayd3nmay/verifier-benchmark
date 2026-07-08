@@ -1,0 +1,99 @@
+{
+    "id": "ae9fa013-ccbc-457a-9d48-f7e3d723ddda",
+    "started_at": "2026-07-08T03:31:41.896662",
+    "updated_at": "2026-07-08T03:36:41.828472",
+    "finished_at": "2026-07-08T03:36:41.828472",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 0.9091,
+                        "all_correct": 0.0,
+                        "f1": 0.8571,
+                        "fn": 0.0,
+                        "fp": 1.0,
+                        "n": 11.0,
+                        "precision": 0.75,
+                        "recall": 1.0,
+                        "reward": 0.9091,
+                        "tn": 7.0,
+                        "tp": 3.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "0.9091": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "accuracy": {
+                        "0.9091": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "precision": {
+                        "0.75": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "f1": {
+                        "0.8571": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "all_correct": {
+                        "0": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "tp": {
+                        "3": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "fp": {
+                        "1": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "tn": {
+                        "7": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    },
+                    "n": {
+                        "11": [
+                            "adaptive-rejection-sampler__PjhYcrW"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 247932,
+        "n_cache_tokens": 148579,
+        "n_output_tokens": 15907,
+        "cost_usd": 0.31447935000000005
+    }
+}
