@@ -1,0 +1,22 @@
+{
+  "01_oracle": "pass",
+  "02_correct_alt": "pass",
+  "03_correct_upper_edge": "pass",
+  "04_wrong_order": "fail",
+  "05_junk_terminus": "fail",
+  "06_terminal_linker": "fail",
+  "07_linker_nongs": "fail",
+  "08_linker_too_short": "fail",
+  "09_missing_linker": "fail",
+  "10_gc_violation": "fail",
+  "11_gc_near_miss": "fail",
+  "12_wrong_protein": "fail",
+  "13_non_atcg": "fail",
+  "14_multiline": "fail",
+  "15_nop": "fail",
+  "16_logs_no_files": "fail",
+  "17_correct_pure_linkers": "pass",
+  "18_frameshift": "fail",
+  "19_linker_too_long": "fail",
+  "20_wrong_molecule_binder": "fail"
+}

@@ -1,0 +1,23 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   All checks passed successfully!
+02_correct_alt        pass    pass     Y   All checks passed successfully!
+03_correct_upper_edge pass    pass     Y   All checks passed successfully!
+04_wrong_order        fail    fail     Y   DHFR not found in correct position
+05_junk_terminus      fail    fail     Y   Protein does not end with molecule binder
+06_terminal_linker    fail    fail     Y   Protein does not end with molecule binder
+07_linker_nongs       fail    fail     Y   Linker 2 contains non-GS amino acids: 'GGASGGSGG'
+08_linker_too_short   fail    fail     Y   Linker 3 has invalid length 4: 'GGSS'
+09_missing_linker     fail    fail     Y   Linker 2 has invalid length 0: ''
+10_gc_violation       fail    fail     Y   Window 0 to 50 has invalid GC content: 76.0%
+11_gc_near_miss       fail    fail     Y   Window 1293 to 1343 has invalid GC content: 72.0%
+12_wrong_protein      fail    fail     Y   Donor not found in correct position
+13_non_atcg           fail    fail     Y   Invalid characters in DNA sequence
+14_multiline          fail    fail     Y   Expected exactly 1 line, got 2
+15_nop                fail    fail     Y   gblock.txt not found at /tmp/pool_rkbiimqs/solution/gblock.txt
+16_logs_no_files      fail    fail     Y   gblock.txt not found at /tmp/pool__0mhwn9b/solution/gblock.txt
+17_correct_pure_linkerspass    pass     Y   All checks passed successfully!
+18_frameshift         fail    fail     Y   gBlock length 2641 is not a multiple of 3
+19_linker_too_long    fail    fail     Y   Linker 1 has invalid length 21: 'GSGSGSGSGSGSGSGSGSGSG'
+20_wrong_molecule_binderfail    fail     Y   Protein does not end with molecule binder
+
+TP=4 FP=0 FN=0 TN=16  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000

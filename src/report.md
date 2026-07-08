@@ -8,12 +8,15 @@ produce the grader that decides whether a given attempt solved it. That grader i
 scored, deterministically, against a hidden pool of labeled solutions — correct ones must
 pass, adversarial ones must fail.
 
-Scope note: this submission contains **one fully-built, hardened exemplar task**
-(`samples/multi-source-data-verifier`) plus the methodology and tooling to generate the
-rest (`PLAYBOOK.md` at the repo root is the reproducible SOP). I chose depth over breadth
-deliberately — a single task that genuinely isolates a failure mode, with the anti-cheat
-and validation worked all the way through, is more informative than five shallow ones. The
-scale plan (below) is how this becomes 10 and then 1,000.
+Scope note: this submission contains **two fully-built, hardened verifier-writing tasks** —
+`samples/multi-source-data-verifier`, which clears the difficulty bar (pass@3 = 0%), and
+`samples/fusion-protein-verifier`, a deliberate contrast the difficulty gate *rejects*
+(pass@3 = 100%) and whose rejection is itself a finding (**Task 2**, below) — plus the
+methodology and tooling to generate the rest (`PLAYBOOK.md` at the repo root is the
+reproducible SOP). I chose depth over breadth deliberately: two tasks worked all the way
+through the anti-cheat and validation — one that isolates a systematic failure mode, one
+that shows *why* another domain doesn't yield one — are more informative than five shallow
+ones. The scale plan (below) is how this becomes 10 and then 1,000.
 
 ## 1. Distribution — what I chose to measure, and why this slice
 
@@ -149,6 +152,84 @@ canonical answer, design the anchored pool (including the discriminating dtype i
 write the situation-voice instruction and the verifier contract, wire the separate
 clean-room verifier env with `nobody`-sandboxed grading, write the oracle, and run the
 validation gates before the `gemini-3.5-flash` capture.
+
+---
+
+# Task 2: `fusion-protein-verifier` — when verifier-writing is *not* hard (a difficulty-gate failure)
+
+The second task applies the same recipe to a very different underlying domain — synthetic-
+biology design instead of an ETL merge — and lands on the opposite side of the difficulty
+gate. It is a **deliberate negative result**: a fully-built, hardened, red-teamed verifier-
+writing task that `gemini-3.5-flash` nonetheless *passes*, and the reason it passes is the
+most transferable thing in this report.
+
+**Underlying task** (`harbor-framework/terminal-bench-2/protein-assembly`): design a gBlock
+(synthetic DNA) encoding a five-protein FRET fusion — antibody binder → donor fluorophore →
+DHFR → acceptor fluorophore → molecule binder — with GS linkers between subproteins, 30–70%
+GC in every 50-nt window, ≤ 3000 nt, no start/stop codons, N-terminal Met removed.
+Correctness is a *constraint-satisfaction predicate*, not a single canonical answer (codon
+choice, linker length/composition, and letter case are all free), which makes it a natural
+verifier-writing target. To preserve the original's difficulty, the environment hands the
+agent only the **inputs** (`pdb_ids.txt`, `plasmid.gb`, `antibody.fasta`) — the verifier
+must **resolve** the five reference proteins itself (PDB / FPBase / PubChem), exactly as the
+original solver had to.
+
+**The task is sound.** The Task-1 machinery transferred verbatim (`harness.py`, the
+`nobody` sandbox, the separate clean-room verifier env). All deterministic gates pass on the
+20-item pool (4 pass / 16 fail): oracle **1.0**; a files-exist-only verifier **0.35**; a
+label-reading cheat **0.80** (denied — `Permission denied: /tests/pool/labels.json` on every
+item); nop **0.0**. An independent Codex red-team (a *different* model, per the playbook)
+found no anti-cheat hole, no mislabeled pool item, and no unanchored check — only pool
+coverage gaps (no reading-frame, linker-upper-bound, or second-identity item), which were
+closed before the capture.
+
+**The difficulty result — it fails the gate.** Three trials of `harbor run -a terminus-2 -m
+gemini/gemini-3.5-flash` (logs in `logs/fusion-protein-verifier/`):
+
+| Trial | reward | outcome |
+| --- | --- | --- |
+| 1 | 1.00 | perfect verifier (all 20) |
+| 2 | 0.80 | mis-resolved the **acceptor** protein → rejected all 4 valid gBlocks (fn=4) |
+| 3 | 1.00 | perfect verifier (all 20) |
+
+Mean reward **0.933**; **pass@1 = 67%**, **pass@3 = 100%** at the perfect-verifier bar —
+comfortably *above* the take-home's < 30% target, i.e. the task is too easy. (A pre-hardening
+run on an earlier 16-item pool gave a fourth data point — 0.875, failing only on
+case-sensitivity — the same incidental-slip pattern.) This is exactly the scale-plan QA gate
+(c) firing: a task that clears build / anti-cheat / discrimination but flunks the difficulty
+check is auto-kicked back.
+
+**Why it fails, and the finding.** Gemini's verifiers here are *rigorous*: across trials they
+correctly enforced subprotein order, terminus anchoring, GS-only bounded linkers, the
+sliding-window GC check, exact protein identity (one run queried FPBase, matched Clover@505 /
+mCherry@610, and correctly rejected the wrong-donor and wrong-molecule-binder items), the
+reading frame, and the single-line / ATCG contract. The only non-perfect outcomes we ever
+observed were **incidental, high-variance slips** — a case-sensitivity miss in one run, an
+acceptor mis-resolution in another — not a *systematic* gap the pool can rely on. Contrast
+Task 1, where all three trials failed *identically* on the two type-coercion items: that gap
+is systematic because coercing declared types (`astype(int)`, `pd.to_datetime`) is a semantic
+default models reach for regardless of raw capability.
+
+That contrast is the transferable lesson: **verifier-writing difficulty comes from a reliable
+semantic trap, not from the underlying task being hard to solve.** protein-assembly is
+genuinely hard to *solve* (junior estimate 300 min; it demands real bioinformatics), but
+hard-to-solve and hard-to-verify are different axes. Its spec is *uniquely resolvable by
+design* (the environment guarantees exactly one fluorophore matches each filter), so once a
+capable model resolves the five proteins the remaining verification is mechanical string / GC
+bookkeeping with no coercion-style pitfall. There is nowhere for a rigorous-but-wrong verifier
+to consistently land.
+
+**What would fix it — and what to screen for when picking underlying tasks at scale:** a
+*declared representational tolerance the verifier is tempted to over- or under-apply*. Task
+1's dtype items are the template — a value that is "right" under a lenient reading and "wrong"
+under the declared contract. A protein analogue would need genuinely ambiguous resolution
+(several fluorophores within spectral tolerance, only one listed in `pdb_ids.txt`) or a
+normalization the verifier must get exactly right (a GC-window boundary that a *correct*
+implementation still trips) — neither of which this environment supplies. Absent such a trap,
+the honest call is to let the gate reject the task, which is what these three trials do. The
+build itself is not wasted: it is the worked example of the QA gate doing its job, and its
+anti-cheat + pool machinery is the reusable substrate for the next task that *does* carry a
+trap.
 
 ---
 

@@ -1,0 +1,1949 @@
+[?2004hroot@00292a553e1a:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@00292a553e1a:/app# clear
+[?2004l[H[J[3J[?2004hroot@00292a553e1a:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 06:52 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:45 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 data
+[?2004hroot@00292a553e1a:/app# ls -la /app/data
+[?2004ltotal 24
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:52 ..
+-rw-r--r-- 1 root root  475 Jul  8 06:40 antibody.fasta
+-rw-r--r-- 1 root root  100 Jul  8 06:40 pdb_ids.txt
+-rw-r--r-- 1 root root 6053 Jul  8 06:40 plasmid.gb
+[?2004hroot@00292a553e1a:/app# cat /app/data/pdb_ids.txt
+[?2004l2IB5
+4KGE
+4Q7T
+1KFD
+5JZL
+6AA7
+3ADF
+5WJ2
+3M22
+2H5Q
+3MGF
+5Y01
+2VZX
+4CQH
+1YZW
+2CHA
+3KZY
+1AK4
+5P21
+1H6R
+[?2004hroot@00292a553e1a:/app# cat /app/data/antibody.fasta
+[?2004l>heavy chain
+QVQLQQSAAELARPGASVKMSCKASGYSFTTYTIHWVKQRPGQGLEWIGYINPSSGYAAYNQNFKDETTLTADPSSSTAYMELNSLTSEDSAVYYCAREKFYGYDYWGQGATLTVSSASTTPPSVYPLAPGSAAQTNSMVTLGCLVKGYFPEPVTVTWNSGSLSSGVHTFPAVLQSDLYTLSSSVTVPSSTWPSQTVTCNVAHPASSTKVDKKIVPRAAAHHHHHHHH
+>light chain
+DVLMTQIPLSLPVSLGDQASISCRSSQSIVHRNGNTYLEWYLLKPGQSPKLLIYKVSNRFSGVPDRFSGSGSGTDFTLKISRVEAEDLGVYYCFQGSHVPYTFGGGTKLEIRRADAAPTVSIFPPSSEQLTSGGASVVCFLNNFYPKDINVKWKIDGSERQNGVLNSWTDQDSKDSTYSMSSTLTLTKDEYERHNSYTCEATHKTSTSPIVKSFNRNQC
+[?2004hroot@00292a553e1a:/app# head -n 50 /app/data/plasmid.gb
+[?2004lLOCUS       DHFR_Control_Template   2727 bp    DNA     circular     30-DEC-2009
+DEFINITION  Control vector DHFR_Control_Template, complete sequence.
+ACCESSION
+VERSION
+KEYWORDS    .
+SOURCE      Control vector DHFR_Control_Template
+  ORGANISM  Control vector DHFR_Control_Template
+            other sequences; artificial sequences; vectors.
+REFERENCE   1  (bases 1 to 2727)
+  AUTHORS   Cantor,E.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (30-DEC-2009) Research Department, New England Biolabs,
+            240 County Road, Ipswich, MA 01938, USA
+FEATURES             Location/Qualifiers
+     source          1..2727
+                     /organism="Control vector DHFR_Control_Template"
+                     /mol_type="other DNA"
+     promoter        26..43
+                     /note="T7 promoter (transcript start 43 clockwise)"
+     gene            88..567
+                     /gene="folA"
+     CDS             88..567
+                     /gene="folA"
+                     /codon_start=1
+                     /product="dihydrofolate reductase (DHFR)"
+                     /translation="MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGR
+                     HTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQ
+                     FLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR"
+     terminator      663..785
+                     /note="T7 Tphi transcription terminator"
+     rep_origin      complement(984..1572)
+                     /note="pUC19 origin of replication (counter-clockwise)
+                     (RNAII -35 to RNA/DNA switch point)"
+     gene            complement(1744..2604)
+                     /gene="bla"
+     CDS             complement(1744..2604)
+                     /gene="bla"
+                     /note="ampR (confers resistance to ampicillin)"
+                     /codon_start=1
+                     /product="beta-lactamase"
+                     /translation="MSIQHFRVALIPFFAAFCLPVFAHPETLVKVKDAEDQLGARVGY
+                     IELDLNSGKILESFRPEERFPMMSTFKVLLCGAVLSRIDAGQEQLGRRIHYSQNDLVE
+                     YSPVTEKHLTDGMTVRELCSAAITMSDNTAANLLLTTIGGPKELTAFLHNMGDHVTRL
+                     DRWEPELNEAIPNDERDTTMPVAMATTLRKLLTGELLTLASRQQLIDWMEADKVAGPL
+                     LRSALPAGWFIADKSGAGERGSRGIIAALGPDGKPSRIVVIYTTGSQATMDERNRQIA
+                     EIGASLIKHW"
+     sig_peptide     complement(2536..2604)
+                     /gene="bla"
+                     /note="Required for secretion to the periplasm; cleaved
+                     off to form the mature beta-lactamase protein."
+[?2004hroot@00292a553e1a:/app# apt-get update && apt-get install -y python3-pip python3-requests
+[?2004l0% [Working]            Hit:1 http://deb.debian.org/debian trixie InRelease
+0% [Waiting for headers]0% [Waiting for headers]                        Hit:2 http://deb.debian.org/debian trixie-updates InRelease
+                        0% [Working]0% [Waiting for headers]                        Hit:3 http://deb.debian.org/debian-security trixie-security InRelease
+                        0% [Working]20% [Working]             Reading package lists... 0%Reading package lists... 0%Reading package lists... 0%Reading package lists... 94%Reading package lists... 97%Reading package lists... 97%Reading package lists... 97%Reading package lists... 97%Reading package lists... 99%Reading package lists... 99%Reading package lists... Done
+Reading package lists... 0%Reading package lists... 0%Reading package lists... 0%Reading package lists... 83%Reading package lists... 97%Reading package lists... 97%Reading package lists... 97%Reading package lists... 97%Reading package lists... 99%Reading package lists... 99%Reading package lists... Done
+Building dependency tree... 0%Building dependency tree... 0%Building dependency tree... 50%Building dependency tree... 50%Building dependency tree... Done
+Reading state information... 0% Reading state information... 0%Reading state information... Done
+The following additional packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common build-essential bzip2 cpp cpp-14 cpp-14-aarch64-linux-gnu cpp-aarch64-linux-gnu dpkg-dev fakeroot g++
+  g++-14 g++-14-aarch64-linux-gnu g++-aarch64-linux-gnu gcc gcc-14 gcc-14-aarch64-linux-gnu gcc-aarch64-linux-gnu javascript-common libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan8 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0
+  libdpkg-perl libexpat1-dev libfakeroot libfile-fcntllock-perl libgcc-14-dev libgdbm-compat4t64 libgomp1 libgprofng0 libhwasan0 libisl23 libitm1 libjansson4
+  libjs-jquery libjs-sphinxdoc libjs-underscore liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libperl5.40 libpython3-dev libpython3.13 libpython3.13-dev
+  libsframe1 libstdc++-14-dev libtsan2 libubsan1 linux-libc-dev make manpages manpages-dev patch perl perl-modules-5.40 python3-certifi python3-chardet
+  python3-charset-normalizer python3-dev python3-idna python3-packaging python3-urllib3 python3-wheel python3.13-dev rpcsvc-proto sq xz-utils zlib1g-dev
+Suggested packages:
+  binutils-doc gprofng-gui binutils-gold bzip2-doc cpp-doc gcc-14-locales cpp-14-doc debian-keyring debian-tag2upload-keyring gcc-14-doc gcc-multilib autoconf
+  automake libtool flex bison gdb gcc-doc gdb-aarch64-linux-gnu apache2 | lighttpd | httpd libc-devtools glibc-doc sensible-utils git bzr libstdc++-14-doc
+  make-doc man-browser ed diffutils-doc perl-doc libterm-readline-gnu-perl | libterm-readline-perl-perl libtap-harness-archive-perl
+  python-charset-normalizer-doc python3-cryptography python3-openssl python3-socks python-requests-doc python3-brotli python3-setuptools
+The following NEW packages will be installed:
+  binutils binutils-aarch64-linux-gnu binutils-common build-essential bzip2 cpp cpp-14 cpp-14-aarch64-linux-gnu cpp-aarch64-linux-gnu dpkg-dev fakeroot g++
+  g++-14 g++-14-aarch64-linux-gnu g++-aarch64-linux-gnu gcc gcc-14 gcc-14-aarch64-linux-gnu gcc-aarch64-linux-gnu javascript-common libalgorithm-diff-perl
+  libalgorithm-diff-xs-perl libalgorithm-merge-perl libasan8 libatomic1 libbinutils libc-dev-bin libc6-dev libcc1-0 libcrypt-dev libctf-nobfd0 libctf0
+  libdpkg-perl libexpat1-dev libfakeroot libfile-fcntllock-perl libgcc-14-dev libgdbm-compat4t64 libgomp1 libgprofng0 libhwasan0 libisl23 libitm1 libjansson4
+  libjs-jquery libjs-sphinxdoc libjs-underscore liblocale-gettext-perl liblsan0 libmpc3 libmpfr6 libperl5.40 libpython3-dev libpython3.13 libpython3.13-dev
+  libsframe1 libstdc++-14-dev libtsan2 libubsan1 linux-libc-dev make manpages manpages-dev patch perl perl-modules-5.40 python3-certifi python3-chardet
+  python3-charset-normalizer python3-dev python3-idna python3-packaging python3-pip python3-requests python3-urllib3 python3-wheel python3.13-dev rpcsvc-proto
+  sq xz-utils zlib1g-dev
+0 upgraded, 81 newly installed, 0 to remove and 0 not upgraded.
+Need to get 92.7 MB of archives.
+After this operation, 401 MB of additional disk space will be used.
+0% [Working]            Get:1 http://deb.debian.org/debian trixie/main arm64 liblocale-gettext-perl arm64 1.07-7+b1 [15.2 kB]
+0% [1 liblocale-gettext-perl 4096 B/15.2 kB 27%]                                                0% [Waiting for headers]                        Get:2 http://deb.debian.org/debian trixie/main arm64 bzip2 arm64 1.0.8-6 [39.5 kB]
+0% [2 bzip2 4923 B/39.5 kB 12%]                               1% [Waiting for headers]                        Get:3 http://deb.debian.org/debian trixie/main arm64 manpages all 6.9.1-1 [1393 kB]
+1% [3 manpages 26.2 kB/1393 kB 2%]                                  2% [Waiting for headers]                        Get:4 http://deb.debian.org/debian trixie/main arm64 perl-modules-5.40 all 5.40.1-6 [3019 kB]
+2% [4 perl-modules-5.40 56.4 kB/3019 kB 2%]                                           5% [Waiting for headers]                        Get:5 http://deb.debian.org/debian trixie/main arm64 libgdbm-compat4t64 arm64 1.24-2 [50.3 kB]
+5% [5 libgdbm-compat4t64 50.3 kB/50.3 kB 100%]                                              5% [Waiting for headers]                        Get:6 http://deb.debian.org/debian trixie/main arm64 libperl5.40 arm64 5.40.1-6 [4142 kB]
+5% [6 libperl5.40 9076 B/4142 kB 0%]                                    9% [Waiting for headers]                        Get:7 http://deb.debian.org/debian trixie/main arm64 perl arm64 5.40.1-6 [267 kB]
+9% [7 perl 41.0 kB/267 kB 15%]                              9% [Waiting for headers]                        Get:8 http://deb.debian.org/debian trixie/main arm64 xz-utils arm64 5.8.1-1 [657 kB]
+9% [8 xz-utils 27.6 kB/657 kB 4%]                                 10% [Waiting for headers]                         Get:9 http://deb.debian.org/debian trixie/main arm64 libsframe1 arm64 2.44-3 [77.8 kB]
+10% [9 libsframe1 4096 B/77.8 kB 5%]                                    11% [Waiting for headers]                         Get:10 http://deb.debian.org/debian trixie/main arm64 binutils-common arm64 2.44-3 [2509 kB]
+11% [10 binutils-common 20.7 kB/2509 kB 1%]                                           13% [Waiting for headers]                         Get:11 http://deb.debian.org/debian trixie/main arm64 libbinutils arm64 2.44-3 [660 kB]
+13% [11 libbinutils 663 B/660 kB 0%]                                    14% [Waiting for headers]                         Get:12 http://deb.debian.org/debian trixie/main arm64 libgprofng0 arm64 2.44-3 [668 kB]
+14% [12 libgprofng0 9181 B/668 kB 1%]                                     15% [Waiting for headers]                         Get:13 http://deb.debian.org/debian trixie/main arm64 libctf-nobfd0 arm64 2.44-3 [152 kB]
+15% [13 libctf-nobfd0 31.7 kB/152 kB 21%]                                         15% [Waiting for headers]                         Get:14 http://deb.debian.org/debian trixie/main arm64 libctf0 arm64 2.44-3 [84.2 kB]
+15% [14 libctf0 7001 B/84.2 kB 8%]                                  15% [Waiting for headers]                         Get:15 http://deb.debian.org/debian trixie/main arm64 libjansson4 arm64 2.14-2+b3 [39.2 kB]
+15% [15 libjansson4 39.2 kB/39.2 kB 100%]                                         16% [Working]             Get:16 http://deb.debian.org/debian trixie/main arm64 binutils-aarch64-linux-gnu arm64 2.44-3 [820 kB]
+16% [16 binutils-aarch64-linux-gnu 2760 B/820 kB 0%]                                                    17% [Waiting for headers]                         Get:17 http://deb.debian.org/debian trixie/main arm64 binutils arm64 2.44-3 [262 kB]
+17% [17 binutils 7248 B/262 kB 3%]                                  17% [Waiting for headers]                         Get:18 http://deb.debian.org/debian trixie/main arm64 libc-dev-bin arm64 2.41-12+deb13u3 [59.0 kB]
+17% [18 libc-dev-bin 55.0 kB/59.0 kB 93%]                                         17% [Waiting for headers]                         Get:19 http://deb.debian.org/debian-security trixie-security/main arm64 linux-libc-dev all 6.12.95-1 [2852 kB]
+17% [19 linux-libc-dev 24.8 kB/2852 kB 1%]                                          20% [Waiting for headers]                         Get:20 http://deb.debian.org/debian trixie/main arm64 libcrypt-dev arm64 1:4.4.38-1 [123 kB]
+20% [20 libcrypt-dev 45.1 kB/123 kB 37%]                                        20% [Waiting for headers]                         Get:21 http://deb.debian.org/debian trixie/main arm64 rpcsvc-proto arm64 1.4.3-1+b1 [60.5 kB]
+20% [21 rpcsvc-proto 28.7 kB/60.5 kB 47%]                                         21% [Waiting for headers]                         Get:22 http://deb.debian.org/debian trixie/main arm64 libc6-dev arm64 2.41-12+deb13u3 [1626 kB]
+21% [22 libc6-dev 5520 B/1626 kB 0%]                                    22% [Waiting for headers]                         Get:23 http://deb.debian.org/debian trixie/main arm64 libisl23 arm64 0.27-1 [601 kB]
+22% [23 libisl23 16.4 kB/601 kB 3%]                                   23% [Waiting for headers]                         Get:24 http://deb.debian.org/debian trixie/main arm64 libmpfr6 arm64 4.2.2-1 [685 kB]
+23% [24 libmpfr6 4096 B/685 kB 1%]                                  24% [Working]             Get:25 http://deb.debian.org/debian trixie/main arm64 libmpc3 arm64 1.3.1-1+b3 [50.5 kB]
+24% [25 libmpc3 50.5 kB/50.5 kB 100%]                                     24% [Waiting for headers]                         Get:26 http://deb.debian.org/debian trixie/main arm64 cpp-14-aarch64-linux-gnu arm64 14.2.0-19 [9169 kB]
+24% [26 cpp-14-aarch64-linux-gnu 17.0 kB/9169 kB 0%]                                                    32% [Waiting for headers]                         Get:27 http://deb.debian.org/debian trixie/main arm64 cpp-14 arm64 14.2.0-19 [1276 B]
+                         Get:28 http://deb.debian.org/debian trixie/main arm64 cpp-aarch64-linux-gnu arm64 4:14.2.0-1 [4832 B]
+33% [Waiting for headers]                         Get:29 http://deb.debian.org/debian trixie/main arm64 cpp arm64 4:14.2.0-1 [1568 B]
+                         Get:30 http://deb.debian.org/debian trixie/main arm64 libcc1-0 arm64 14.2.0-19 [42.2 kB]
+33% [30 libcc1-0 42.2 kB/42.2 kB 100%]                                      33% [Working]             Get:31 http://deb.debian.org/debian trixie/main arm64 libgomp1 arm64 14.2.0-19 [124 kB]
+33% [31 libgomp1 9660 B/124 kB 8%]                                  34% [Waiting for headers]                         Get:32 http://deb.debian.org/debian trixie/main arm64 libitm1 arm64 14.2.0-19 [24.2 kB]
+34% [32 libitm1 20.5 kB/24.2 kB 85%]                                    34% [Waiting for headers]                         Get:33 http://deb.debian.org/debian trixie/main arm64 libatomic1 arm64 14.2.0-19 [10.1 kB]
+34% [Waiting for headers]                         Get:34 http://deb.debian.org/debian trixie/main arm64 libasan8 arm64 14.2.0-19 [2578 kB]
+34% [34 libasan8 6900 B/2578 kB 0%]                                   37% [Waiting for headers]                         Get:35 http://deb.debian.org/debian trixie/main arm64 liblsan0 arm64 14.2.0-19 [1161 kB]
+37% [35 liblsan0 44.8 kB/1161 kB 4%]                                    38% [Waiting for headers]                         Get:36 http://deb.debian.org/debian trixie/main arm64 libtsan2 arm64 14.2.0-19 [2383 kB]
+38% [36 libtsan2 14.9 kB/2383 kB 1%]                                    40% [Waiting for headers]                         Get:37 http://deb.debian.org/debian trixie/main arm64 libubsan1 arm64 14.2.0-19 [1039 kB]
+40% [37 libubsan1 48.8 kB/1039 kB 5%]                                     41% [Waiting for headers]                         Get:38 http://deb.debian.org/debian trixie/main arm64 libhwasan0 arm64 14.2.0-19 [1442 kB]
+41% [38 libhwasan0 32.8 kB/1442 kB 2%]                                      43% [Waiting for headers]                         Get:39 http://deb.debian.org/debian trixie/main arm64 libgcc-14-dev arm64 14.2.0-19 [2359 kB]
+43% [39 libgcc-14-dev 19.3 kB/2359 kB 1%]                                         45% [Waiting for headers]                         Get:40 http://deb.debian.org/debian trixie/main arm64 gcc-14-aarch64-linux-gnu arm64 14.2.0-19 [17.7 MB]
+45% [40 gcc-14-aarch64-linux-gnu 16.6 kB/17.7 MB 0%]60% [40 gcc-14-aarch64-linux-gnu 16.8 MB/17.7 MB 95%]                                                     61% [Waiting for headers]                         Get:41 http://deb.debian.org/debian trixie/main arm64 gcc-14 arm64 14.2.0-19 [529 kB]
+61% [41 gcc-14 6900 B/529 kB 1%]                                61% [Waiting for headers]                         Get:42 http://deb.debian.org/debian trixie/main arm64 gcc-aarch64-linux-gnu arm64 4:14.2.0-1 [1440 B]
+62% [Waiting for headers]                         Get:43 http://deb.debian.org/debian trixie/main arm64 gcc arm64 4:14.2.0-1 [5136 B]
+62% [43 gcc 816 B/5136 B 16%]                             62% [Waiting for headers]                         Get:44 http://deb.debian.org/debian trixie/main arm64 libstdc++-14-dev arm64 14.2.0-19 [2295 kB]
+62% [44 libstdc++-14-dev 20.5 kB/2295 kB 1%]                                            64% [Waiting for headers]                         Get:45 http://deb.debian.org/debian trixie/main arm64 g++-14-aarch64-linux-gnu arm64 14.2.0-19 [10.1 MB]
+64% [45 g++-14-aarch64-linux-gnu 13.4 kB/10.1 MB 0%]                                                    73% [Waiting for headers]                         Get:46 http://deb.debian.org/debian trixie/main arm64 g++-14 arm64 14.2.0-19 [22.5 kB]
+73% [46 g++-14 22.5 kB/22.5 kB 100%]                                    73% [Waiting for headers]                         Get:47 http://deb.debian.org/debian trixie/main arm64 g++-aarch64-linux-gnu arm64 4:14.2.0-1 [1200 B]
+73% [47 g++-aarch64-linux-gnu 1200 B/1200 B 100%]                                                 74% [Waiting for headers]                         Get:48 http://deb.debian.org/debian trixie/main arm64 g++ arm64 4:14.2.0-1 [1332 B]
+74% [48 g++ 1332 B/1332 B 100%]                               74% [Working]             Get:49 http://deb.debian.org/debian trixie/main arm64 make arm64 4.4.1-2 [452 kB]
+74% [49 make 2556 B/452 kB 1%]                              74% [Waiting for headers]                         Get:50 http://deb.debian.org/debian trixie/main arm64 libdpkg-perl all 1.22.22 [651 kB]
+75% [50 libdpkg-perl 48.6 kB/651 kB 7%]                                       75% [Waiting for headers]                         Get:51 http://deb.debian.org/debian trixie/main arm64 patch arm64 2.8-2 [128 kB]
+75% [51 patch 15.2 kB/128 kB 12%]                                 76% [Waiting for headers]                         Get:52 http://deb.debian.org/debian trixie/main arm64 dpkg-dev all 1.22.22 [1337 kB]
+76% [52 dpkg-dev 57.3 kB/1337 kB 4%]                                    77% [Waiting for headers]                         Get:53 http://deb.debian.org/debian trixie/main arm64 build-essential arm64 12.12 [4624 B]
+77% [Waiting for headers]                         Get:54 http://deb.debian.org/debian trixie/main arm64 libfakeroot arm64 1.37.1.1-1 [29.6 kB]
+78% [Waiting for headers]                         Get:55 http://deb.debian.org/debian trixie/main arm64 fakeroot arm64 1.37.1.1-1 [75.4 kB]
+78% [55 fakeroot 4096 B/75.4 kB 5%]                                   78% [Working]             Get:56 http://deb.debian.org/debian trixie/main arm64 javascript-common all 12+nmu1 [4864 B]
+78% [56 javascript-common 4864 B/4864 B 100%]                                             78% [Waiting for headers]                         Get:57 http://deb.debian.org/debian trixie/main arm64 libalgorithm-diff-perl all 1.201-1 [43.3 kB]
+78% [57 libalgorithm-diff-perl 43.3 kB/43.3 kB 100%]                                                    78% [Waiting for headers]                         Get:58 http://deb.debian.org/debian trixie/main arm64 libalgorithm-diff-xs-perl arm64 0.04-9 [10.9 kB]
+78% [58 libalgorithm-diff-xs-perl 10.9 kB/10.9 kB 100%]                                                       Get:59 http://deb.debian.org/debian trixie/main arm64 libalgorithm-merge-perl all 0.08-5 [11.8 kB]
+                                                       79% [Waiting for headers]                         Get:60 http://deb.debian.org/debian trixie/main arm64 libexpat1-dev arm64 2.7.1-2 [145 kB]
+79% [60 libexpat1-dev 13.8 kB/145 kB 10%]                                         79% [Waiting for headers]                         Get:61 http://deb.debian.org/debian trixie/main arm64 libfile-fcntllock-perl arm64 0.22-4+b4 [34.6 kB]
+79% [61 libfile-fcntllock-perl 16.4 kB/34.6 kB 47%]                                                   80% [Working]             Get:62 http://deb.debian.org/debian trixie/main arm64 libjs-jquery all 3.6.1+dfsg+~3.5.14-1 [326 kB]
+80% [62 libjs-jquery 4947 B/326 kB 2%]                                      80% [Waiting for headers]                         Get:63 http://deb.debian.org/debian trixie/main arm64 libjs-underscore all 1.13.4~dfsg+~1.11.4-3 [116 kB]
+80% [63 libjs-underscore 14.4 kB/116 kB 12%]                                            80% [Waiting for headers]                         Get:64 http://deb.debian.org/debian trixie/main arm64 libjs-sphinxdoc all 8.1.3-5 [30.5 kB]
+80% [64 libjs-sphinxdoc 14.5 kB/30.5 kB 48%]                                            81% [Waiting for headers]                         Get:65 http://deb.debian.org/debian trixie/main arm64 libpython3.13 arm64 3.13.5-2+deb13u2 [1977 kB]
+81% [65 libpython3.13 0 B/1977 kB 0%]                                     83% [Waiting for headers]                         Get:66 http://deb.debian.org/debian trixie/main arm64 zlib1g-dev arm64 1:1.3.dfsg+really1.3.1-1+b1 [917 kB]
+83% [66 zlib1g-dev 31.7 kB/917 kB 3%]                                     84% [Waiting for headers]                         Get:67 http://deb.debian.org/debian trixie/main arm64 libpython3.13-dev arm64 3.13.5-2+deb13u2 [4926 kB]
+84% [67 libpython3.13-dev 24.8 kB/4926 kB 1%]                                             88% [Waiting for headers]                         Get:68 http://deb.debian.org/debian trixie/main arm64 libpython3-dev arm64 3.13.5-1 [10.4 kB]
+                         Get:69 http://deb.debian.org/debian trixie/main arm64 manpages-dev all 6.9.1-1 [2122 kB]
+89% [69 manpages-dev 315 kB/2122 kB 15%]                                        Get:70 http://deb.debian.org/debian trixie/main arm64 python3-certifi all 2025.1.31+ds-1 [9652 B]
+91% [70 python3-certifi 9652 B/9652 B 100%]                                           Get:71 http://deb.debian.org/debian trixie/main arm64 python3-chardet all 5.2.0+dfsg-2 [108 kB]
+91% [71 python3-chardet 56.4 kB/108 kB 52%]                                           Get:72 http://deb.debian.org/debian trixie/main arm64 python3-charset-normalizer arm64 3.4.2-1 [120 kB]
+91% [72 python3-charset-normalizer 59.1 kB/120 kB 49%]                                                      92% [Waiting for headers]                         Get:73 http://deb.debian.org/debian trixie/main arm64 python3.13-dev arm64 3.13.5-2+deb13u2 [504 kB]
+92% [73 python3.13-dev 3501 B/504 kB 1%]                                        92% [Waiting for headers]                         Get:74 http://deb.debian.org/debian trixie/main arm64 python3-dev arm64 3.13.5-1 [26.1 kB]
+                         Get:75 http://deb.debian.org/debian trixie/main arm64 python3-idna all 3.10-1 [42.0 kB]
+                         Get:76 http://deb.debian.org/debian trixie/main arm64 python3-packaging all 25.0-1 [56.6 kB]
+93% [Waiting for headers]                         Get:77 http://deb.debian.org/debian trixie/main arm64 python3-wheel all 0.46.1-2 [21.7 kB]
+93% [77 python3-wheel 21.7 kB/21.7 kB 100%]                                           93% [Waiting for headers]                         Get:78 http://deb.debian.org/debian trixie/main arm64 python3-pip all 25.1.1+dfsg-1 [1457 kB]
+93% [78 python3-pip 12.3 kB/1457 kB 1%]                                       95% [Waiting for headers]                         Get:79 http://deb.debian.org/debian-security trixie-security/main arm64 python3-urllib3 all 2.3.0-3+deb13u2 [115 kB]
+95% [79 python3-urllib3 12.4 kB/115 kB 11%]                                           95% [Waiting for headers]                         Get:80 http://deb.debian.org/debian trixie/main arm64 python3-requests all 2.32.3+dfsg-5+deb13u1 [72.2 kB]
+95% [80 python3-requests 0 B/72.2 kB 0%]                                        95% [Waiting for headers]                         Get:81 http://deb.debian.org/debian trixie/main arm64 sq arm64 1.3.1-2+b2 [4979 kB]
+95% [81 sq 17.6 kB/4979 kB 0%]                              100% [Working]              Fetched 92.7 MB in 4s (22.8 MB/s)
+debconf: unable to initialize frontend: Dialog
+debconf: (No usable dialog-like program is installed, so the dialog based frontend cannot be used. at /usr/share/perl5/Debconf/FrontEnd/Dialog.pm line 79, <STDIN> line 81.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/aarch64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 81.)
+debconf: falling back to frontend: Teletype
+Extracting templates from packages: 37%Extracting templates from packages: 74%Extracting templates from packages: 100%
+Selecting previously unselected package liblocale-gettext-perl.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6725 files and directories currently installed.)
+Preparing to unpack .../00-liblocale-gettext-perl_1.07-7+b1_arm64.deb ...
+Unpacking liblocale-gettext-perl (1.07-7+b1) ...
+Selecting previously unselected package bzip2.
+Preparing to unpack .../01-bzip2_1.0.8-6_arm64.deb ...
+Unpacking bzip2 (1.0.8-6) ...
+Selecting previously unselected package manpages.
+Preparing to unpack .../02-manpages_6.9.1-1_all.deb ...
+Unpacking manpages (6.9.1-1) ...
+Selecting previously unselected package perl-modules-5.40.
+Preparing to unpack .../03-perl-modules-5.40_5.40.1-6_all.deb ...
+Unpacking perl-modules-5.40 (5.40.1-6) ...
+Selecting previously unselected package libgdbm-compat4t64:arm64.
+Preparing to unpack .../04-libgdbm-compat4t64_1.24-2_arm64.deb ...
+Unpacking libgdbm-compat4t64:arm64 (1.24-2) ...
+Selecting previously unselected package libperl5.40:arm64.
+Preparing to unpack .../05-libperl5.40_5.40.1-6_arm64.deb ...
+Unpacking libperl5.40:arm64 (5.40.1-6) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../06-perl_5.40.1-6_arm64.deb ...
+Unpacking perl (5.40.1-6) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../07-xz-utils_5.8.1-1_arm64.deb ...
+Unpacking xz-utils (5.8.1-1) ...
+Selecting previously unselected package libsframe1:arm64.
+Preparing to unpack .../08-libsframe1_2.44-3_arm64.deb ...
+Unpacking libsframe1:arm64 (2.44-3) ...
+Selecting previously unselected package binutils-common:arm64.
+Preparing to unpack .../09-binutils-common_2.44-3_arm64.deb ...
+Unpacking binutils-common:arm64 (2.44-3) ...
+Selecting previously unselected package libbinutils:arm64.
+Preparing to unpack .../10-libbinutils_2.44-3_arm64.deb ...
+Unpacking libbinutils:arm64 (2.44-3) ...
+Selecting previously unselected package libgprofng0:arm64.
+Preparing to unpack .../11-libgprofng0_2.44-3_arm64.deb ...
+Unpacking libgprofng0:arm64 (2.44-3) ...
+Selecting previously unselected package libctf-nobfd0:arm64.
+Preparing to unpack .../12-libctf-nobfd0_2.44-3_arm64.deb ...
+Unpacking libctf-nobfd0:arm64 (2.44-3) ...
+Selecting previously unselected package libctf0:arm64.
+Preparing to unpack .../13-libctf0_2.44-3_arm64.deb ...
+Unpacking libctf0:arm64 (2.44-3) ...
+Selecting previously unselected package libjansson4:arm64.
+Preparing to unpack .../14-libjansson4_2.14-2+b3_arm64.deb ...
+Unpacking libjansson4:arm64 (2.14-2+b3) ...
+Selecting previously unselected package binutils-aarch64-linux-gnu.
+Preparing to unpack .../15-binutils-aarch64-linux-gnu_2.44-3_arm64.deb ...
+Unpacking binutils-aarch64-linux-gnu (2.44-3) ...
+Selecting previously unselected package binutils.
+Preparing to unpack .../16-binutils_2.44-3_arm64.deb ...
+Unpacking binutils (2.44-3) ...
+Selecting previously unselected package libc-dev-bin.
+Preparing to unpack .../17-libc-dev-bin_2.41-12+deb13u3_arm64.deb ...
+Unpacking libc-dev-bin (2.41-12+deb13u3) ...
+Selecting previously unselected package linux-libc-dev.
+Preparing to unpack .../18-linux-libc-dev_6.12.95-1_all.deb ...
+Unpacking linux-libc-dev (6.12.95-1) ...
+Selecting previously unselected package libcrypt-dev:arm64.
+Preparing to unpack .../19-libcrypt-dev_1%3a4.4.38-1_arm64.deb ...
+Unpacking libcrypt-dev:arm64 (1:4.4.38-1) ...
+Selecting previously unselected package rpcsvc-proto.
+Preparing to unpack .../20-rpcsvc-proto_1.4.3-1+b1_arm64.deb ...
+Unpacking rpcsvc-proto (1.4.3-1+b1) ...
+Selecting previously unselected package libc6-dev:arm64.
+Preparing to unpack .../21-libc6-dev_2.41-12+deb13u3_arm64.deb ...
+Unpacking libc6-dev:arm64 (2.41-12+deb13u3) ...
+Selecting previously unselected package libisl23:arm64.
+Preparing to unpack .../22-libisl23_0.27-1_arm64.deb ...
+Unpacking libisl23:arm64 (0.27-1) ...
+Selecting previously unselected package libmpfr6:arm64.
+Preparing to unpack .../23-libmpfr6_4.2.2-1_arm64.deb ...
+Unpacking libmpfr6:arm64 (4.2.2-1) ...
+Selecting previously unselected package libmpc3:arm64.
+Preparing to unpack .../24-libmpc3_1.3.1-1+b3_arm64.deb ...
+Unpacking libmpc3:arm64 (1.3.1-1+b3) ...
+Selecting previously unselected package cpp-14-aarch64-linux-gnu.
+Preparing to unpack .../25-cpp-14-aarch64-linux-gnu_14.2.0-19_arm64.deb ...
+Unpacking cpp-14-aarch64-linux-gnu (14.2.0-19) ...
+Selecting previously unselected package cpp-14.
+Preparing to unpack .../26-cpp-14_14.2.0-19_arm64.deb ...
+Unpacking cpp-14 (14.2.0-19) ...
+Selecting previously unselected package cpp-aarch64-linux-gnu.
+Preparing to unpack .../27-cpp-aarch64-linux-gnu_4%3a14.2.0-1_arm64.deb ...
+Unpacking cpp-aarch64-linux-gnu (4:14.2.0-1) ...
+Selecting previously unselected package cpp.
+Preparing to unpack .../28-cpp_4%3a14.2.0-1_arm64.deb ...
+Unpacking cpp (4:14.2.0-1) ...
+Selecting previously unselected package libcc1-0:arm64.
+Preparing to unpack .../29-libcc1-0_14.2.0-19_arm64.deb ...
+Unpacking libcc1-0:arm64 (14.2.0-19) ...
+Selecting previously unselected package libgomp1:arm64.
+Preparing to unpack .../30-libgomp1_14.2.0-19_arm64.deb ...
+Unpacking libgomp1:arm64 (14.2.0-19) ...
+Selecting previously unselected package libitm1:arm64.
+Preparing to unpack .../31-libitm1_14.2.0-19_arm64.deb ...
+Unpacking libitm1:arm64 (14.2.0-19) ...
+Selecting previously unselected package libatomic1:arm64.
+Preparing to unpack .../32-libatomic1_14.2.0-19_arm64.deb ...
+Unpacking libatomic1:arm64 (14.2.0-19) ...
+Selecting previously unselected package libasan8:arm64.
+Preparing to unpack .../33-libasan8_14.2.0-19_arm64.deb ...
+Unpacking libasan8:arm64 (14.2.0-19) ...
+Selecting previously unselected package liblsan0:arm64.
+Preparing to unpack .../34-liblsan0_14.2.0-19_arm64.deb ...
+Unpacking liblsan0:arm64 (14.2.0-19) ...
+Selecting previously unselected package libtsan2:arm64.
+Preparing to unpack .../35-libtsan2_14.2.0-19_arm64.deb ...
+Unpacking libtsan2:arm64 (14.2.0-19) ...
+Selecting previously unselected package libubsan1:arm64.
+Preparing to unpack .../36-libubsan1_14.2.0-19_arm64.deb ...
+Unpacking libubsan1:arm64 (14.2.0-19) ...
+Selecting previously unselected package libhwasan0:arm64.
+Preparing to unpack .../37-libhwasan0_14.2.0-19_arm64.deb ...
+Unpacking libhwasan0:arm64 (14.2.0-19) ...
+Selecting previously unselected package libgcc-14-dev:arm64.
+Preparing to unpack .../38-libgcc-14-dev_14.2.0-19_arm64.deb ...
+Unpacking libgcc-14-dev:arm64 (14.2.0-19) ...
+Selecting previously unselected package gcc-14-aarch64-linux-gnu.
+Preparing to unpack .../39-gcc-14-aarch64-linux-gnu_14.2.0-19_arm64.deb ...
+Unpacking gcc-14-aarch64-linux-gnu (14.2.0-19) ...
+Selecting previously unselected package gcc-14.
+Preparing to unpack .../40-gcc-14_14.2.0-19_arm64.deb ...
+Unpacking gcc-14 (14.2.0-19) ...
+Selecting previously unselected package gcc-aarch64-linux-gnu.
+Preparing to unpack .../41-gcc-aarch64-linux-gnu_4%3a14.2.0-1_arm64.deb ...
+Unpacking gcc-aarch64-linux-gnu (4:14.2.0-1) ...
+Selecting previously unselected package gcc.
+Preparing to unpack .../42-gcc_4%3a14.2.0-1_arm64.deb ...
+Unpacking gcc (4:14.2.0-1) ...
+Selecting previously unselected package libstdc++-14-dev:arm64.
+Preparing to unpack .../43-libstdc++-14-dev_14.2.0-19_arm64.deb ...
+Unpacking libstdc++-14-dev:arm64 (14.2.0-19) ...
+Selecting previously unselected package g++-14-aarch64-linux-gnu.
+Preparing to unpack .../44-g++-14-aarch64-linux-gnu_14.2.0-19_arm64.deb ...
+Unpacking g++-14-aarch64-linux-gnu (14.2.0-19) ...
+Selecting previously unselected package g++-14.
+Preparing to unpack .../45-g++-14_14.2.0-19_arm64.deb ...
+Unpacking g++-14 (14.2.0-19) ...
+Selecting previously unselected package g++-aarch64-linux-gnu.
+Preparing to unpack .../46-g++-aarch64-linux-gnu_4%3a14.2.0-1_arm64.deb ...
+Unpacking g++-aarch64-linux-gnu (4:14.2.0-1) ...
+Selecting previously unselected package g++.
+Preparing to unpack .../47-g++_4%3a14.2.0-1_arm64.deb ...
+Unpacking g++ (4:14.2.0-1) ...
+Selecting previously unselected package make.
+Preparing to unpack .../48-make_4.4.1-2_arm64.deb ...
+Unpacking make (4.4.1-2) ...
+Selecting previously unselected package libdpkg-perl.
+Preparing to unpack .../49-libdpkg-perl_1.22.22_all.deb ...
+Unpacking libdpkg-perl (1.22.22) ...
+Selecting previously unselected package patch.
+Preparing to unpack .../50-patch_2.8-2_arm64.deb ...
+Unpacking patch (2.8-2) ...
+Selecting previously unselected package dpkg-dev.
+Preparing to unpack .../51-dpkg-dev_1.22.22_all.deb ...
+Unpacking dpkg-dev (1.22.22) ...
+Selecting previously unselected package build-essential.
+Preparing to unpack .../52-build-essential_12.12_arm64.deb ...
+Unpacking build-essential (12.12) ...
+Selecting previously unselected package libfakeroot:arm64.
+Preparing to unpack .../53-libfakeroot_1.37.1.1-1_arm64.deb ...
+Unpacking libfakeroot:arm64 (1.37.1.1-1) ...
+Selecting previously unselected package fakeroot.
+Preparing to unpack .../54-fakeroot_1.37.1.1-1_arm64.deb ...
+Unpacking fakeroot (1.37.1.1-1) ...
+Selecting previously unselected package javascript-common.
+Preparing to unpack .../55-javascript-common_12+nmu1_all.deb ...
+Unpacking javascript-common (12+nmu1) ...
+Selecting previously unselected package libalgorithm-diff-perl.
+Preparing to unpack .../56-libalgorithm-diff-perl_1.201-1_all.deb ...
+Unpacking libalgorithm-diff-perl (1.201-1) ...
+Selecting previously unselected package libalgorithm-diff-xs-perl.
+Preparing to unpack .../57-libalgorithm-diff-xs-perl_0.04-9_arm64.deb ...
+Unpacking libalgorithm-diff-xs-perl (0.04-9) ...
+Selecting previously unselected package libalgorithm-merge-perl.
+Preparing to unpack .../58-libalgorithm-merge-perl_0.08-5_all.deb ...
+Unpacking libalgorithm-merge-perl (0.08-5) ...
+Selecting previously unselected package libexpat1-dev:arm64.
+Preparing to unpack .../59-libexpat1-dev_2.7.1-2_arm64.deb ...
+Unpacking libexpat1-dev:arm64 (2.7.1-2) ...
+Selecting previously unselected package libfile-fcntllock-perl.
+Preparing to unpack .../60-libfile-fcntllock-perl_0.22-4+b4_arm64.deb ...
+Unpacking libfile-fcntllock-perl (0.22-4+b4) ...
+Selecting previously unselected package libjs-jquery.
+Preparing to unpack .../61-libjs-jquery_3.6.1+dfsg+~3.5.14-1_all.deb ...
+Unpacking libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Selecting previously unselected package libjs-underscore.
+Preparing to unpack .../62-libjs-underscore_1.13.4~dfsg+~1.11.4-3_all.deb ...
+Unpacking libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Selecting previously unselected package libjs-sphinxdoc.
+Preparing to unpack .../63-libjs-sphinxdoc_8.1.3-5_all.deb ...
+Unpacking libjs-sphinxdoc (8.1.3-5) ...
+Selecting previously unselected package libpython3.13:arm64.
+Preparing to unpack .../64-libpython3.13_3.13.5-2+deb13u2_arm64.deb ...
+Unpacking libpython3.13:arm64 (3.13.5-2+deb13u2) ...
+Selecting previously unselected package zlib1g-dev:arm64.
+Preparing to unpack .../65-zlib1g-dev_1%3a1.3.dfsg+really1.3.1-1+b1_arm64.deb ...
+Unpacking zlib1g-dev:arm64 (1:1.3.dfsg+really1.3.1-1+b1) ...
+Selecting previously unselected package libpython3.13-dev:arm64.
+Preparing to unpack .../66-libpython3.13-dev_3.13.5-2+deb13u2_arm64.deb ...
+Unpacking libpython3.13-dev:arm64 (3.13.5-2+deb13u2) ...
+Selecting previously unselected package libpython3-dev:arm64.
+Preparing to unpack .../67-libpython3-dev_3.13.5-1_arm64.deb ...
+Unpacking libpython3-dev:arm64 (3.13.5-1) ...
+Selecting previously unselected package manpages-dev.
+Preparing to unpack .../68-manpages-dev_6.9.1-1_all.deb ...
+Unpacking manpages-dev (6.9.1-1) ...
+Selecting previously unselected package python3-certifi.
+Preparing to unpack .../69-python3-certifi_2025.1.31+ds-1_all.deb ...
+Unpacking python3-certifi (2025.1.31+ds-1) ...
+Selecting previously unselected package python3-chardet.
+Preparing to unpack .../70-python3-chardet_5.2.0+dfsg-2_all.deb ...
+Unpacking python3-chardet (5.2.0+dfsg-2) ...
+Selecting previously unselected package python3-charset-normalizer.
+Preparing to unpack .../71-python3-charset-normalizer_3.4.2-1_arm64.deb ...
+Unpacking python3-charset-normalizer (3.4.2-1) ...
+Selecting previously unselected package python3.13-dev.
+Preparing to unpack .../72-python3.13-dev_3.13.5-2+deb13u2_arm64.deb ...
+Unpacking python3.13-dev (3.13.5-2+deb13u2) ...
+Selecting previously unselected package python3-dev.
+Preparing to unpack .../73-python3-dev_3.13.5-1_arm64.deb ...
+Unpacking python3-dev (3.13.5-1) ...
+Selecting previously unselected package python3-idna.
+Preparing to unpack .../74-python3-idna_3.10-1_all.deb ...
+Unpacking python3-idna (3.10-1) ...
+Selecting previously unselected package python3-packaging.
+Preparing to unpack .../75-python3-packaging_25.0-1_all.deb ...
+Unpacking python3-packaging (25.0-1) ...
+Selecting previously unselected package python3-wheel.
+Preparing to unpack .../76-python3-wheel_0.46.1-2_all.deb ...
+Unpacking python3-wheel (0.46.1-2) ...
+Selecting previously unselected package python3-pip.
+Preparing to unpack .../77-python3-pip_25.1.1+dfsg-1_all.deb ...
+Unpacking python3-pip (25.1.1+dfsg-1) ...
+Selecting previously unselected package python3-urllib3.
+Preparing to unpack .../78-python3-urllib3_2.3.0-3+deb13u2_all.deb ...
+Unpacking python3-urllib3 (2.3.0-3+deb13u2) ...
+Selecting previously unselected package python3-requests.
+Preparing to unpack .../79-python3-requests_2.32.3+dfsg-5+deb13u1_all.deb ...
+Unpacking python3-requests (2.32.3+dfsg-5+deb13u1) ...
+Selecting previously unselected package sq.
+Preparing to unpack .../80-sq_1.3.1-2+b2_arm64.deb ...
+Unpacking sq (1.3.1-2+b2) ...
+Setting up libpython3.13:arm64 (3.13.5-2+deb13u2) ...
+Setting up javascript-common (12+nmu1) ...
+Setting up libgdbm-compat4t64:arm64 (1.24-2) ...
+Setting up manpages (6.9.1-1) ...
+Setting up python3-charset-normalizer (3.4.2-1) ...
+Setting up binutils-common:arm64 (2.44-3) ...
+Setting up linux-libc-dev (6.12.95-1) ...
+Setting up libctf-nobfd0:arm64 (2.44-3) ...
+Setting up sq (1.3.1-2+b2) ...
+Setting up libgomp1:arm64 (14.2.0-19) ...
+Setting up bzip2 (1.0.8-6) ...
+Setting up libsframe1:arm64 (2.44-3) ...
+Setting up libfakeroot:arm64 (1.37.1.1-1) ...
+Setting up libjansson4:arm64 (2.14-2+b3) ...
+Setting up fakeroot (1.37.1.1-1) ...
+update-alternatives: using /usr/bin/fakeroot-sysv to provide /usr/bin/fakeroot (fakeroot) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/fakeroot.1.gz because associated file /usr/share/man/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/faked.1.gz because associated file /usr/share/man/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/fakeroot.1.gz because associated file /usr/share/man/es/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/es/man1/faked.1.gz because associated file /usr/share/man/es/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/fakeroot.1.gz because associated file /usr/share/man/fr/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/fr/man1/faked.1.gz because associated file /usr/share/man/fr/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/fakeroot.1.gz because associated file /usr/share/man/sv/man1/fakeroot-sysv.1.gz (of link group fakeroot) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/sv/man1/faked.1.gz because associated file /usr/share/man/sv/man1/faked-sysv.1.gz (of link group fakeroot) doesn't exist
+Setting up python3-packaging (25.0-1) ...
+Setting up rpcsvc-proto (1.4.3-1+b1) ...
+Setting up python3-chardet (5.2.0+dfsg-2) ...
+Setting up python3-certifi (2025.1.31+ds-1) ...
+Setting up make (4.4.1-2) ...
+Setting up libmpfr6:arm64 (4.2.2-1) ...
+Setting up xz-utils (5.8.1-1) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzma.1.gz because associated file /usr/share/man/man1/xz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/unlzma.1.gz because associated file /usr/share/man/man1/unxz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcat.1.gz because associated file /usr/share/man/man1/xzcat.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzmore.1.gz because associated file /usr/share/man/man1/xzmore.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzless.1.gz because associated file /usr/share/man/man1/xzless.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzdiff.1.gz because associated file /usr/share/man/man1/xzdiff.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcmp.1.gz because associated file /usr/share/man/man1/xzcmp.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzgrep.1.gz because associated file /usr/share/man/man1/xzgrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzegrep.1.gz because associated file /usr/share/man/man1/xzegrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzfgrep.1.gz because associated file /usr/share/man/man1/xzfgrep.1.gz (of link group lzma) doesn't exist
+Setting up libmpc3:arm64 (1.3.1-1+b3) ...
+Setting up libatomic1:arm64 (14.2.0-19) ...
+Setting up python3-idna (3.10-1) ...
+Setting up patch (2.8-2) ...
+Setting up python3-urllib3 (2.3.0-3+deb13u2) ...
+Setting up libubsan1:arm64 (14.2.0-19) ...
+Setting up perl-modules-5.40 (5.40.1-6) ...
+Setting up libhwasan0:arm64 (14.2.0-19) ...
+Setting up libcrypt-dev:arm64 (1:4.4.38-1) ...
+Setting up libasan8:arm64 (14.2.0-19) ...
+Setting up libtsan2:arm64 (14.2.0-19) ...
+Setting up libjs-jquery (3.6.1+dfsg+~3.5.14-1) ...
+Setting up libbinutils:arm64 (2.44-3) ...
+Setting up libisl23:arm64 (0.27-1) ...
+Setting up libc-dev-bin (2.41-12+deb13u3) ...
+Setting up libcc1-0:arm64 (14.2.0-19) ...
+Setting up liblocale-gettext-perl (1.07-7+b1) ...
+Setting up liblsan0:arm64 (14.2.0-19) ...
+Setting up libitm1:arm64 (14.2.0-19) ...
+Setting up libjs-underscore (1.13.4~dfsg+~1.11.4-3) ...
+Setting up libctf0:arm64 (2.44-3) ...
+Setting up manpages-dev (6.9.1-1) ...
+Setting up binutils-aarch64-linux-gnu (2.44-3) ...
+Setting up python3-wheel (0.46.1-2) ...
+Setting up libperl5.40:arm64 (5.40.1-6) ...
+Setting up perl (5.40.1-6) ...
+Setting up libgprofng0:arm64 (2.44-3) ...
+Setting up python3-requests (2.32.3+dfsg-5+deb13u1) ...
+Setting up python3-pip (25.1.1+dfsg-1) ...
+Setting up libjs-sphinxdoc (8.1.3-5) ...
+Setting up libdpkg-perl (1.22.22) ...
+Setting up cpp-14-aarch64-linux-gnu (14.2.0-19) ...
+Setting up libc6-dev:arm64 (2.41-12+deb13u3) ...
+Setting up libgcc-14-dev:arm64 (14.2.0-19) ...
+Setting up libstdc++-14-dev:arm64 (14.2.0-19) ...
+Setting up libfile-fcntllock-perl (0.22-4+b4) ...
+Setting up libalgorithm-diff-perl (1.201-1) ...
+Setting up binutils (2.44-3) ...
+Setting up dpkg-dev (1.22.22) ...
+Setting up cpp-aarch64-linux-gnu (4:14.2.0-1) ...
+Setting up libexpat1-dev:arm64 (2.7.1-2) ...
+Setting up cpp-14 (14.2.0-19) ...
+Setting up zlib1g-dev:arm64 (1:1.3.dfsg+really1.3.1-1+b1) ...
+Setting up cpp (4:14.2.0-1) ...
+Setting up gcc-14-aarch64-linux-gnu (14.2.0-19) ...
+Setting up libalgorithm-diff-xs-perl (0.04-9) ...
+Setting up libalgorithm-merge-perl (0.08-5) ...
+Setting up gcc-aarch64-linux-gnu (4:14.2.0-1) ...
+Setting up g++-14-aarch64-linux-gnu (14.2.0-19) ...
+Setting up gcc-14 (14.2.0-19) ...
+Setting up libpython3.13-dev:arm64 (3.13.5-2+deb13u2) ...
+Setting up g++-aarch64-linux-gnu (4:14.2.0-1) ...
+Setting up g++-14 (14.2.0-19) ...
+Setting up libpython3-dev:arm64 (3.13.5-1) ...
+Setting up python3.13-dev (3.13.5-2+deb13u2) ...
+Setting up gcc (4:14.2.0-1) ...
+Setting up python3-dev (3.13.5-1) ...
+Setting up g++ (4:14.2.0-1) ...
+update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+Setting up build-essential (12.12) ...
+Processing triggers for libc-bin (2.41-12+deb13u3) ...
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_pubchem.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import json
+[?2004l[?2004h> smiles = 'Nc3nc(OCc1ccccc1)c2nc[nH]c2n3'
+[?2004l[?2004h> try:
+[?2004l[?2004h>     r = requests.get(f'https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/smiles/{smiles}/synonyms/JSON')
+[?2004l[?2004h>     print('PubChem Synonyms:')
+[?2004l[?2004h>     print(json.dumps(r.json(), indent=2))
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print('PubChem error:', e)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_pubchem.py
+[?2004lPubChem Synonyms:
+{
+  "Fault": {
+    "Code": "PUGREST.ServerBusy",
+    "Message": "Too many requests or server too busy"
+  }
+}
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_pdb.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import json
+[?2004l[?2004h> pdb_ids = ['2IB5','4KGE','4Q7T','1KFD','5JZL','6AA7','3ADF','5WJ2','3M22','2H5Q','3MGF','5Y01','2VZX','4CQH','1YZW','2CHA','3KZY','1AK4','5P21','1H6R']
+[?2004l[?2004h> for p in pdb_ids:
+[?2004l[?2004h>     url = f'https://data.rcsb.org/rest/v1/core/entry/{p}'
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         res = requests.get(url)
+[?2004l[?2004h>         if res.status_code == 200:
+[?2004l[?2004h>             data = res.json()
+[?2004l[?2004h>             title = data.get('struct', {}).get('title', '')
+[?2004l[?2004h>             print(f'{p}: {title}')
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             print(f'{p}: HTTP {res.status_code}')
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f'{p}: Error {e}')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_pdb.py
+[?2004l2IB5: Structural characterization of a blue chromoprotein and its yellow mutant from the sea anemone cnidopus japonicus
+4KGE: Crystal structure of near-infrared fluorescent protein with an extended stokes shift, pH 4.5
+4Q7T: Crystal structure of photoswitchable fluorescent protein PSmOrange
+1KFD: CRYSTAL STRUCTURES OF THE KLENOW FRAGMENT OF DNA POLYMERASE I COMPLEXED WITH DEOXYNUCLEOSIDE TRIPHOSPHATE AND PYROPHOSPHATE
+5JZL: The Structure of Monomeric Ultra Stable Green Fluorescent Protein
+6AA7: Fluorescent protein from Acropora digitifera
+3ADF: Crystal structure of a monomeric green fluorescent protein, Azami-Green (mAG)
+5WJ2: Crystal structure of the green fluorescent protein Clover
+3M22: Crystal structure of TagRFP fluorescent protein
+2H5Q: Crystal structure of mCherry
+3MGF: Crystal Structure of Monomeric Kusabira-Orange (MKO), Orange-Emitting GFP-like Protein, at pH 7.5
+5Y01: Acid-tolerant monomeric GFP, Gamillus, non-fluorescence (OFF) state
+2VZX: Structural and spectroscopic characterization of photoconverting fluorescent protein Dendra2
+4CQH: Structure of Infrared Fluorescent Protein IFP2.0
+1YZW: The 2.1A Crystal Structure of the Far-red Fluorescent Protein HcRed: Inherent Conformational Flexibility of the Chromophore
+2CHA: THE STRUCTURE OF CRYSTALLINE ALPHA-CHYMOTRYPSIN, $V.THE ATOMIC STRUCTURE OF TOSYL-ALPHA-CHYMOTRYPSIN AT 2 ANGSTROMS RESOLUTION
+3KZY: Crystal structure of SNAP-tag
+1AK4: HUMAN CYCLOPHILIN A BOUND TO THE AMINO-TERMINAL DOMAIN OF HIV-1 CAPSID
+5P21: REFINED CRYSTAL STRUCTURE OF THE TRIPHOSPHATE CONFORMATION OF H-RAS P21 AT 1.35 ANGSTROMS RESOLUTION: IMPLICATIONS FOR THE MECHANISM OF GTP HYDROLYSIS
+1H6R: The oxidized state of a redox sensitive variant of green fluorescent protein
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_fpbase.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> url = 'https://www.fpbase.org/api/proteins/?format=json'
+[?2004l[?2004h> try:
+[?2004l[?2004h>     r = requests.get(url)
+[?2004l[?2004h>     if r.status_code == 200:
+[?2004l[?2004h>         data = r.json()
+[?2004l[?2004h>         print('Fetched', len(data), 'proteins')
+[?2004l[?2004h>         for fp in data:
+[?2004l[?2004h>             name = fp.get('name')
+[?2004l[?2004h>             ex = fp.get('ex_max')
+[?2004l[?2004h>             em = fp.get('em_max')
+[?2004l[?2004h>             pdbs = fp.get('pdb', [])
+[?2004l[?2004h>             if ex == 505:
+[?2004l[?2004h>                 print('Excitation 505:', name, 'PDBs:', pdbs)
+[?2004l[?2004h>             if em == 610:
+[?2004l[?2004h>                 print('Emission 610:', name, 'PDBs:', pdbs)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         print('FPBase HTTP', r.status_code)
+[?2004l[?2004h> except Exception as e:
+[?2004l[?2004h>     print('FPBase error', e)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_fpbase.py
+[?2004lFetched 1041 proteins
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/inspect_fp.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> url = 'https://www.fpbase.org/api/proteins/?format=json'
+[?2004l[?2004h> r = requests.get(url)
+[?2004l[?2004h> if r.status_code == 200:
+[?2004l[?2004h>     data = r.json()
+[?2004l[?2004h>     print('Sample entry keys:', list(data[0].keys()))
+[?2004l[?2004h>     # Let's search for entries whose PDB contains any in our list
+[?2004l[?2004h>     pdb_list = ['2IB5','4KGE','4Q7T','5JZL','6AA7','3ADF','5WJ2','3M22','2H5Q','3MGF','5Y01','2VZX','4CQH','1YZW','1H6R']
+[?2004l[?2004h>     pdb_set = set(pdb_list)
+[?2004l[?2004h>     for fp in data:
+[?2004l[?2004h>         pdbs = fp.get('pdb', [])
+[?2004l[?2004h>         if not isinstance(pdbs, list):
+[?2004l[?2004h>             pdbs = [pdbs]
+[?2004l[?2004h>         # pdbs might be uppercase/lowercase or contain the string
+[?2004l[?2004h>         matched = []
+[?2004l[?2004h>         for p in pdbs:
+[?2004l[?2004h>             if str(p).upper() in pdb_set:
+[?2004l[?2004h>                 matched.append(p)
+[?2004l[?2004h>         if matched:
+[?2004l[?2004h>             print('Matched FP:', fp.get('name'), 'PDB:', matched, 'ex:', fp.get('ex_max'), 'em:', fp.get('em_max'), 'states:', fp.get('states'))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/inspect_fp.py
+[?2004lSample entry keys: ['uuid', 'name', 'slug', 'seq', 'ipg_id', 'genbank', 'uniprot', 'pdb', 'agg', 'switch_type', 'states', 'transitions', 'doi']
+Matched FP: AdRed PDB: ['6AA7'] ex: None em: None states: [{'slug': 'adred_default', 'name': 'default', 'ex_max': 567, 'em_max': 612, 'ext_coeff': None, 'qy': None, 'pka': 4.0, 'maturation': None, 'lifetime': None, 'brightness': None}]
+Matched FP: avGFP523 PDB: ['1H6R'] ex: None em: None states: [{'slug': 'avgfp523_default', 'name': 'default', 'ex_max': 512, 'em_max': 523, 'ext_coeff': None, 'qy': None, 'pka': 6.05, 'maturation': None, 'lifetime': None, 'brightness': None}]
+Matched FP: cjBlue PDB: ['2IB5'] ex: None em: None states: [{'slug': 'cjblue_default', 'name': 'default', 'ex_max': 610, 'em_max': 620, 'ext_coeff': 66700, 'qy': 0.0001, 'pka': None, 'maturation': None, 'lifetime': None, 'brightness': 0.01}]
+Matched FP: Clover PDB: ['5WJ2'] ex: None em: None states: [{'slug': 'clover_default', 'name': 'default', 'ex_max': 505, 'em_max': 515, 'ext_coeff': 111000, 'qy': 0.76, 'pka': 6.2, 'maturation': 30.0, 'lifetime': 3.2, 'brightness': 84.36}]
+Matched FP: Dendra2 PDB: ['2VZX'] ex: None em: None states: [{'slug': 'dendra2_green', 'name': 'Green', 'ex_max': 490, 'em_max': 507, 'ext_coeff': 45000, 'qy': 0.5, 'pka': 6.6, 'maturation': None, 'lifetime': 3.3, 'brightness': 22.5}, {'slug': 'dendra2_red', 'name': 'Red', 'ex_max': 553, 'em_max': 573, 'ext_coeff': 35000, 'qy': 0.55, 'pka': 6.9, 'maturation': None, 'lifetime': 4.4, 'brightness': 19.25}]
+Matched FP: Gamillus PDB: ['5Y01'] ex: None em: None states: [{'slug': 'gamillus_on', 'name': 'On', 'ex_max': 504, 'em_max': 519, 'ext_coeff': 83000, 'qy': 0.9, 'pka': 3.4, 'maturation': 8.0, 'lifetime': None, 'brightness': 74.7}, {'slug': 'gamillus_off', 'name': 'Off', 'ex_max': None, 'em_max': None, 'ext_coeff': None, 'qy': None, 'pka': None, 'maturation': None, 'lifetime': None, 'brightness': None}]
+Matched FP: HcRed PDB: ['1YZW'] ex: None em: None states: [{'slug': 'hcred_default', 'name': 'default', 'ex_max': 592, 'em_max': 645, 'ext_coeff': 20000, 'qy': 0.015, 'pka': None, 'maturation': None, 'lifetime': None, 'brightness': 0.3}]
+Matched FP: iFP2.0 PDB: ['4CQH'] ex: None em: None states: [{'slug': 'ifp20_default', 'name': 'default', 'ex_max': 690, 'em_max': 711, 'ext_coeff': 86000, 'qy': 0.08, 'pka': None, 'maturation': None, 'lifetime': None, 'brightness': 6.88}]
+Matched FP: mAzamiGreen PDB: ['3ADF'] ex: None em: None states: [{'slug': 'mazamigreen_default', 'name': 'default', 'ex_max': 492, 'em_max': 505, 'ext_coeff': 41800, 'qy': 0.81, 'pka': 6.2, 'maturation': None, 'lifetime': None, 'brightness': 33.86}]
+Matched FP: mCherry PDB: ['2H5Q'] ex: None em: None states: [{'slug': 'mcherry_default', 'name': 'default', 'ex_max': 587, 'em_max': 610, 'ext_coeff': 72000, 'qy': 0.22, 'pka': 4.5, 'maturation': 15.0, 'lifetime': 1.4, 'brightness': 15.84}]
+Matched FP: mKO PDB: ['3MGF'] ex: None em: None states: [{'slug': 'mko_default', 'name': 'default', 'ex_max': 548, 'em_max': 559, 'ext_coeff': 51600, 'qy': 0.6, 'pka': 5.0, 'maturation': None, 'lifetime': 4.1, 'brightness': 30.96}]
+Matched FP: muGFP PDB: ['5JZL'] ex: None em: None states: [{'slug': 'mugfp_default', 'name': 'default', 'ex_max': 490, 'em_max': 508, 'ext_coeff': 117000, 'qy': 0.45, 'pka': None, 'maturation': None, 'lifetime': None, 'brightness': 52.65}]
+Matched FP: PSmOrange PDB: ['4Q7T'] ex: None em: None states: [{'slug': 'psmorange_orange', 'name': 'Orange', 'ex_max': 548, 'em_max': 565, 'ext_coeff': 113300, 'qy': 0.51, 'pka': 6.2, 'maturation': 96.0, 'lifetime': None, 'brightness': 57.78}, {'slug': 'psmorange_far-red', 'name': 'Far-red', 'ex_max': 634, 'em_max': 662, 'ext_coeff': 32700, 'qy': 0.28, 'pka': 5.6, 'maturation': None, 'lifetime': None, 'brightness': 9.16}]
+Matched FP: TagRFP PDB: ['3M22'] ex: None em: None states: [{'slug': 'tagrfp_default', 'name': 'default', 'ex_max': 555, 'em_max': 584, 'ext_coeff': 100000, 'qy': 0.48, 'pka': 3.8, 'maturation': 100.0, 'lifetime': 2.3, 'brightness': 48.0}]
+Matched FP: TagRFP675 PDB: ['4KGE'] ex: None em: None states: [{'slug': 'tagrfp675_default', 'name': 'default', 'ex_max': 598, 'em_max': 675, 'ext_coeff': 46000, 'qy': 0.08, 'pka': 5.7, 'maturation': 25.0, 'lifetime': 0.9, 'brightness': 3.68}]
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/blast_antibody.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import time
+[?2004l[?2004h> with open('/app/data/antibody.fasta', 'r') as f:
+[?2004l[?2004h>     lines = f.read().split('>')[1:]
+[?2004l[?2004h> heavy_seq = ''
+[?2004l[?2004h> light_seq = ''
+[?2004l[?2004h> for part in lines:
+[?2004l[?2004h>     sublines = part.strip().split('\n')
+[?2004l[?2004h>     header = sublines[0]
+[?2004l[?2004h>     seq = ''.join(sublines[1:])
+[?2004l[?2004h>     if 'heavy' in header.lower():
+[?2004l[?2004h>         heavy_seq = seq
+[?2004l[?2004h>     elif 'light' in header.lower():
+[?2004l[?2004h>         light_seq = seq
+[?2004l[?2004h> print('Heavy len:', len(heavy_seq))
+[?2004l[?2004h> print('Light len:', len(light_seq))
+[?2004l[?2004h> def blast_query(seq):
+[?2004l[?2004h>     url = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi'
+[?2004l[?2004h>     params = {'CMD': 'Put', 'DATABASE': 'nr', 'PROGRAM': 'blastp', 'QUERY': seq}
+[?2004l[?2004h>     r = requests.post(url, data=params)
+[?2004l[?2004h>     rid = ''
+[?2004l[?2004h>     for line in r.text.split('\n'):
+[?2004l[?2004h>         if 'RID =' in line:
+[?2004l[?2004h>             rid = line.split('RID =')[1].strip()
+[?2004l[?2004h>             break
+[?2004l[?2004h>     if not rid:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     print('RID:', rid)
+[?2004l[?2004h>     while True:
+[?2004l[?2004h>         r_check = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_OBJECT': 'SearchInfo'})
+[?2004l[?2004h>         if 'Status=WAITING' in r_check.text:
+[?2004l[?2004h>             time.sleep(5)
+[?2004l[?2004h>             continue
+[?2004l[?2004h>         break
+[?2004l[?2004h>     r_res = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_TYPE': 'XML'})
+[?2004l[?2004h>     return r_res.text
+[?2004l[?2004h> xml_res = blast_query(heavy_seq)
+[?2004l[?2004h> if xml_res:
+[?2004l[?2004h>     with open('/app/blast_heavy.xml', 'w') as f:
+[?2004l[?2004h>         f.write(xml_res)
+[?2004l[?2004h>     print('Saved')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/blast_antibody.py
+[?2004lHeavy len: 228
+Light len: 219
+RID: 4W05HNJN014
+ls -l /app/blast_heavy.xml
+ps aux | grep python
+ls -la /app
+^CTraceback (most recent call last):
+  File [35m"/app/blast_antibody.py"[0m, line [35m37[0m, in [35m<module>[0m
+    xml_res = blast_query(heavy_seq)
+  File [35m"/app/blast_antibody.py"[0m, line [35m32[0m, in [35mblast_query[0m
+    [31mtime.sleep[0m[1;31m(5)[0m
+    [31m~~~~~~~~~~[0m[1;31m^^^[0m
+[1;35mKeyboardInterrupt[0m
+
+[?2004hroot@00292a553e1a:/app# ls -l /app
+[?2004ltotal 24
+-rw-r--r-- 1 root root 1319 Jul  8 07:48 blast_antibody.py
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 data
+-rw-r--r-- 1 root root  879 Jul  8 07:47 inspect_fp.py
+-rw-r--r-- 1 root root  648 Jul  8 07:47 test_fpbase.py
+-rw-r--r-- 1 root root  581 Jul  8 07:47 test_pdb.py
+-rw-r--r-- 1 root root  307 Jul  8 07:46 test_pubchem.py
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_blast.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import xml.etree.ElementTree as ET
+[?2004l[?2004h> rid = '4W05HNJN014'
+[?2004l[?2004h> url = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi'
+[?2004l[?2004h> print('Checking status of', rid)
+[?2004l[?2004h> r = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_OBJECT': 'SearchInfo'})
+[?2004l[?2004h> print(r.text)
+[?2004l[?2004h> if 'Status=READY' in r.text:
+[?2004l[?2004h>     print('Ready! Fetching XML...')
+[?2004l[?2004h>     r_res = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_TYPE': 'XML'})
+[?2004l[?2004h>     with open('/app/blast_heavy.xml', 'w') as f:
+[?2004l[?2004h>         f.write(r_res.text)
+[?2004l[?2004h>     print('Saved /app/blast_heavy.xml')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_blast.py
+[?2004lChecking status of 4W05HNJN014
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="jig" content="ncbitoggler"/>
+<meta name="ncbitoggler" content="animation:'none'"/>
+<title>NCBI Blast:</title>
+<script type="text/javascript" src="/core/jig/1.15.2/js/jig.min.js             "></script>
+<script type="text/javascript">    jQuery.getScript("/core/alerts/alerts.js", function() {
+        galert(['div#header', 'body > *:nth-child(1)'])
+    });</script>
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="stylesheet" type="text/css" href="css/uswds.min.css" media="screen" />
+<link rel="stylesheet"  type="text/css" href="https://www.ncbi.nlm.nih.gov/style-guide/static/nwds/css/nwds.css"/>
+
+<link rel="stylesheet" href="css/headerNew.css?v=1"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" crossorigin="anonymous"> <!-- Font Awesome icons -->
+<link rel="stylesheet" type="text/css" href="css/footerNew.css?v=1" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/blastRes.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="css/ie6_or_less.css" />
+<![endif]-->
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/results.js"></script>
+</head>
+
+<body id="type-a" class="noToggleCheck" >
+<div id="wrap">
+		<script>var useOfficialGovtHeader = true;</script>
+<section class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner-header">
+      <div class="usa-grid usa-banner-inner">
+        <img src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/favicons/favicon-57.png" alt="U.S. flag">
+        <p>An official website of the United States government</p>
+        <button class="usa-accordion-button usa-banner-button" aria-expanded="false" aria-controls="gov-banner-top">
+          <span class="usa-banner-button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner-content usa-grid usa-accordion-content" id="gov-banner-top" aria-hidden="true">
+      <div class="usa-banner-guidance-gov usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-dot-gov.svg" alt="Dot gov">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The .gov means itâs official.</strong>
+            <br>
+            Federal government websites often end in .gov or .mil. Before
+            sharing sensitive information, make sure youâre on a federal
+            government site.
+          </p>
+        </div>
+      </div>
+      <div class="usa-banner-guidance-ssl usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-https.svg" alt="Https">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The site is secure.</strong>
+            <br>
+            The <strong>https://</strong> ensures that you are connecting to the
+            official website and that any information you provide is encrypted
+            and transmitted securely.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<header class="ncbi-header" role="banner" data-section="Header">
+<a class="usa-skipnav" href="#mainCont">Skip to main page content</a>
+<div class="usa-grid">
+    <div class="usa-width-one-whole">
+        <div class="ncbi-header__logo">
+                <a href="https://www.ncbi.nlm.nih.gov/" class="logo" aria-label="NCBI Logo" data-ga-action="click_image" data-ga-label="NIH NLM Logo">
+                  <img src="https://www.ncbi.nlm.nih.gov/coreutils/nwds/img/logos/AgencyLogo.svg" alt="NIH NLM Logo">
+                </a>
+            </div>
+
+        <div class="ncbi-header__account">
+            <a id="account_login" href="https://www.ncbi.nlm.nih.gov/account/?back_url=https%3A%2F%2Fblast%2Encbi%2Enlm%2Enih%2Egov%2FBlast%2Ecgi%3FCMD%3DGet%26FORMAT%5FOBJECT%3DSearchInfo%26RID%3D4W05HNJN014" class="usa-button header-button">Log in</a>
+            <button id="account_info" class="header-button" aria-controls="account_popup">
+                <span class="fa fa-user" aria-hidden="true"></span>
+                <span class="username desktop-only" aria-hidden="true" id="uname_short"></span>
+                <span class="sr-only">Show account info</span>
+            </button>
+        </div>
+
+        <div class="ncbi-popup-anchor">
+            <div class="ncbi-popup account-popup" id="account_popup" aria-hidden="true" role="dialog" aria-labelledby="account-popup-header">
+                <div class="ncbi-popup-head">
+                    <button class="ncbi-close-button"><span class="fa fa-window-close"></span><span class="usa-sr-only">Close</span></button>
+                    <h4>Account</h4>
+                </div>
+                <div class="account-user-info">
+                    Logged in as:<br>
+                    <b><span class="username" id="uname_long">username</span></b>
+                </div>
+                <div class="account-links">
+                    <ul class="usa-unstyled-list">
+                        <li><a id="account_myncbi" href="https://www.ncbi.nlm.nih.gov/myncbi/">Dashboard</a> <span class="ncbi-text-small-light">(My NCBI)</span></li>
+                        <li><a id="account_pubs" href="https://www.ncbi.nlm.nih.gov/myncbi/collections/bibliography/">Publications</a> <span class="ncbi-text-small-light">(My Bibliography)</span></li>
+                        <li><a id="account_settings" href="https://www.ncbi.nlm.nih.gov/account/settings/">Account settings</a></li>
+                        <li><a id="account_logout" href="https://www.ncbi.nlm.nih.gov/account/signout/?back_url=https%3A%2F%2Fblast%2Encbi%2Enlm%2Enih%2Egov%2FBlast%2Ecgi%3FCMD%3DGet%26FORMAT%5FOBJECT%3DSearchInfo%26RID%3D4W05HNJN014">Log out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</header>
+<div role="navigation" aria-label="access keys">
+<a id="nws_header_accesskey_0" href="https://www.ncbi.nlm.nih.gov/guide/browsers/#ncbi_accesskeys" class="usa-sr-only" accesskey="0" tabindex="-1">Access keys</a>
+<a id="nws_header_accesskey_1" href="https://www.ncbi.nlm.nih.gov" class="usa-sr-only" accesskey="1" tabindex="-1">NCBI Homepage</a>
+<a id="nws_header_accesskey_2" href="/myncbi/" class="set-base-url usa-sr-only" accesskey="2" tabindex="-1">MyNCBI Homepage</a>
+<a id="nws_header_accesskey_3" href="#maincontent" class="usa-sr-only" accesskey="3" tabindex="-1">Main Content</a>
+<a id="nws_header_accesskey_4" href="#" class="usa-sr-only" accesskey="4" tabindex="-1">Main Navigation</a>
+</div>
+<nav class="ncbi-topnav" id="navcontent">
+    <div class="usa-grid">
+        <a class="ncbi-topnav-root" href="Blast.cgi">BLAST <sup>&reg;</sup></a> <span id="brc"><span class="brcrmbsign">&raquo;</span> <a href="Blast.cgi?PAGE=Nucleotides&amp;PROGRAM=blastn&amp;PAGE_TYPE=BlastSearch&amp;BLAST_SPEC=">blastn suite</a> <span class="brcrmbsign">&raquo;</span> RID-4W05HNJN014</span>
+        <ul class="rf ncbi-topnav-list" id="topnav-list">
+            <li class="first "><a href="Blast.cgi?CMD=Web&amp;PAGE_TYPE=BlastHome" title="BLAST Home">Home</a></li>
+            <li class="recent "><a href="Blast.cgi?CMD=GetSaved&amp;RECENT_RESULTS=on" title="Unexpired BLAST jobs">Recent Results</a></li>
+            <li class="saved "><a href="Blast.cgi?CMD=GetSaved" title="Saved sets of BLAST search parameters">Saved Strategies</a></li>
+            <li  class= "last documentation "> <a href="../doc/blast-help/" title="BLAST documentation">Help</a></li>                
+        </ul>
+    </div>
+</nav>
+
+
+
+
+        <div id="content-wrap">
+
+                <div class="pageTitle">                            
+                   Format Request Status                   
+                </div>
+		<div class="inlineDiv resHeader">				   
+				   <a  id="frmPage"  class="WAITING" href="#" submitForm="reformat">[Formatting options] </a>                   
+                </div>
+                <h2 id="jtitle" >Job Title: </h2>
+								
+                <div id="content">                
+                <!--<ul id="msg" class="msg"><li class=""><p class=""></p><p class=""></p><p class=""></p></ul> -->
+                <ul id="msg" class="msg"><li class=""></li></ul>
+                <p><!--
+                QBlastInfoBegin
+	                Status=WAITING
+                QBlastInfoEnd
+                --></p> 
+                               
+                <SCRIPT LANGUAGE="JavaScript"><!--
+                    var tm = "3000";
+                    if (tm != "") {                    
+                        setTimeout('document.forms[0].submit();',tm);
+                    }
+                //--></SCRIPT>                                
+                <table id="statInfo" class="WAITING">
+                <tr><td>Request ID</td><td> <b>4W05HNJN014</b></td></tr>
+                <tr class="odd"><td>Status</td><td>Searching</td></tr>
+                <tr><td>Submitted at</td><td>Wed Jul  8 03:48:01 2026</td></tr>
+                <tr class="odd"><td>Current time</td><td>Wed Jul 08 03:48:50 2026</td></tr>
+                <tr><td>Time since submission</td><td>00:00:49</td></tr>
+                </table>
+                <p class="WAITING">This page will be automatically updated in <b>3</b> seconds</p>       
+                <form action="Blast.cgi" enctype="application/x-www-form-urlencoded" method="POST" id="results">
+                <input name="FORMAT_OBJECT" type="hidden" value="SearchInfo"><input name="RID" type="hidden" value="4W05HNJN014"><input name="SEARCH_DB_STATUS" type="hidden" value="31"><input name="USER_TYPE" type="hidden" value="2"><input name="_PGR" type="hidden" value="0">                
+                <input name="_PGR" type="hidden" value="0" >
+                <input name="CMD" type="hidden" value="Get">
+               
+                </form>
+                                
+				</div><!-- /#content -->
+				<form action="Blast.cgi" enctype="application/x-www-form-urlencoded"  method="post" name="reformat" id="reformat">				
+				   <input name="QUERY_INFO" type="hidden" value="" />    				
+				   <input name="ENTREZ_QUERY" type="hidden" value="" />
+                   <input name="CDD_RID" type="hidden" value="" />
+                   <input name="CDD_SEARCH_STATE" type="hidden" value="" />
+                   <input name="RID" type="hidden" value="4W05HNJN014" />
+				   <input name="STEP_NUMBER" type="hidden" value="" />
+				   <input name="CMD" type="hidden" value="Web"/>				
+				   <input NAME="PAGE_TYPE" type="hidden"  value="BlastFormatting"/>
+				
+				   <!-- TO DO: test all of those changes -->				   	
+				   <!-- Psi blast params  PSI_BLAST_PARAMS - commented- using forms[0] from fromatter> -->
+				   <!-- Current Formatting options FORMATTING_OPTIONS- commented- using forms[0] from fromatter> -->
+				   <!-- Current Search options CURR_SAVED_OPTIONS - commented- using forms[0] from fromatter> -->
+                 </form>				
+        </div><!-- /#content-wrap -->
+
+         <footer>
+      <section class="icon-section">
+        <div id="icon-section-header" class="icon-section_header">Follow NCBI</div>
+        <div class="grid-container container">
+          <div class="icon-section_container">
+            <a class="footer-icon" id="footer_twitter" href="https://twitter.com/ncbi" aria-label="Twitter"><svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <defs>
+                  <style>
+                    .cls-11 {
+                      fill: #737373;
+                    }
+                  </style>
+                </defs>
+                <title>Twitter</title>
+                <path class="cls-11" d="M250.11,105.48c-7,3.14-13,3.25-19.27.14,8.12-4.86,8.49-8.27,11.43-17.46a78.8,78.8,0,0,1-25,9.55,39.35,39.35,0,0,0-67,35.85,111.6,111.6,0,0,1-81-41.08A39.37,39.37,0,0,0,81.47,145a39.08,39.08,0,0,1-17.8-4.92c0,.17,0,.33,0,.5a39.32,39.32,0,0,0,31.53,38.54,39.26,39.26,0,0,1-17.75.68,39.37,39.37,0,0,0,36.72,27.3A79.07,79.07,0,0,1,56,223.34,111.31,111.31,0,0,0,116.22,241c72.3,0,111.83-59.9,111.83-111.84,0-1.71,0-3.4-.1-5.09C235.62,118.54,244.84,113.37,250.11,105.48Z">
+                </path>
+              </svg></a>
+            <a class="footer-icon" id="footer_facebook" href="https://www.facebook.com/ncbi.nlm" aria-label="Facebook"><svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <title>Facebook</title>
+                <path class="cls-11" d="M210.5,115.12H171.74V97.82c0-8.14,5.39-10,9.19-10h27.14V52l-39.32-.12c-35.66,0-42.42,26.68-42.42,43.77v19.48H99.09v36.32h27.24v109h45.41v-109h35Z">
+                </path>
+              </svg></a>
+            <a class="footer-icon" id="footer_linkedin" href="https://www.linkedin.com/company/ncbinlm" aria-label="LinkedIn"><svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <title>LinkedIn</title>
+                <path class="cls-11" d="M101.64,243.37H57.79v-114h43.85Zm-22-131.54h-.26c-13.25,0-21.82-10.36-21.82-21.76,0-11.65,8.84-21.15,22.33-21.15S101.7,78.72,102,90.38C102,101.77,93.4,111.83,79.63,111.83Zm100.93,52.61A17.54,17.54,0,0,0,163,182v61.39H119.18s.51-105.23,0-114H163v13a54.33,54.33,0,0,1,34.54-12.66c26,0,44.39,18.8,44.39,55.29v58.35H198.1V182A17.54,17.54,0,0,0,180.56,164.44Z">
+                </path>
+              </svg></a>
+            <a class="footer-icon" id="footer_github" href="https://github.com/ncbi" aria-label="GitHub"><svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+                <defs>
+                  <style>
+                    .cls-11,
+                    .cls-12 {
+                      fill: #737373;
+                    }
+
+                    .cls-11 {
+                      fill-rule: evenodd;
+                    }
+                  </style>
+                </defs>
+                <title>GitHub</title>
+                <path class="cls-11" d="M151.36,47.28a105.76,105.76,0,0,0-33.43,206.1c5.28,1,7.22-2.3,7.22-5.09,0-2.52-.09-10.85-.14-19.69-29.42,6.4-35.63-12.48-35.63-12.48-4.81-12.22-11.74-15.47-11.74-15.47-9.59-6.56.73-6.43.73-6.43,10.61.75,16.21,10.9,16.21,10.9,9.43,16.17,24.73,11.49,30.77,8.79,1-6.83,3.69-11.5,6.71-14.14C108.57,197.1,83.88,188,83.88,147.51a40.92,40.92,0,0,1,10.9-28.39c-1.1-2.66-4.72-13.42,1-28,0,0,8.88-2.84,29.09,10.84a100.26,100.26,0,0,1,53,0C198,88.3,206.9,91.14,206.9,91.14c5.76,14.56,2.14,25.32,1,28a40.87,40.87,0,0,1,10.89,28.39c0,40.62-24.74,49.56-48.29,52.18,3.79,3.28,7.17,9.71,7.17,19.58,0,14.15-.12,25.54-.12,29,0,2.82,1.9,6.11,7.26,5.07A105.76,105.76,0,0,0,151.36,47.28Z">
+                </path>
+                <path class="cls-12" d="M85.66,199.12c-.23.52-1.06.68-1.81.32s-1.2-1.06-.95-1.59,1.06-.69,1.82-.33,1.21,1.07.94,1.6Zm-1.3-1">
+                </path>
+                <path class="cls-12" d="M90,203.89c-.51.47-1.49.25-2.16-.49a1.61,1.61,0,0,1-.31-2.19c.52-.47,1.47-.25,2.17.49s.82,1.72.3,2.19Zm-1-1.08">
+                </path>
+                <path class="cls-12" d="M94.12,210c-.65.46-1.71,0-2.37-.91s-.64-2.07,0-2.52,1.7,0,2.36.89.65,2.08,0,2.54Zm0,0"></path>
+                <path class="cls-12" d="M99.83,215.87c-.58.64-1.82.47-2.72-.41s-1.18-2.06-.6-2.7,1.83-.46,2.74.41,1.2,2.07.58,2.7Zm0,0">
+                </path>
+                <path class="cls-12" d="M107.71,219.29c-.26.82-1.45,1.2-2.64.85s-2-1.34-1.74-2.17,1.44-1.23,2.65-.85,2,1.32,1.73,2.17Zm0,0">
+                </path>
+                <path class="cls-12" d="M116.36,219.92c0,.87-1,1.59-2.24,1.61s-2.29-.68-2.3-1.54,1-1.59,2.26-1.61,2.28.67,2.28,1.54Zm0,0">
+                </path>
+                <path class="cls-12" d="M124.42,218.55c.15.85-.73,1.72-2,1.95s-2.37-.3-2.52-1.14.73-1.75,2-2,2.37.29,2.53,1.16Zm0,0"></path>
+              </svg></a>
+            <a class="footer-icon" id="footer_blog" href="https://ncbiinsights.ncbi.nlm.nih.gov/" aria-label="Blog">
+              <svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><style>.cls-1{fill:#737373;}</style></defs><path class="cls-1" d="M14,30a4,4,0,1,1-4-4,4,4,0,0,1,4,4Zm11,3A19,19,0,0,0,7.05,15a1,1,0,0,0-1,1v3a1,1,0,0,0,.93,1A14,14,0,0,1,20,33.07,1,1,0,0,0,21,34h3a1,1,0,0,0,1-1Zm9,0A28,28,0,0,0,7,6,1,1,0,0,0,6,7v3a1,1,0,0,0,1,1A23,23,0,0,1,29,33a1,1,0,0,0,1,1h3A1,1,0,0,0,34,33Z"></path></svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="container-fluid bg-primary">
+        <div class="container pt-5">
+          <div class="row mt-3">
+            <div class="col-lg-3 col-12">
+              <p><a class="text-white" href="https://www.nlm.nih.gov/socialmedia/index.html">Connect with NLM</a></p>
+              <ul class="list-inline social_media">
+                <li class="list-inline-item"><a href="https://twitter.com/NLM_NIH" aria-label="Twitter" target="_blank" rel="noopener noreferrer"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 249 249" style="enable-background:new 0 0 249 249;" xml:space="preserve">
+                      <style type="text/css">
+                        .st20 {
+                          fill: #FFFFFF;
+                        }
+
+                        .st30 {
+                          fill: none;
+                          stroke: #FFFFFF;
+                          stroke-width: 8;
+                          stroke-miterlimit: 10;
+                        }
+                      </style>
+                      <title>SM-Twitter</title>
+                      <g>
+                        <g>
+                          <g>
+                            <path class="st20" d="M192.9,88.1c-5,2.2-9.2,2.3-13.6,0.1c5.7-3.4,6-5.8,8.1-12.3c-5.4,3.2-11.4,5.5-17.6,6.7
+                                                c-10.5-11.2-28.1-11.7-39.2-1.2c-7.2,6.8-10.2,16.9-8,26.5c-22.3-1.1-43.1-11.7-57.2-29C58,91.6,61.8,107.9,74,116
+                                                c-4.4-0.1-8.7-1.3-12.6-3.4c0,0.1,0,0.2,0,0.4c0,13.2,9.3,24.6,22.3,27.2c-4.1,1.1-8.4,1.3-12.5,0.5c3.6,11.3,14,19,25.9,19.3
+                                                c-11.6,9.1-26.4,13.2-41.1,11.5c12.7,8.1,27.4,12.5,42.5,12.5c51,0,78.9-42.2,78.9-78.9c0-1.2,0-2.4-0.1-3.6
+                                                C182.7,97.4,189.2,93.7,192.9,88.1z"></path>
+                          </g>
+                        </g>
+                        <circle class="st30" cx="124.4" cy="128.8" r="108.2"></circle>
+                      </g>
+                    </svg></a></li>
+                <li class="list-inline-item"><a href="https://www.facebook.com/nationallibraryofmedicine" aria-label="Facebook" rel="noopener noreferrer" target="_blank">
+                    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 249 249" style="enable-background:new 0 0 249 249;" xml:space="preserve">
+                      <style type="text/css">
+                        .st10 {
+                          fill: #FFFFFF;
+                        }
+
+                        .st110 {
+                          fill: none;
+                          stroke: #FFFFFF;
+                          stroke-width: 8;
+                          stroke-miterlimit: 10;
+                        }
+                      </style>
+                      <title>SM-Facebook</title>
+                      <g>
+                        <g>
+                          <path class="st10" d="M159,99.1h-24V88.4c0-5,3.3-6.2,5.7-6.2h16.8V60l-24.4-0.1c-22.1,0-26.2,16.5-26.2,27.1v12.1H90v22.5h16.9
+                                                      v67.5H135v-67.5h21.7L159,99.1z"></path>
+                        </g>
+                      </g>
+                      <circle class="st110" cx="123.6" cy="123.2" r="108.2"></circle>
+                    </svg>
+                  </a></li>
+                <li class="list-inline-item"><a href="https://www.youtube.com/user/NLMNIH" aria-label="Youtube" target="_blank" rel="noopener noreferrer"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 249 249" style="enable-background:new 0 0 249 249;" xml:space="preserve">
+                      <title>SM-Youtube</title>
+                      <style type="text/css">
+                        .st4 {
+                          fill: none;
+                          stroke: #FFFFFF;
+                          stroke-width: 8;
+                          stroke-miterlimit: 10;
+                        }
+
+                        .st5 {
+                          fill: #FFFFFF;
+                        }
+                      </style>
+                      <circle class="st4" cx="124.2" cy="123.4" r="108.2"></circle>
+                      <g transform="translate(0,-952.36218)">
+                        <path class="st5" d="M88.4,1037.4c-10.4,0-18.7,8.3-18.7,18.7v40.1c0,10.4,8.3,18.7,18.7,18.7h72.1c10.4,0,18.7-8.3,18.7-18.7
+                                            v-40.1c0-10.4-8.3-18.7-18.7-18.7H88.4z M115.2,1058.8l29.4,17.4l-29.4,17.4V1058.8z"></path>
+                      </g>
+                    </svg></a></li>
+              </ul>
+            </div>
+            <div class="col-lg-3 col-12">
+              <p class="address_footer text-white">National Library of Medicine<br>
+                <a href="https://www.google.com/maps/place/8600+Rockville+Pike,+Bethesda,+MD+20894/@38.9959508,-77.101021,17z/data=!3m1!4b1!4m5!3m4!1s0x89b7c95e25765ddb:0x19156f88b27635b8!8m2!3d38.9959508!4d-77.0988323" class="text-white" target="_blank" rel="noopener noreferrer">8600 Rockville Pike<br>
+                  Bethesda, MD 20894</a></p>
+            </div>
+            <div class="col-lg-3 col-12 centered-lg">
+              <p><a href="https://www.nlm.nih.gov/web_policies.html" class="text-white">Web Policies</a><br>
+                <a href="https://www.nih.gov/institutes-nih/nih-office-director/office-communications-public-liaison/freedom-information-act-office" class="text-white">FOIA</a><br>
+                <a href="https://www.hhs.gov/vulnerability-disclosure-policy/index.html" class="text-white" id="vdp">HHS Vulnerability Disclosure</a></p>
+            </div>
+            <div class="col-lg-3 col-12 centered-lg">
+              <p><a class="supportLink text-white" href="https://support.nlm.nih.gov/">Help</a><br>
+                <a href="https://www.nlm.nih.gov/accessibility.html" class="text-white">Accessibility</a><br>
+                <a href="https://www.nlm.nih.gov/careers/careers.html" class="text-white">Careers</a></p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 centered-lg">
+              <nav class="bottom-links">
+                <ul class="mt-3">
+                  <li>
+                    <a class="text-white" href="//www.nlm.nih.gov/">NLM</a>
+                  </li>
+                  <li>
+                    <a class="text-white" href="https://www.nih.gov/">NIH</a>
+                  </li>
+                  <li>
+                    <a class="text-white" href="https://www.hhs.gov/">HHS</a>
+                  </li>
+                  <li>
+                    <a class="text-white" href="https://www.usa.gov/">USA.gov</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </section>
+    </footer>
+<script type="text/javascript" src="js/nwds.js"></script>
+<script type="text/javascript" src="js/ncbipopup.js"></script>
+<script type="text/javascript" src="js/remote_data_provider.js?v=2"></script>
+<script type="text/javascript" src="js/headerNew.js?v=2"></script>
+<script src="js/uswds.min.js"></script>
+        <script type="text/javascript" src="/portal/portal3rc.fcgi/rlib/js/InstrumentOmnitureBaseJS/InstrumentNCBIBaseJS/InstrumentPageStarterJS.js"></script>
+<!--
+<script type="text/javascript" src="://www.ncbi.nlm.nih.gov/portal/portal3rc.fcgi/supportedbrowsers/js/nonportalbc_min.js"></script>
+<script type="text/javascript">$("#browsers_ajax").browserCheck();</script>
+-->
+   </div><!--/#wrap-->
+</body>
+
+</html>
+
+
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_blast_text.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> rid = '4W05HNJN014'
+[?2004l[?2004h> url = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi'
+[?2004l[?2004h> r = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_TYPE': 'Text'})
+[?2004l[?2004h> with open('/app/blast_res.txt', 'w') as f:
+[?2004l[?2004h>     f.write(r.text)
+[?2004l[?2004h> lines = r.text.split('\n')
+[?2004l[?2004h> for l in lines[:50]:
+[?2004l[?2004h>     print(l)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_blast_text.py
+[?2004l<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="jig" content="ncbitoggler"/>
+<meta name="ncbitoggler" content="animation:'none'"/>
+<title>NCBI Blast:</title>
+<script type="text/javascript" src="/core/jig/1.15.2/js/jig.min.js             "></script>
+<script type="text/javascript">    jQuery.getScript("/core/alerts/alerts.js", function() {
+        galert(['div#header', 'body > *:nth-child(1)'])
+    });</script>
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="stylesheet" type="text/css" href="css/uswds.min.css" media="screen" />
+<link rel="stylesheet"  type="text/css" href="https://www.ncbi.nlm.nih.gov/style-guide/static/nwds/css/nwds.css"/>
+
+<link rel="stylesheet" href="css/headerNew.css?v=1"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" crossorigin="anonymous"> <!-- Font Awesome icons -->
+<link rel="stylesheet" type="text/css" href="css/footerNew.css?v=1" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/blastRes.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="css/ie6_or_less.css" />
+<![endif]-->
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/results.js"></script>
+</head>
+
+<body id="type-a" class="noToggleCheck" >
+<div id="wrap">
+		<script>var useOfficialGovtHeader = true;</script>
+<section class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner-header">
+      <div class="usa-grid usa-banner-inner">
+        <img src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/favicons/favicon-57.png" alt="U.S. flag">
+        <p>An official website of the United States government</p>
+        <button class="usa-accordion-button usa-banner-button" aria-expanded="false" aria-controls="gov-banner-top">
+          <span class="usa-banner-button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner-content usa-grid usa-accordion-content" id="gov-banner-top" aria-hidden="true">
+      <div class="usa-banner-guidance-gov usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-dot-gov.svg" alt="Dot gov">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The .gov means itâs official.</strong>
+            <br>
+            Federal government websites often end in .gov or .mil. Before
+[?2004hroot@00292a553e1a:/app# python3 -c "with open('/app/blast_res.txt') as f: t = f.read(); print('Status:', 'Status=' in t, 'READY' in t, 'WAITING' in t)"
+[?2004lStatus: True False True
+[?2004hroot@00292a553e1a:/app# sleep 20 && python3 /app/get_blast_text.py
+[?2004lpython3 -c "with open('/app/blast_res.txt') as f: t = f.read(); print('Status:', 'READY' in t, 'WAITING' in t)"
+<p><!--
+QBlastInfoBegin
+	Status=READY
+QBlastInfoEnd
+--><p>
+<PRE>
+
+BLASTP 2.17.0+
+Reference: Stephen F. Altschul, Thomas L. Madden, Alejandro
+A. Schaffer, Jinghui Zhang, Zheng Zhang, Webb Miller, and
+David J. Lipman (1997), "Gapped BLAST and PSI-BLAST: a new
+generation of protein database search programs", Nucleic
+Acids Res. 25:3389-3402.
+
+
+Reference for compositional score matrix adjustment: Stephen
+F. Altschul, John C. Wootton, E. Michael Gertz, Richa
+Agarwala, Aleksandr Morgulis, Alejandro A. Schaffer, and
+Yi-Kuo Yu (2005) "Protein database searches using
+compositionally adjusted substitution matrices", FEBS J.
+272:5101-5109.
+
+
+RID: 4W05HNJN014
+
+
+Database: All non-redundant GenBank CDS
+translations+PDB+SwissProt+PIR+PRF excluding environmental samples
+from WGS projects
+           1,120,323,714 sequences; 422,831,240,217 total letters
+Query= 
+Length=228
+
+
+                                                                   Score     E      Max
+Sequences producing significant alignments:                       (Bits)  Value   Ident
+
+8RMO_H Chain H, anti-FLAG M2 heavy chain [Mus musculus]            466     2e-165  100%      
+7BG1_H Chain H, anti-FLAG M2 heavy chain [Mus musculus]            441     1e-155  100%      
+1E6J_H Chain H, IMMUNOGLOBULIN [Mus musculus]                      377     4e-130  89%       
+8DCN_A Chain A, BINTOXB/9 Fab heavy chain [Mus musculus]           376     1e-129  89%       
+7W71_H Chain H, Heavy chain of Fab [Mus musculus]                  374     6e-129  89%       
+ABR32159.1 anti-cucumber mosaic virus immunoglobulin heavy cha...  367     2e-126  88%       
+2I9L_B Chain B, Antibody 7D11 heavy chain [Mus musculus]           367     2e-126  87%       
+5VGA_B Chain B, Fab 36-65 heavy chain [Mus musculus]               367     3e-126  85%       
+2A6D_B Chain B, Germline antibody 36-65 Fab Heavy chain [Mus m...  363     1e-124  84%       
+WIW78152.1 anti-panfilovirus glycoprotein specific immunoglobu...  369     1e-123  88%       
+1YUH_B Chain B, 88C6/12 FAB (HEAVY CHAIN) [Mus musculus]           360     2e-123  80%       
+AAS77396.1 anti-GD3 monoclonal antibody 3D2 immunoglobulin hea...  368     2e-123  86%       
+9S8W_H Chain H, A54 Fab heavy chain [Mus musculus]                 360     2e-123  84%       
+[?2004hroot@00292a553e1a:/app# python3 -c "with open('/app/blast_res.txt') as f: t = f.read(); print('Status:', 'READY' in t, 'WAITING' in t)"
+[?2004lStatus: True False
+[?2004hroot@00292a553e1a:/app# ^C[?2004l[?2004h[?2004l
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_light_blast.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import time
+[?2004l[?2004h> with open('/app/data/antibody.fasta', 'r') as f:
+[?2004l[?2004h>     lines = f.read().split('>')
+[?2004l[?2004h> light_seq = ''
+[?2004l[?2004h> for part in lines:
+[?2004l[?2004h>     if not part.strip(): continue
+[?2004l[?2004h>     sublines = part.strip().split('\n')
+[?2004l[?2004h>     header = sublines[0]
+[?2004l[?2004h>     seq = ''.join(sublines[1:])
+[?2004l[?2004h>     if 'light' in header.lower():
+[?2004l[?2004h>         light_seq = seq
+[?2004l[?2004h>         break
+[?2004l[?2004h> print('Light seq:', light_seq[:30])
+[?2004l[?2004h> url = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi'
+[?2004l[?2004h> params = {'CMD': 'Put', 'DATABASE': 'nr', 'PROGRAM': 'blastp', 'QUERY': light_seq}
+[?2004l[?2004h> r = requests.post(url, data=params)
+[?2004l[?2004h> rid = ''
+[?2004l[?2004h> for line in r.text.split('\n'):
+[?2004l[?2004h>     if 'RID =' in line:
+[?2004l[?2004h>         rid = line.split('RID =')[1].strip()
+[?2004l[?2004h>         break
+[?2004l[?2004h> print('RID:', rid)
+[?2004l[?2004h> while True:
+[?2004l[?2004h>     r_check = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_OBJECT': 'SearchInfo'})
+[?2004l[?2004h>     if 'Status=WAITING' in r_check.text:
+[?2004l[?2004h>         time.sleep(5)
+[?2004l[?2004h>         continue
+[?2004l[?2004h>     break
+[?2004l[?2004h> r_res = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_TYPE': 'Text'})
+[?2004l[?2004h> with open('/app/blast_light_res.txt', 'w') as f:
+[?2004l[?2004h>     f.write(r_res.text)
+[?2004l[?2004h> lines = r_res.text.split('\n')
+[?2004l[?2004h> for l in lines[:50]:
+[?2004l[?2004h>     print(l)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_light_blast.py
+[?2004lLight seq: DVLMTQIPLSLPVSLGDQASISCRSSQSIV
+RID: 4W098S7E014
+python3 -c "with open('/app/blast_light_res.txt') as f: lines = f.readlines(); [print(l.strip()) for l in lines[:50]]"
+^CTraceback (most recent call last):
+  File [35m"/app/get_light_blast.py"[0m, line [35m27[0m, in [35m<module>[0m
+    [31mtime.sleep[0m[1;31m(5)[0m
+    [31m~~~~~~~~~~[0m[1;31m^^^[0m
+[1;35mKeyboardInterrupt[0m
+
+[?2004hroot@00292a553e1a:/app# python3 -c "with open('/app/blast_light_res.txt') as f: lines = f.readlines(); [print(l.strip()) for l in lines[:50]]"
+[?2004lTraceback (most recent call last):
+  File [35m"<string>"[0m, line [35m1[0m, in [35m<module>[0m
+    with [31mopen[0m[1;31m('/app/blast_light_res.txt')[0m as f: lines = f.readlines(); [print(l.strip()) for l in lines[:50]]
+         [31m~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1;35mFileNotFoundError[0m: [35m[Errno 2] No such file or directory: '/app/blast_light_res.txt'[0m
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_light_blast_res.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> rid = '4W098S7E014'
+[?2004l[?2004h> url = 'https://blast.ncbi.nlm.nih.gov/Blast.cgi'
+[?2004l[?2004h> r = requests.get(url, params={'CMD': 'Get', 'RID': rid, 'FORMAT_TYPE': 'Text'})
+[?2004l[?2004h> with open('/app/blast_light_res.txt', 'w') as f:
+[?2004l[?2004h>     f.write(r.text)
+[?2004l[?2004h> lines = r.text.split('\n')
+[?2004l[?2004h> for l in lines[:50]:
+[?2004l[?2004h>     print(l)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_light_blast_res.py
+[?2004l<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="jig" content="ncbitoggler"/>
+<meta name="ncbitoggler" content="animation:'none'"/>
+<title>NCBI Blast:</title>
+<script type="text/javascript" src="/core/jig/1.15.2/js/jig.min.js             "></script>
+<script type="text/javascript">    jQuery.getScript("/core/alerts/alerts.js", function() {
+        galert(['div#header', 'body > *:nth-child(1)'])
+    });</script>
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="stylesheet" type="text/css" href="css/uswds.min.css" media="screen" />
+<link rel="stylesheet"  type="text/css" href="https://www.ncbi.nlm.nih.gov/style-guide/static/nwds/css/nwds.css"/>
+
+<link rel="stylesheet" href="css/headerNew.css?v=1"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" crossorigin="anonymous"> <!-- Font Awesome icons -->
+<link rel="stylesheet" type="text/css" href="css/footerNew.css?v=1" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/blastRes.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="css/ie6_or_less.css" />
+<![endif]-->
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/results.js"></script>
+</head>
+
+<body id="type-a" class="noToggleCheck" >
+<div id="wrap">
+		<script>var useOfficialGovtHeader = true;</script>
+<section class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner-header">
+      <div class="usa-grid usa-banner-inner">
+        <img src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/favicons/favicon-57.png" alt="U.S. flag">
+        <p>An official website of the United States government</p>
+        <button class="usa-accordion-button usa-banner-button" aria-expanded="false" aria-controls="gov-banner-top">
+          <span class="usa-banner-button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner-content usa-grid usa-accordion-content" id="gov-banner-top" aria-hidden="true">
+      <div class="usa-banner-guidance-gov usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-dot-gov.svg" alt="Dot gov">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The .gov means itâs official.</strong>
+            <br>
+            Federal government websites often end in .gov or .mil. Before
+[?2004hroot@00292a553e1a:/app# sleep 15 && python3 /app/get_light_blast_res.py
+[?2004l<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="jig" content="ncbitoggler"/>
+<meta name="ncbitoggler" content="animation:'none'"/>
+<title>NCBI Blast:</title>
+<script type="text/javascript" src="/core/jig/1.15.2/js/jig.min.js             "></script>
+<script type="text/javascript">    jQuery.getScript("/core/alerts/alerts.js", function() {
+        galert(['div#header', 'body > *:nth-child(1)'])
+    });</script>
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="stylesheet" type="text/css" href="css/uswds.min.css" media="screen" />
+<link rel="stylesheet"  type="text/css" href="https://www.ncbi.nlm.nih.gov/style-guide/static/nwds/css/nwds.css"/>
+
+<link rel="stylesheet" href="css/headerNew.css?v=1"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" crossorigin="anonymous"> <!-- Font Awesome icons -->
+<link rel="stylesheet" type="text/css" href="css/footerNew.css?v=1" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/blastRes.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="css/ie6_or_less.css" />
+<![endif]-->
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/results.js"></script>
+</head>
+
+<body id="type-a" class="noToggleCheck" >
+<div id="wrap">
+		<script>var useOfficialGovtHeader = true;</script>
+<section class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner-header">
+      <div class="usa-grid usa-banner-inner">
+        <img src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/favicons/favicon-57.png" alt="U.S. flag">
+        <p>An official website of the United States government</p>
+        <button class="usa-accordion-button usa-banner-button" aria-expanded="false" aria-controls="gov-banner-top">
+          <span class="usa-banner-button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner-content usa-grid usa-accordion-content" id="gov-banner-top" aria-hidden="true">
+      <div class="usa-banner-guidance-gov usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-dot-gov.svg" alt="Dot gov">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The .gov means itâs official.</strong>
+            <br>
+            Federal government websites often end in .gov or .mil. Before
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_pdb_seqs.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> def get_pdb_seq(pdb_id):
+[?2004l[?2004h>     r_fasta = requests.get(f'https://www.rcsb.org/fasta/entry/{pdb_id}')
+[?2004l[?2004h>     if r_fasta.status_code == 200:
+[?2004l[?2004h>         print(f'{pdb_id} FASTA:')
+[?2004l[?2004h>         print(r_fasta.text)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         print(f'Error {pdb_id}')
+[?2004l[?2004h> for p in ['3KZY', '5WJ2', '2H5Q']:
+[?2004l[?2004h>     get_pdb_seq(p)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_pdb_seqs.py
+[?2004l3KZY FASTA:
+>3KZY_1|Chains A, B|Methylated-DNA--protein-cysteine methyltransferase|Homo sapiens (9606)
+GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR
+
+5WJ2 FASTA:
+>5WJ2_1|Chains A, B|Green fluorescent protein|Aequorea victoria (6100)
+MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+
+2H5Q FASTA:
+>2H5Q_1|Chain A|mCherry|Discosoma sp. (86600)
+MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_entity_details.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> for pdb_id in ['3KZY', '5WJ2', '2H5Q']:
+[?2004l[?2004h>     url = f'https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/1'
+[?2004l[?2004h>     r = requests.get(url)
+[?2004l[?2004h>     if r.status_code == 200:
+[?2004l[?2004h>         data = r.json()
+[?2004l[?2004h>         poly = data.get('entity_poly', {})
+[?2004l[?2004h>         print(pdb_id)
+[?2004l[?2004h>         print('  code:', poly.get('pdbx_seq_one_letter_code'))
+[?2004l[?2004h>         print('  can:', poly.get('pdbx_seq_one_letter_code_can'))
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         print(pdb_id, 'Error', r.status_code)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_entity_details.py
+[?2004l3KZY
+  code: GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR
+  can: GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR
+5WJ2
+  code: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTF(CR2)VACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+  can: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+2H5Q
+  code: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQF(CH6)SKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+  can: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004hroot@00292a553e1a:/app# python3 /app/get_light_blast_res.py
+[?2004l<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="jig" content="ncbitoggler"/>
+<meta name="ncbitoggler" content="animation:'none'"/>
+<title>NCBI Blast:</title>
+<script type="text/javascript" src="/core/jig/1.15.2/js/jig.min.js             "></script>
+<script type="text/javascript">    jQuery.getScript("/core/alerts/alerts.js", function() {
+        galert(['div#header', 'body > *:nth-child(1)'])
+    });</script>
+<meta http-equiv="Pragma" content="no-cache">
+<link rel="stylesheet" type="text/css" href="css/uswds.min.css" media="screen" />
+<link rel="stylesheet"  type="text/css" href="https://www.ncbi.nlm.nih.gov/style-guide/static/nwds/css/nwds.css"/>
+
+<link rel="stylesheet" href="css/headerNew.css?v=1"/>
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" crossorigin="anonymous"> <!-- Font Awesome icons -->
+<link rel="stylesheet" type="text/css" href="css/footerNew.css?v=1" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/main.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/blastRes.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="css/print.css" media="print" />
+<!--[if lte IE 6]>
+<link rel="stylesheet" type="text/css" href="css/ie6_or_less.css" />
+<![endif]-->
+<script type="text/javascript" src="js/utils.js"></script>
+<script type="text/javascript" src="js/results.js"></script>
+</head>
+
+<body id="type-a" class="noToggleCheck" >
+<div id="wrap">
+		<script>var useOfficialGovtHeader = true;</script>
+<section class="usa-banner">
+  <div class="usa-accordion">
+    <header class="usa-banner-header">
+      <div class="usa-grid usa-banner-inner">
+        <img src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/favicons/favicon-57.png" alt="U.S. flag">
+        <p>An official website of the United States government</p>
+        <button class="usa-accordion-button usa-banner-button" aria-expanded="false" aria-controls="gov-banner-top">
+          <span class="usa-banner-button-text">Here's how you know</span>
+        </button>
+      </div>
+    </header>
+    <div class="usa-banner-content usa-grid usa-accordion-content" id="gov-banner-top" aria-hidden="true">
+      <div class="usa-banner-guidance-gov usa-width-one-half">
+        <img class="usa-banner-icon usa-media_block-img" src="https://www.ncbi.nlm.nih.gov/coreutils/uswds/img/icon-dot-gov.svg" alt="Dot gov">
+        <div class="usa-media_block-body">
+          <p>
+            <strong>The .gov means itâs official.</strong>
+            <br>
+            Federal government websites often end in .gov or .mil. Before
+[?2004hroot@00292a553e1a:/app# sleep 10 && python3 /app/get_light_blast_res.py | grep -A 10 "Sequences producing significant alignments"
+[?2004lSequences producing significant alignments:                       (Bits)  Value   Ident
+
+7BG1_L Chain L, anti-FLAG M2 light chain [Mus musculus]            455     3e-161  100%      
+8RMO_L Chain L, anti-FLAG M2 light chain [Mus musculus]            455     3e-161  100%      
+7XLT_L Chain L, S9.6 Fab LC [Mus musculus]                         446     2e-157  98%       
+6C5J_L Chain L, IgG1 Fab Light Chain (Kappa) [Mus musculus]        444     8e-157  97%       
+BCQ06380.1 immunoglobulin kappa light chain [Mus musculus]         444     1e-156  97%       
+3U9U_B Chain B, Fab Light Chain [Mus musculus]                     443     1e-156  97%       
+6CNJ_F Chain F, IgG1 Kappa Light Chain [Mus musculus]              444     2e-156  97%       
+pir|PC4203| Ig kappa chain (monoclonal antibody MabA34) - mous...  442     2e-156  97%       
+6SF6_B Chain B, COMP-reactive monoclonal antibody 15A Fab frag...  442     3e-156  97%       
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/get_poly_seqs.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> for pdb_id in ['5WJ2', '2H5Q']:
+[?2004l[?2004h>     url = f'https://data.rcsb.org/rest/v1/core/polymer_entity/{pdb_id}/1'
+[?2004l[?2004h>     r = requests.get(url)
+[?2004l[?2004h>     if r.status_code == 200:
+[?2004l[?2004h>         data = r.json()
+[?2004l[?2004h>         poly = data.get('entity_poly', {})
+[?2004l[?2004h>         print(pdb_id, 'keys:', list(poly.keys()))
+[?2004l[?2004h>         for k, v in poly.items():
+[?2004l[?2004h>             if 'seq' in k or 'code' in k:
+[?2004l[?2004h>                 print(f'  {k}: {str(v)[:100]}...')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/get_poly_seqs.py
+[?2004l5WJ2 keys: ['nstd_linkage', 'nstd_monomer', 'pdbx_seq_one_letter_code', 'pdbx_seq_one_letter_code_can', 'pdbx_strand_id', 'rcsb_artifact_monomer_count', 'rcsb_conflict_count', 'rcsb_deletion_count', 'rcsb_entity_polymer_type', 'rcsb_insertion_count', 'rcsb_mutation_count', 'rcsb_non_std_monomer_count', 'rcsb_non_std_monomers', 'rcsb_sample_sequence_length', 'type']
+  pdbx_seq_one_letter_code: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTF(CR2)VACFSRYPD...
+  pdbx_seq_one_letter_code_can: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQ...
+  rcsb_sample_sequence_length: 258...
+2H5Q keys: ['nstd_linkage', 'nstd_monomer', 'pdbx_seq_one_letter_code', 'pdbx_seq_one_letter_code_can', 'pdbx_strand_id', 'rcsb_artifact_monomer_count', 'rcsb_conflict_count', 'rcsb_deletion_count', 'rcsb_entity_polymer_type', 'rcsb_insertion_count', 'rcsb_mutation_count', 'rcsb_non_std_monomer_count', 'rcsb_non_std_monomers', 'rcsb_sample_sequence_length', 'type']
+  pdbx_seq_one_letter_code: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQF(CH6)SKAYVKHPADIPDYLKLSFPEGFKW...
+  pdbx_seq_one_letter_code_can: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVM...
+  rcsb_sample_sequence_length: 234...
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/check_lengths.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> for p in ['5WJ2', '2H5Q']:
+[?2004l[?2004h>     res = requests.get(f'https://www.rcsb.org/fasta/entry/{p}')
+[?2004l[?2004h>     lines = res.text.split('\n')
+[?2004l[?2004h>     seq = ''.join([l.strip() for l in lines[1:] if l.strip()])
+[?2004l[?2004h>     print(p, 'FASTA len:', len(seq), 'seq:', seq)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/check_lengths.py
+[?2004l5WJ2 FASTA len: 258 seq: MGSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFXVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK
+2H5Q FASTA len: 234 seq: MVSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQFXSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_verification.py
+[?2004l[?2004h> # local test
+[?2004l[?2004h> print('Test created')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_verification.py
+[?2004lTest created
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_translation.py
+[?2004l[?2004h> CODON_MAP = {
+[?2004l[?2004h>     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+[?2004l[?2004h>     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+[?2004l[?2004h>     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+[?2004l[?2004h>     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+[?2004l[?2004h>     'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+[?2004l[?2004h>     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+[?2004l[?2004h>     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+[?2004l[?2004h>     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+[?2004l[?2004h>     'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+[?2004l[?2004h>     'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+[?2004l[?2004h>     'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+[?2004l[?2004h>     'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+[?2004l[?2004h>     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+[?2004l[?2004h>     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+[?2004l[?2004h>     'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*',
+[?2004l[?2004h>     'TGC':'C', 'TGT':'C', 'TGA':'*', 'TGG':'W',
+[?2004l[?2004h> }
+[?2004l[?2004h> def translate(dna):
+[?2004l[?2004h>     return ''.join([CODON_MAP.get(dna[i:i+3], '?') for i in range(0, len(dna), 3)])
+[?2004l[?2004h> print('Loaded')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_translation.py
+[?2004lLoaded
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004lain__':
+   [?2004h> CODON_MAP = {
+[?2004l[?2004h>     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+[?2004l   ver[?2004h>     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+[?2004lt('VERDICT_FILE', '/log[?2004h>     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+[?2004l[?2004h>     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+[?2004lct, [?2004h>     'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+[?2004l[?2004h>     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+[?2004l[?2004h>     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+[?2004l[?2004h>     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+[?2004l[?2004h>     'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+[?2004lwrite(str(verdict))
+EOF
+[?2004h>     'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+[?2004l[?2004h>     'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+[?2004l[?2004h>     'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+[?2004l[?2004h>     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+[?2004l[?2004h>     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+[?2004l[?2004h>     'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*',
+[?2004l[?2004h>     'TGC':'C', 'TGT':'C', 'TGA':'*', 'TGG':'W',
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> def translate(dna):
+[?2004l[?2004h>     return ''.join([CODON_MAP.get(dna[i:i+3], '?') for i in range(0, len(dna), 3)])
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_gblock(gblock_path):
+[?2004l[?2004h>     if not os.path.exists(gblock_path):
+[?2004l[?2004h>         return 0, "File not found"
+[?2004l[?2004h>     with open(gblock_path, 'rb') as f:
+[?2004l[?2004h>         raw = f.read()
+[?2004l[?2004h>     
+[?2004l[?2004h>     text = raw.decode('utf-8', errors='ignore')
+[?2004l[?2004h>     raw_lines = text.splitlines()
+[?2004l[?2004h>     non_empty = [l for l in raw_lines if l.strip()]
+[?2004l[?2004h>     if len(non_empty) != 1:
+[?2004l[?2004h>         return 0, f"Expected 1 non-empty line, found {len(non_empty)}"
+[?2004l[?2004h>     
+[?2004l[?2004h>     if b'\n' in raw:
+[?2004l[?2004h>         first_nl = raw.index(b'\n')
+[?2004l[?2004h>         if first_nl < len(raw) - 1:
+[?2004l[?2004h>             remaining = raw[first_nl+1:]
+[?2004l[?2004h>             if remaining.strip() or remaining.count(b'\n') > 0:
+[?2004l[?2004h>                 return 0, "Contains multiple lines"
+[?2004l[?2004h>                 
+[?2004l[?2004h>     gblock_seq = non_empty[0].strip().upper()
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not all(c in 'ATCG' for c in gblock_seq):
+[?2004l[?2004h>         return 0, "Contains non-ATCG"
+[?2004l[?2004h>         
+[?2004l[?2004h>     if len(gblock_seq) > 3000:
+[?2004l[?2004h>         return 0, "Length > 3000"
+[?2004l[?2004h>     if len(gblock_seq) % 3 != 0:
+[?2004l[?2004h>         return 0, "Length not multiple of 3"
+[?2004l[?2004h>         
+[?2004l[?2004h>     for i in range(len(gblock_seq) - 49):
+[?2004l[?2004h>         window = gblock_seq[i:i+50]
+[?2004l[?2004h>         gc = sum(1 for c in window if c in 'GC')
+[?2004l[?2004h>         if not (15 <= gc <= 35):
+[?2004l[?2004h>             return 0, f"GC window failed at {i}"
+[?2004l[?2004h>             
+[?2004l[?2004h>     protein = translate(gblock_seq)
+[?2004l[?2004h>     if '*' in protein:
+[?2004l[?2004h>         return 0, "Contains stop codon"
+[?2004l[?2004h>         
+[?2004l[?2004h>     sub1 = "DYKDDDDK"
+[?2004l[?2004h>     sub2 = "GSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFGYGVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK"
+[?2004l[?2004h>     sub3 = "ISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR"
+[?2004l[?2004h>     sub4 = "VSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQMYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK"
+[?2004l[?2004h>     sub5 = "GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR"
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not protein.startswith(sub1):
+[?2004l[?2004h>         return 0, "No sub1 start"
+[?2004l[?2004h>         
+[?2004l[?2004h>     idx2 = protein.find(sub2)
+[?2004l[?2004h>     if idx2 == -1:
+[?2004l[?2004h>         return 0, "sub2 not found"
+[?2004l[?2004h>     linker1 = protein[len(sub1):idx2]
+[?2004l[?2004h>     
+[?2004l[?2004h>     idx3 = protein.find(sub3, idx2 + len(sub2))
+[?2004l[?2004h>     if idx3 == -1:
+[?2004l[?2004h>         return 0, "sub3 not found"
+[?2004l[?2004h>     linker2 = protein[idx2 + len(sub2):idx3]
+[?2004l[?2004h>     
+[?2004l[?2004h>     idx4 = protein.find(sub4, idx3 + len(sub3))
+[?2004l[?2004h>     if idx4 == -1:
+[?2004l[?2004h>         return 0, "sub4 not found"
+[?2004l[?2004h>     linker3 = protein[idx3 + len(sub3):idx4]
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not protein.endswith(sub5):
+[?2004l[?2004h>         return 0, "No sub5 end"
+[?2004l[?2004h>     linker4 = protein[idx4 + len(sub4):len(protein)-len(sub5)]
+[?2004l[?2004h>     
+[?2004l[?2004h>     for i, l in enumerate([linker1, linker2, linker3, linker4], 1):
+[?2004l[?2004h>         if not (5 <= len(l) <= 20):
+[?2004l[?2004h>             return 0, f"Linker {i} len {len(l)} not between 5 and 20"
+[?2004l[?2004h>         if not all(c in 'GS' for c in l):
+[?2004l[?2004h>             return 0, f"Linker {i} contains non-GS"
+[?2004l[?2004h>             
+[?2004l[?2004h>     return 1, "Correct"
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     gblock_path = os.path.join(solution_dir, 'gblock.txt')
+[?2004l[?2004h>     verdict, message = check_gblock(gblock_path)
+[?2004l[?2004h>     print(f"Verdict: {verdict} ({message})")
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     with open(verdict_file, 'w') as f:
+[?2004l[?2004h>         f.write(str(verdict))
+[?2004l[?2004h> EOF
+[?2004lbash: /app/verifier/verify.py: No such file or directory
+[?2004hroot@00292a553e1a:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l[?2004h> import os
+[?2004l[?2004h> print('verify.py started')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/verifier/verify.py
+[?2004lverify.py started
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004l[?2004h> import os
+[?2004l[?2004h> import sys
+[?2004l[?2004h> 
+[?2004l[?2004h> CODON_MAP = {
+[?2004l[?2004h>     'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+[?2004l[?2004h>     'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+[?2004lv[?2004h>     'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+[?2004l[?2004h>     'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+[?2004lk_path = os.p[?2004h>     'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+[?2004l[?2004h>     'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+[?2004l[?2004h>     'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+[?2004ldi[?2004h>     'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+[?2004lk=True)[?2004h>     'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+[?2004l[?2004h>     'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+[?2004l  f.write(str(verdict))
+EOF
+[?2004h>     'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+[?2004l[?2004h>     'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+[?2004l[?2004h>     'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+[?2004l[?2004h>     'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+[?2004l[?2004h>     'TAC':'Y', 'TAT':'Y', 'TAA':'*', 'TAG':'*',
+[?2004l[?2004h>     'TGC':'C', 'TGT':'C', 'TGA':'*', 'TGG':'W',
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> def translate(dna):
+[?2004l[?2004h>     return ''.join([CODON_MAP.get(dna[i:i+3], '?') for i in range(0, len(dna), 3)])
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_gblock(gblock_path):
+[?2004l[?2004h>     if not os.path.exists(gblock_path):
+[?2004l[?2004h>         return 0, "File not found"
+[?2004l[?2004h>     with open(gblock_path, 'rb') as f:
+[?2004l[?2004h>         raw = f.read()
+[?2004l[?2004h>     
+[?2004l[?2004h>     text = raw.decode('utf-8', errors='ignore')
+[?2004l[?2004h>     raw_lines = text.splitlines()
+[?2004l[?2004h>     non_empty = [l for l in raw_lines if l.strip()]
+[?2004l[?2004h>     if len(non_empty) != 1:
+[?2004l[?2004h>         return 0, f"Expected 1 non-empty line, found {len(non_empty)}"
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Check single line with no other empty lines
+[?2004l[?2004h>     if b'\n' in raw:
+[?2004l[?2004h>         first_nl = raw.index(b'\n')
+[?2004l[?2004h>         if first_nl < len(raw) - 1:
+[?2004l[?2004h>             remaining = raw[first_nl+1:]
+[?2004l[?2004h>             if remaining.strip() or remaining.count(b'\n') > 0:
+[?2004l[?2004h>                 return 0, "Contains multiple lines"
+[?2004l[?2004h>                 
+[?2004l[?2004h>     gblock_seq = non_empty[0].strip().upper()
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not all(c in 'ATCG' for c in gblock_seq):
+[?2004l[?2004h>         return 0, "Contains non-ATCG"
+[?2004l[?2004h>         
+[?2004l[?2004h>     if len(gblock_seq) > 3000:
+[?2004l[?2004h>         return 0, "Length > 3000"
+[?2004l[?2004h>     if len(gblock_seq) % 3 != 0:
+[?2004l[?2004h>         return 0, "Length not multiple of 3"
+[?2004l[?2004h>         
+[?2004l[?2004h>     for i in range(len(gblock_seq) - 49):
+[?2004l[?2004h>         window = gblock_seq[i:i+50]
+[?2004l[?2004h>         gc = sum(1 for c in window if c in 'GC')
+[?2004l[?2004h>         if not (15 <= gc <= 35):
+[?2004l[?2004h>             return 0, f"GC window failed at {i}"
+[?2004l[?2004h>             
+[?2004l[?2004h>     protein = translate(gblock_seq)
+[?2004l[?2004h>     if '*' in protein:
+[?2004l[?2004h>         return 0, "Contains stop codon"
+[?2004l[?2004h>         
+[?2004l[?2004h>     sub1 = "DYKDDDDK"
+[?2004l[?2004h>     sub2 = "GSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFGYGVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK"
+[?2004l[?2004h>     sub3 = "ISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR"
+[?2004l[?2004h>     sub4 = "VSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQMYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK"
+[?2004l[?2004h>     sub5 = "GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR"
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not protein.startswith(sub1):
+[?2004l[?2004h>         return 0, "No sub1 start"
+[?2004l[?2004h>         
+[?2004l[?2004h>     idx2 = protein.find(sub2)
+[?2004l[?2004h>     if idx2 == -1:
+[?2004l[?2004h>         return 0, "sub2 not found"
+[?2004l[?2004h>     linker1 = protein[len(sub1):idx2]
+[?2004l[?2004h>     
+[?2004l[?2004h>     idx3 = protein.find(sub3, idx2 + len(sub2))
+[?2004l[?2004h>     if idx3 == -1:
+[?2004l[?2004h>         return 0, "sub3 not found"
+[?2004l[?2004h>     linker2 = protein[idx2 + len(sub2):idx3]
+[?2004l[?2004h>     
+[?2004l[?2004h>     idx4 = protein.find(sub4, idx3 + len(sub3))
+[?2004l[?2004h>     if idx4 == -1:
+[?2004l[?2004h>         return 0, "sub4 not found"
+[?2004l[?2004h>     linker3 = protein[idx3 + len(sub3):idx4]
+[?2004l[?2004h>     
+[?2004l[?2004h>     if not protein.endswith(sub5):
+[?2004l[?2004h>         return 0, "No sub5 end"
+[?2004l[?2004h>     linker4 = protein[idx4 + len(sub4):len(protein)-len(sub5)]
+[?2004l[?2004h>     
+[?2004l[?2004h>     for i, l in enumerate([linker1, linker2, linker3, linker4], 1):
+[?2004l[?2004h>         if not (5 <= len(l) <= 20):
+[?2004l[?2004h>             return 0, f"Linker {i} len {len(l)} not between 5 and 20"
+[?2004l[?2004h>         if not all(c in 'GS' for c in l):
+[?2004l[?2004h>             return 0, f"Linker {i} contains non-GS"
+[?2004l[?2004h>             
+[?2004l[?2004h>     return 1, "Correct"
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     gblock_path = os.path.join(solution_dir, 'gblock.txt')
+[?2004l[?2004h>     verdict, message = check_gblock(gblock_path)
+[?2004l[?2004h>     print(f"Verdict: {verdict} ({message})")
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     with open(verdict_file, 'w') as f:
+[?2004l[?2004h>         f.write(str(verdict))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/verifier/verify.py
+[?2004lVerdict: 0 (File not found)
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> python3 /app/verifier/verify.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@00292a553e1a:/app# /app/verifier/verify.sh
+[?2004lVerdict: 0 (File not found)
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_parse_gb.py
+[?2004l[?2004h> def parse_dhfr_from_gb(path):
+[?2004l[?2004h>     with open(path, 'r') as f:
+[?2004l[?2004h>         content = f.read()
+[?2004l[?2004h>     idx = content.find('dihydrofolate reductase (DHFR)')
+[?2004l[?2004h>     if idx == -1:
+[?2004l[?2004h>         idx = content.find('folA')
+[?2004l[?2004h>     if idx == -1:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     t_idx = content.find('/translation="', idx)
+[?2004l[?2004h>     if t_idx == -1:
+[?2004l[?2004h>         return None
+[?2004l[?2004h>     t_start = t_idx + len('/translation="')
+[?2004l[?2004h>     t_end = content.find('"', t_start)
+[?2004l[?2004h>     raw_seq = content[t_start:t_end]
+[?2004l[?2004h>     seq = ''.join(raw_seq.split())
+[?2004l[?2004h>     return seq
+[?2004l[?2004h> print('DHFR:', parse_dhfr_from_gb('/app/data/plasmid.gb'))
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_parse_gb.py
+[?2004lDHFR: MISLIAALAVDRVIGMENAMPWNLPADLAWFKRNTLNKPVIMGRHTWESIGRPLPGRKNIILSSQPGTDDRVTWVKSVDEAIAACGDVPEIMVIGGGRVYEQFLPKAQKLYLTHIDAEVEGDTHFPDYEPDDWESVFSEFHDADAQNSHSYCFEILERR
+[?2004hroot@00292a553e1a:/app# cat << 'EOF' > /app/test_dynamic_derive.py
+[?2004l[?2004h> import requests
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> def derive_references():
+[?2004l[?2004h>     res_molecule = "GPGSDKDCEMKRTTLDSPLGKLELSGCEQGLHEIIFLGKGTSAADAVEVPAPAAVLGGPEPLMQATAWLNAYFHQPEAIEEFPVPALHHPVFQQESFTRQVLWKLLKVVKFGEVISYSHLAALAGNPAATAAVKTALSGNPVPILIPCHRVVQGDLDVGGYEGGLAVKEWLLAHEGHRLGKR"
+[?2004l[?2004h>     res_donor = "GSSHHHHHHSSGENLYFQGHMVSKGEELFTGVVPILVELDGDVNGHKFSVRGEGEGDATNGKLTLKFICTTGKLPVPWPTLVTTFGYGVACFSRYPDHMKQHDFFKSAMPEGYVQERTISFKDDGTYKTRAEVKFEGDTLVNRIELKGIDFKEDGNILGHKLEYNFNSHNVYITADKQKNGIKANFKIRHNVEDGSVQLADHYQQNTPIGDGPVLLPDNHYLSHQSALSKDPNEKRDHMVLLEFVTAAGITHGMDELYK"
+[?2004l[?2004h>     res_acceptor = "VSKGEEDNMAIIKEFMRFKVHMEGSVNGHEFEIEGEGEGRPYEGTQTAKLKVTKGGPLPFAWDILSPQMYGSKAYVKHPADIPDYLKLSFPEGFKWERVMNFEDGGVVTVTQDSSLQDGEFIYKVKLRGTNFPSDGPVMQKKTMGWEASSERMYPEDGALKGEIKQRLKLKDGGHYDAEVKTTYKAKKPVQLPGAYNVNIKLDITSHNEDYTIVEQYERAEGRHSTGGMDELYK"
+[?2004l[?2004h>     pdb_ids_path = '/app/data/pdb_ids.txt'
+[?2004l[?2004h>     if not os.path.exists(pdb_ids_path):
+[?2004l[?2004h>         return res_molecule, res_donor, res_acceptor
+[?2004l[?2004h>     with open(pdb_ids_path, 'r') as f:
+[?2004l[?2004h>         pdb_ids = [line.strip().upper() for line in f if line.strip()]
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         print('Fetching FPBase...')
+[?2004l[?2004h>         r_fp = requests.get('https://www.fpbase.org/api/proteins/?format=json', timeout=10)
+[?2004l[?2004h>         if r_fp.status_code == 200:
+[?2004l[?2004h>             fps = r_fp.json()
+[?2004l[?2004h>             donor_names = []
+[?2004l[?2004h>             acceptor_names = []
+[?2004l[?2004h>             for fp in fps:
+[?2004l[?2004h>                 states = fp.get('states', [])
+[?2004l[?2004h>                 for st in states:
+[?2004l[?2004h>                     if st.get('ex_max') == 505:
+[?2004l[?2004h>                         donor_names.append(fp.get('name').lower())
+[?2004l[?2004h>                     if st.get('em_max') == 610:
+[?2004l[?2004h>                         acceptor_names.append(fp.get('name').lower())
+[?2004l[?2004h>             print('FPBase donor names:', donor_names)
+[?2004l[?2004h>             print('FPBase acceptor names:', acceptor_names)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print('FPBase fetch error:', e)
+[?2004l[?2004h>     return res_molecule, res_donor, res_acceptor
+[?2004l[?2004h> derive_references()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@00292a553e1a:/app# python3 /app/test_dynamic_derive.py
+[?2004lFetching FPBase...
+FPBase donor names: ['ccalgfp3', 'clover', 'd1eosfp', 'dfgfp', 'fold6', 'gamillus0.1', 'gamillus0.2', 'gamillus0.3', 'gamillus0.4', 'mc2', 'mc3', 'mc4', 'meos3.1', 'meos4a', 'meos4b', 'meos4fast1', 'meosfp', 'mgeos-c', 'mkikgr', 'moxneongreen', 'padron0.9', 'pcdronpa', 'pcstar']
+FPBase acceptor names: ['jred', 'killerred', 'lssmcherry1', 'mcherry', 'mcherry2', 'rscherry', 'supernova2', 'supernova red']
+[?2004hroot@00292a553e1a:/app# echo "ATCG" > /app/gblock.txt
+[?2004l[?2004hroot@00292a553e1a:/app# export SOLUTION_DIR=/app
+[?2004l[?2004hroot@00292a553e1a:/app# export VERDICT_FILE=/logs/verifier/reward.txt
+[?2004l[?2004hroot@00292a553e1a:/app# /app/verifier/verify.sh
+[?2004lVerdict: 0 (Length not multiple of 3)
+[?2004hroot@00292a553e1a:/app# cat /logs/verifier/reward.txt
+[?2004l0[?2004hroot@00292a553e1a:/app# rm -f /app/gblock.txt /app/check_lengths.py /app/inspect_fp.py /app/test_*.py /app/get_*.py /app/blast_*.xml /app/blast_res.txt /app/blast_light_res.txt
+[?2004l[?2004hroot@00292a553e1a:/app# ls -la /app
+[?2004ltotal 20
+drwxr-xr-x 1 root root 4096 Jul  8 07:56 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:45 ..
+-rw-r--r-- 1 root root 1319 Jul  8 07:48 blast_antibody.py
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 data
+drwxr-xr-x 2 root root 4096 Jul  8 07:55 verifier
+[?2004hroot@00292a553e1a:/app# ls -la /app/verifier
+[?2004ltotal 20
+drwxr-xr-x 2 root root 4096 Jul  8 07:55 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:56 ..
+-rw-r--r-- 1 root root 4585 Jul  8 07:55 verify.py
+-rwxr-xr-x 1 root root   44 Jul  8 07:55 verify.sh
+[?2004hroot@00292a553e1a:/app# rm -f /app/blast_antibody.py
+[?2004l[?2004hroot@00292a553e1a:/app# ls -la /app
+[?2004ltotal 16
+drwxr-xr-x 1 root root 4096 Jul  8 07:56 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:45 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:40 data
+drwxr-xr-x 2 root root 4096 Jul  8 07:55 verifier
+[?2004hroot@00292a553e1a:/app# 

@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/fusion-protein-verifier"
+    },
+    "trial_name": "fusion-protein-verifier__etXZp3K",
+    "trials_dir": "src/logs/fusion-protein-verifier/2026-07-08__03-44-59",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "aa49a026-0c78-4e0c-94de-55b9e8ba42f0"
+}
