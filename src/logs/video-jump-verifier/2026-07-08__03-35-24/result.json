@@ -1,0 +1,99 @@
+{
+    "id": "504038b3-8509-4c41-aed5-2168e262cd6d",
+    "started_at": "2026-07-08T03:35:24.954643",
+    "updated_at": "2026-07-08T03:38:30.048834",
+    "finished_at": "2026-07-08T03:38:30.048834",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 1.0,
+                        "all_correct": 1.0,
+                        "f1": 1.0,
+                        "fn": 0.0,
+                        "fp": 0.0,
+                        "n": 11.0,
+                        "precision": 1.0,
+                        "recall": 1.0,
+                        "reward": 1.0,
+                        "tn": 8.0,
+                        "tp": 3.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "1.0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "accuracy": {
+                        "1.0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "precision": {
+                        "1.0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "f1": {
+                        "1.0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "all_correct": {
+                        "1": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "tp": {
+                        "3": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "fp": {
+                        "0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "tn": {
+                        "8": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    },
+                    "n": {
+                        "11": [
+                            "video-jump-verifier__UhufTSx"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 268459,
+        "n_cache_tokens": 143898,
+        "n_output_tokens": 11093,
+        "cost_usd": 0.3082632
+    }
+}

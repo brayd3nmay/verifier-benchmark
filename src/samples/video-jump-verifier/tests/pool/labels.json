@@ -1,0 +1,13 @@
+{
+  "01_reference": "pass",
+  "02_correct_variant": "pass",
+  "03_correct_stdlib": "pass",
+  "04_hardcode_test": "fail",
+  "05_hardcode_example": "fail",
+  "06_crash": "fail",
+  "07_wrong_values": "fail",
+  "08_float_output": "fail",
+  "09_forbidden_import": "fail",
+  "10_no_output": "fail",
+  "11_trace_only": "fail"
+}
