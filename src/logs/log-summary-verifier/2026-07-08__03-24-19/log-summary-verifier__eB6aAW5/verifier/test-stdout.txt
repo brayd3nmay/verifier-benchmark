@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   Verification successful!
+02_correct_alt        pass    pass     Y   Verification successful!
+03_correct_superset   pass    pass     Y   Verification successful!
+04_wrong_values       fail    fail     Y   Mismatch for period=last_30_days, severity=ERROR. Expected 9594, got 9694
+05_near_miss          fail    fail     Y   Mismatch for period=last_7_days, severity=ERROR. Expected 2969, got 2970
+06_error_trap         fail    fail     Y   Mismatch for period=today, severity=ERROR. Expected 370, got 414
+07_logs_no_files      fail    fail     Y   File summary.csv not found at /tmp/pool_yvx235g_/solution/summary.csv
+08_wrong_shape        fail    fail     Y   Missing required columns. Found headers: ['period', 'ERROR', 'WARNING', 'INFO']
+09_nop                fail    fail     Y   File summary.csv not found at /tmp/pool_1pv7ije_/solution/summary.csv
+10_count_as_float     fail    fail     Y   Invalid count format: 370.0 for today, ERROR
+11_correct_quoted     pass    pass     Y   Verification successful!
+12_correct_reordered_colspass    pass     Y   Verification successful!
+
+TP=5 FP=0 FN=0 TN=7  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000

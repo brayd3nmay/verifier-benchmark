@@ -1,0 +1,15 @@
+{
+    "job_name": "2026-07-08__03-31-52",
+    "jobs_dir": "src/logs/video-jump-verifier",
+    "agents": [
+        {
+            "name": "terminus-2",
+            "model_name": "gemini/gemini-3.5-flash"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "src/samples/video-jump-verifier"
+        }
+    ]
+}
