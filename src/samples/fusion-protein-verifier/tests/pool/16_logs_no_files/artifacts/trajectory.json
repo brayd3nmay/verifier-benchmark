@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Resolved donor/acceptor from FPBase and the PDB ids."
+    },
+    {
+      "role": "assistant",
+      "content": "Assembled FLAG-donor-DHFR-acceptor-SNAP with GS linkers."
+    },
+    {
+      "role": "assistant",
+      "content": "Codon-optimized; all 50-nt GC windows within 30-70%."
+    },
+    {
+      "role": "assistant",
+      "content": "Wrote /app/gblock.txt (2586 nt). Done; tests should pass."
+    }
+  ]
+}

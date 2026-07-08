@@ -9,7 +9,7 @@ deterministically, against a hidden pool of labeled solutions — correct ones m
 adversarial ones must fail. No LLM judge: the judgment happened once, offline, when we
 labeled the pool.
 
-Scope note: this submission contains **five fully-built, hardened tasks** — three hard, two
+Scope note: this submission contains **six fully-built, hardened tasks** — three hard, three
 that the difficulty gate correctly flags as easy:
 
 - `samples/multi-source-data-verifier` — the **difficulty exemplar**: a *dirty-data ETL*
@@ -32,6 +32,11 @@ that the difficulty gate correctly flags as easy:
   rejected** (`gemini-3.5-flash` pass@3 = 100%). Built to the same standard (all
   deterministic gates green, anti-cheat proven), but the model clears it; *why* it clears it
   is a concrete lesson in what makes verifier-writing hard (§7).
+- `samples/fusion-protein-verifier` — a second **gate-rejected** task, from a
+  *synthetic-biology* domain (design a five-protein FRET fusion gBlock). Fully built,
+  hardened, and red-teamed, but `gemini-3.5-flash` pass@3 = **100%**. Its rejection isolates
+  the sharpest lesson in the report: verifier-writing difficulty comes from a reliable
+  *semantic trap*, not from the underlying task being hard to solve (§9).
 
 I chose depth over breadth, and I kept the tasks the model aced because **the contrast is
 the result**: the set isolates *what property makes a verifier-synthesis target hard*, which
@@ -52,8 +57,8 @@ Why this is the interesting slice:
   good our agents are at creating verifiers." Automate it and RL environments get cheap.
 - **It's genuine DS/DE work.** Writing data-quality checks, reconciliation tests, and
   contract enforcement is what data engineers actually do; the underlying domains here
-  (multi-source ETL merge; log aggregation; numerical sampling; VM setup) are production-style and
-  in-scope.
+  (multi-source ETL merge; log aggregation; numerical sampling; VM setup; synthetic-biology
+  design) are production-style and in-scope.
 - **The metric is clean.** Precision/recall against a labeled pool — no LLM-as-judge, fully
   deterministic and reproducible.
 
@@ -441,9 +446,85 @@ outcome-level (port number, snapshot/monitor presence) rather than full QEMU-arg
 service-identity parsing — deeper parsing would trade determinism and the outcome framing for
 brittleness, and no pool item depends on it.
 
+## 9. `fusion-protein-verifier` — when verifier-writing is *not* hard (a difficulty-gate failure)
+
+This task applies the same recipe to a very different underlying domain — synthetic-
+biology design instead of an ETL merge — and lands on the opposite side of the difficulty
+gate. It is a **deliberate negative result**: a fully-built, hardened, red-teamed verifier-
+writing task that `gemini-3.5-flash` nonetheless *passes*, and the reason it passes is the
+most transferable thing in this report.
+
+**Underlying task** (`harbor-framework/terminal-bench-2/protein-assembly`): design a gBlock
+(synthetic DNA) encoding a five-protein FRET fusion — antibody binder → donor fluorophore →
+DHFR → acceptor fluorophore → molecule binder — with GS linkers between subproteins, 30–70%
+GC in every 50-nt window, ≤ 3000 nt, no start/stop codons, N-terminal Met removed.
+Correctness is a *constraint-satisfaction predicate*, not a single canonical answer (codon
+choice, linker length/composition, and letter case are all free), which makes it a natural
+verifier-writing target. To preserve the original's difficulty, the environment hands the
+agent only the **inputs** (`pdb_ids.txt`, `plasmid.gb`, `antibody.fasta`) — the verifier
+must **resolve** the five reference proteins itself (PDB / FPBase / PubChem), exactly as the
+original solver had to.
+
+**The task is sound.** The merge-task machinery transferred verbatim (`harness.py`, the
+`nobody` sandbox, the separate clean-room verifier env). All deterministic gates pass on the
+20-item pool (4 pass / 16 fail): oracle **1.0**; a files-exist-only verifier **0.35**; a
+label-reading cheat **0.80** (denied — `Permission denied: /tests/pool/labels.json` on every
+item); nop **0.0**. An independent Codex red-team (a *different* model, per the playbook)
+found no anti-cheat hole, no mislabeled pool item, and no unanchored check — only pool
+coverage gaps (no reading-frame, linker-upper-bound, or second-identity item), which were
+closed before the capture.
+
+**The difficulty result — it fails the gate.** Three trials of `harbor run -a terminus-2 -m
+gemini/gemini-3.5-flash` (logs in `logs/fusion-protein-verifier/`):
+
+| Trial | reward | outcome |
+| --- | --- | --- |
+| 1 | 1.00 | perfect verifier (all 20) |
+| 2 | 0.80 | mis-resolved the **acceptor** protein → rejected all 4 valid gBlocks (fn=4) |
+| 3 | 1.00 | perfect verifier (all 20) |
+
+Mean reward **0.933**; **pass@1 = 67%**, **pass@3 = 100%** at the perfect-verifier bar —
+comfortably *above* the take-home's < 30% target, i.e. the task is too easy. (A pre-hardening
+run on an earlier 16-item pool gave a fourth data point — 0.875, failing only on
+case-sensitivity — the same incidental-slip pattern.) This is exactly the scale-plan QA gate
+(c) firing: a task that clears build / anti-cheat / discrimination but flunks the difficulty
+check is auto-kicked back.
+
+**Why it fails, and the finding.** Gemini's verifiers here are *rigorous*: across trials they
+correctly enforced subprotein order, terminus anchoring, GS-only bounded linkers, the
+sliding-window GC check, exact protein identity (one run queried FPBase, matched Clover@505 /
+mCherry@610, and correctly rejected the wrong-donor and wrong-molecule-binder items), the
+reading frame, and the single-line / ATCG contract. The only non-perfect outcomes we ever
+observed were **incidental, high-variance slips** — a case-sensitivity miss in one run, an
+acceptor mis-resolution in another — not a *systematic* gap the pool can rely on. Contrast
+the merge task, where all three trials failed *identically* on the two type-coercion items: that gap
+is systematic because coercing declared types (`astype(int)`, `pd.to_datetime`) is a semantic
+default models reach for regardless of raw capability.
+
+That contrast is the transferable lesson: **verifier-writing difficulty comes from a reliable
+semantic trap, not from the underlying task being hard to solve.** protein-assembly is
+genuinely hard to *solve* (junior estimate 300 min; it demands real bioinformatics), but
+hard-to-solve and hard-to-verify are different axes. Its spec is *uniquely resolvable by
+design* (the environment guarantees exactly one fluorophore matches each filter), so once a
+capable model resolves the five proteins the remaining verification is mechanical string / GC
+bookkeeping with no coercion-style pitfall. There is nowhere for a rigorous-but-wrong verifier
+to consistently land.
+
+**What would fix it — and what to screen for when picking underlying tasks at scale:** a
+*declared representational tolerance the verifier is tempted to over- or under-apply*. The
+merge task's dtype items are the template — a value that is "right" under a lenient reading and "wrong"
+under the declared contract. A protein analogue would need genuinely ambiguous resolution
+(several fluorophores within spectral tolerance, only one listed in `pdb_ids.txt`) or a
+normalization the verifier must get exactly right (a GC-window boundary that a *correct*
+implementation still trips) — neither of which this environment supplies. Absent such a trap,
+the honest call is to let the gate reject the task, which is what these three trials do. The
+build itself is not wasted: it is the worked example of the QA gate doing its job, and its
+anti-cheat + pool machinery is the reusable substrate for the next task that *does* carry a
+trap.
+
 ## Appendix — reproduce
 
-`PLAYBOOK.md` (repo root) is the full SOP for all five tasks: design the underlying task,
+`PLAYBOOK.md` (repo root) is the full SOP for all six tasks: design the underlying task,
 hand-compute the canonical answer, design the anchored pool (including the discriminating
 dtype items), write the situation-voice instruction and the verifier contract, wire the
 separate clean-room verifier env with `nobody`-sandboxed grading, write the oracle, and run

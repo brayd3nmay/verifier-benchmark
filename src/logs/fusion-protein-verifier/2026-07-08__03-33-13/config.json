@@ -1,0 +1,15 @@
+{
+    "job_name": "2026-07-08__03-33-13",
+    "jobs_dir": "src/logs/fusion-protein-verifier",
+    "agents": [
+        {
+            "name": "terminus-2",
+            "model_name": "gemini/gemini-3.5-flash"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "src/samples/fusion-protein-verifier"
+        }
+    ]
+}
