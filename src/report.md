@@ -9,8 +9,7 @@ deterministically, against a hidden pool of labeled solutions — correct ones m
 adversarial ones must fail. No LLM judge: the judgment happened once, offline, when we
 labeled the pool.
 
-Scope note: this submission contains **two fully-built, hardened tasks**, deliberately a
-matched pair:
+Scope note: this submission contains **three fully-built, hardened tasks**:
 
 - `samples/multi-source-data-verifier` — the **difficulty exemplar**. `gemini-3.5-flash`
   pass@3 = **0%** (3 × 0.818). Clears the take-home's < 30% bar with a consistent,
@@ -18,12 +17,16 @@ matched pair:
 - `samples/log-summary-verifier` — an **honest contrast**. Same method, a different
   underlying task (date-ranged log-severity counting). `gemini-3.5-flash` pass@3 = **100%**
   (6 × 1.0). It is *not* a < 30% task, and I am not dressing it up as one.
+- `samples/video-jump-verifier` — a **fully-built task the difficulty gate correctly
+  rejected** (`gemini-3.5-flash` pass@3 = 100%). Built to the same standard (all
+  deterministic gates green, anti-cheat proven), but the model clears it; *why* it clears it
+  is a concrete lesson in what makes verifier-writing hard (§7).
 
-I chose depth over breadth, and I kept the second task even though the model aced it, because
-**the contrast is the result**: the pair isolates *what property makes a verifier-synthesis
-target hard*, which is exactly the question the scale plan has to answer. `PLAYBOOK.md` (repo
-root) is the reproducible SOP that produced both. The scale plan (§4) is how this becomes 10
-and then 1,000 — and now includes the target-selection gate the contrast surfaced.
+I chose depth over breadth, and I kept the tasks the model aced because **the contrast is
+the result**: the set isolates *what property makes a verifier-synthesis target hard*, which
+is exactly the question the scale plan has to answer. `PLAYBOOK.md` (repo root) is the
+reproducible SOP that produced all of them. The scale plan (§5) is how this becomes 10 and
+then 1,000 — and now includes the target-selection gate the contrast surfaced.
 
 ## 1. Distribution — what I chose to measure, and why this slice
 
@@ -208,13 +211,66 @@ boundaries correctly, and reject non-integer counts. There is no fair item that 
 verifier of this task should pass but these fail. The honest conclusion (§3): the *task* is an
 easy verifier-synthesis target, and that is a finding about task selection, not a defect.
 
+## 7. Third task: `video-jump-verifier` — when the difficulty gate says no
+
+I applied the same playbook to a third underlying task: terminal-bench-2's
+`video-processing`, where a script (`jump_analyzer.py`) reads an MP4 of a hurdle jump and
+writes `output.toml` with the takeoff and landing frame numbers. The verifier-writing task:
+the agent writes a grader that decides whether a candidate analyzer is correct. To keep it
+genuinely hard, the grader must **run** each candidate on two videos (it is *not* handed a
+static answer to check), survive candidates that crash or write nothing, and enforce
+integer typing, the accepted frame ranges, and an import allowlist. The pool is 11 labeled
+candidate *scripts*, including two hardcoders (one per video) that only a verifier running
+**both** videos can catch.
+
+**It passes every deterministic gate.** Oracle scores 1.0; a lazy verifier (runs one video,
+coerces types, skips the import check) scores 0.727; the `nobody` sandbox denies a
+labels-reading verifier; `nop` scores 0. The ground truth is deterministic on a pinned
+OpenCV (`opencv-contrib-python==4.11.0.86`): the reference analyzer yields `example_video`
+54/63 and `test_video` 222/232, stable across runs.
+
+**But `gemini-3.5-flash` clears it.** Three trials scored **1.0, 1.0, 0.727** → **pass@3 =
+100%** at the perfect-verifier bar, mean 0.909. And the one sub-1.0 trial was not a
+verification-logic gap: the model emitted a malformed `verify.sh` (Python pasted into a bash
+file → `line 9: 'def write_verdict...'`, exit 2 on every item), so it rejected the three
+correct analyzers. When its plumbing worked (2/3), it wrote a genuinely correct verifier —
+running both videos, guarding `bool`-vs-`int`, walking the AST for disallowed imports,
+handling crashes and missing output.
+
+**Why it clears it — the actual lesson.** Verifying two integer frames, *even when you must
+run untrusted code on two videos*, decomposes into **independent, standard checks**: spawn a
+subprocess, parse TOML, `isinstance(v, int)`, range-test, AST-walk the imports. There is no
+counterintuitive trap and no complex truth to re-derive. The ETL task hit 0% precisely
+because it had **both**: the verifier must re-implement a three-source merge with conflict
+resolution (complex derivation) **and** resist the natural `astype`/`to_datetime` coercion
+habit (a trap where the obvious implementation is silently wrong). Operational complexity
+(running scripts, two videos, sandboxing) is *not* where the difficulty lives — a competent
+model handles it. Difficulty lives in **derivation depth** and **contract traps**.
+
+**This is the difficulty QA-gate doing its job.** The scale-plan pipeline (§5) gates
+every task on `gemini-3.5-flash` pass@3 < 30%. `video-jump-verifier` is a well-formed,
+hardened, discriminating task that this gate correctly *rejects* as not-hard — exactly the
+signal the loop exists to produce. I built it out fully (rather than discarding it) because
+the negative result is load-bearing evidence: it tells the task-selection step to prefer
+underlying tasks with **structured, derivable truth and a natural failure mode**, not merely
+tasks that are operationally fiddly. I also re-ran the experiment on a simpler first framing
+(grade a static `output.toml` against stated ranges + the import allowlist); `gemini-3.5-flash`
+scored 1.0 on all three trials there too — the same conclusion, reached from the other
+direction.
+
+*(Independent red-team note: I attempted a second-model adversarial review via Codex; it
+was unavailable — no API credits — so this task's assurance rests on the deterministic gates
+above and a manual pass: no shortcut verifier can score 1.0, because getting all 11 items
+right requires simultaneously running both videos, enforcing the integer type, checking
+imports, and rejecting no-output candidates.)*
+
 ## Appendix — reproduce
 
-`PLAYBOOK.md` (repo root) is the full SOP for both tasks: design the underlying task,
+`PLAYBOOK.md` (repo root) is the full SOP for all three tasks: design the underlying task,
 hand-compute the canonical answer, design the anchored pool (including the discriminating
 dtype items), write the situation-voice instruction and the verifier contract, wire the
 separate clean-room verifier env with `nobody`-sandboxed grading, write the oracle, and run
-the validation gates before the `gemini-3.5-flash` capture. Both tasks pass the deterministic
+the validation gates before the `gemini-3.5-flash` capture. All tasks pass the deterministic
 gates (oracle 1.0; pool discriminates; anti-cheat denied; nop 0; `harbor check` clean); their
 `gemini` logs are in `logs/`.
 

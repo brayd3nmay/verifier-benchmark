@@ -1,0 +1,434 @@
+[?2004hroot@e02dacd9ed2a:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@e02dacd9ed2a:/app# clear
+[?2004l[H[J[3J[?2004hroot@e02dacd9ed2a:/app# ls -la
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 07:25 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:38 ..
+drwxr-xr-x 2 root root 4096 Jul  8 07:15 data
+[?2004hroot@e02dacd9ed2a:/app# ls -la /app/data
+[?2004ltotal 1492
+drwxr-xr-x 2 root root   4096 Jul  8 07:15 .
+drwxr-xr-x 1 root root   4096 Jul  8 07:25 ..
+-rw-r--r-- 1 root root 551877 Jul  8 07:08 example_video.mp4
+-rw-r--r-- 1 root root 964534 Jul  8 07:15 test_video.mp4
+[?2004hroot@e02dacd9ed2a:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@e02dacd9ed2a:/app# mkdir -p /logs/verifier
+[?2004l[?2004hroot@e02dacd9ed2a:/app# python3 --version
+[?2004lPython 3.13.14
+[?2004hroot@e02dacd9ed2a:/app# python3 -c "import sys; print(sys.stdlib_module_names if hasattr(sys, 'stdlib_module_names') else 'None')"
+[?2004lfrozenset({'venv', '_sqlite3', 'configparser', 'platform', '_weakrefset', '_heapq', 'grp', 'operator', 'tokenize', '_compression', '_sitebuiltins', 'fileinput', '_imp', 'gettext', 'netrc', '_opcode_metadata', 'heapq', '_pickle', 'pathlib', '_py_abc', 'ctypes', 'tabnanny', '_apple_support', '_markupbase', '_codecs_jp', 'cmath', 'dis', 'unittest', 'encodings', '_typing', 'cProfile', 'linecache', 'subprocess', '_pydecimal', 'pydoc', 'abc', 'stringprep', 'symtable', '_tkinter', '_signal', 'locale', 'zipfile', 'code', '_tracemalloc', 'ensurepip', 'html', 'base64', '_curses', 'cmd', 'time', 'io', 'zlib', '_contextvars', 'os', 'quopri', 'winsound', 'contextlib', 'token', 'getopt', 'sys', '_osx_support', 'csv', '_operator', 'datetime', 'dbm', 'json', '_functools', 'shlex', '_compat_pickle', '_ssl', '_collections', 'curses', 'wave', '_codecs_tw', '_sysconfig', 'doctest', '_multiprocessing', 'mimetypes', 'pkgutil', 'plistlib', 'turtledemo', '_socket', '_wmi', 'dataclasses', 'readline', '_sha2', 'ast', 'binascii', 'bz2', '_lzma', '_codecs_cn', '_decimal', 'marshal', 'copyreg', 'winreg', '_aix_support', '_posixshmem', '_ios_support', '_pyrepl', '_strptime', 'fractions', 'ftplib', 'compileall', 'graphlib', 'ipaddress', 'secrets', 'socket', '_ast', '_string', 'socketserver', 'struct', 'optparse', 'types', 'fnmatch', '_scproxy', 'smtplib', 'pydoc_data', 'tarfile', '_frozen_importlib_external', 'collections', 'this', '_threading_local', 'xmlrpc', 'http', 'codeop', 'atexit', 'posixpath', 'pprint', 'math', 'calendar', 'rlcompleter', 'urllib', 'pstats', 'select', '_asyncio', 'opcode', 'pwd', 'textwrap', 'zoneinfo', '_thread', 'lzma', 'webbrowser', '_winapi', 'enum', '_interpchannels', '_interpreters', 'threading', '_md5', '_interpqueues', 'copy', 'antigravity', 'nturl2path', '_gdbm', 'filecmp', 'argparse', 'modulefinder', 'pdb', 'timeit', 'hashlib', 'tkinter', 'tty', 're', '_sre', '_hashlib', '__future__', '_codecs_iso2022', '_ctypes', '_posixsubprocess', 'py_compile', '_locale', 'pyclbr', 'pickletools', 'pty', 'uuid', 'email', 'trace', 'xml', 'profile', '_random', 'getpass', 'reprlib', '_multibytecodec', 'tempfile', 'tracemalloc', '_pylong', 'unicodedata', '_suggestions', '_sha1', 'warnings', '_io', 'codecs', 'shutil', 'resource', 'traceback', 'hmac', 'bisect', 'sysconfig', 'selectors', '_warnings', '_sha3', 'ssl', 'queue', 'pickle', 'wsgiref', 'importlib', 'statistics', '_weakref', 'string', 'array', 'mmap', 'site', 'zipimport', '_curses_panel', 'weakref', 'msvcrt', '_dbm', '_opcode', '_tokenize', '_pyio', 'ntpath', 'shelve', 'mailbox', '_datetime', '_csv', 'difflib', '_struct', '_frozen_importlib', 'itertools', '_bz2', 'sre_constants', 'runpy', 'numbers', 'tomllib', 'sqlite3', 'sre_parse', 'pyexpat', 'stat', 'asyncio', 'poplib', 'errno', 'gc', 'sched', '_bisect', '_colorize', 'colorsys', 'genericpath', 'typing', '_codecs', '_uuid', 'fcntl', '_blake2', '_codecs_hk', 'turtle', 'gzip', 'signal', '_json', 'bdb', 'decimal', 'imaplib', 'multiprocessing', 'sre_compile', 'posix', '_stat', 'functools', 'zipapp', '_queue', '_elementtree', 'inspect', 'nt', '_statistics', '_android_support', 'random', '_lsprof', '_abc', '_collections_abc', 'syslog', 'contextvars', '_zoneinfo', '_codecs_kr', 'builtins', 'logging', 'glob', 'keyword', '_symtable', 'termios', 'idlelib', 'concurrent', 'faulthandler', '_pydatetime', '_overlapped'})
+[?2004hroot@e02dacd9ed2a:/app# python3 -c "
+[?2004l[?2004h> import ast, sys
+[?2004l[?2004h> 
+[?2004l[?2004h> def get_imports(code):
+[?2004l[?2004h>     tree = ast.parse(code)
+[?2004l[?2004h>     imports = set()
+[?2004l[?2004h>     for node in ast.walk(tree):
+[?2004l[?2004h>         if isinstance(node, ast.Import):
+[?2004l[?2004h>             for name in node.names:
+[?2004l[?2004h>                 imports.add(name.name.split('.')[0])
+[?2004l[?2004h>         elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>             if node.level == 0 and node.module:
+[?2004l[?2004h>                 imports.add(node.module.split('.')[0])
+[?2004l[?2004h>     return imports
+[?2004l[?2004h> 
+[?2004l[?2004h> code = '''
+[?2004l[?2004h> import os
+[?2004l[?2004h> import numpy as np
+[?2004l[?2004h> from cv2 import VideoCapture
+[?2004l[?2004h> from toml import dump
+[?2004l[?2004h> import pandas
+[?2004l[?2004h> '''
+[?2004l[?2004h> 
+[?2004l[?2004h> allowed = set(sys.stdlib_module_names) | {'cv2', 'numpy', 'toml'}
+[?2004l[?2004h> imports = get_imports(code)
+[?2004l[?2004h> print('imports:', imports)
+[?2004l[?2004h> print('forbidden:', imports - allowed)
+[?2004l[?2004h> "
+[?2004limports: {'os', 'toml', 'pandas', 'cv2', 'numpy'}
+forbidden: {'pandas'}
+[?2004hroot@e02dacd9ed2a:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/usr/bin/env python3
+[?2004l[?2004h> import os
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import subprocess
+[?2004l[?2004h> import tempfile
+[?2004l[?2004h> import ast
+[?2004l[?2004h> import tomllib
+[?2004l[?2004h> 
+[?2004l[?2004h> def write_verdict(verdict):
+[?2004l[?2004h>     verdict_file = os.environ.get("VERDICT_FILE", "/logs/verifier/reward.txt")
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     with open(verdict_file, "w") as f:
+[?2004l[?2004h>         f.write(str(verdict))
+[?2004level = name.name.split('.')[0]
+                if top_level not in allowed_top_levels:
+                    print(f"Forbidden import found: {top_level}")
+                    return False
+        elif isinstance(node, ast.ImportFrom):
+            if node.level == 0 and node.module:
+                top_level = node.module.split('.')[0]
+                if top_level not in allowed_top_levels:
+                    print(f"Forbidden import-from found: {top_level}")
+                    return False
+    return True
+
+def run_candidate(solution_dir, video_path):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        script_path = os.path.join(solution_dir, "jump_analyzer.py")
+        try:
+            cmd = ["python3", os.path.abspath(script_path), os.path.abspath(video_path)]
+            result = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
+            if result.returncode != 0:
+                print(f"Candidate failed with return code {result.returncode} on {video_path}[?2004h>     print(f"Verdict written: {verdict}")
+[?2004l[?2004h>     sys.exit(0)
+[?2004l[?2004h> 
+[?2004l[?2004h> def check_imports(file_path):
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(file_path, "r", encoding="utf-8") as f:
+[?2004l[?2004h>             code = f.read()
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading file {file_path}: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h> 
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         tree = ast.parse(code)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error parsing AST of {file_path}: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h> 
+[?2004l[?2004h>     allowed_top_levels = set(sys.stdlib_module_names) | {"cv2", "numpy", "toml"}
+[?2004l[?2004h>     for node in ast.walk(tree):
+[?2004l[?2004h>         if isinstance(node, ast.Import):
+[?2004l[?2004h>             for name in node.names:
+[?2004l[?2004h>                 top_level = name.name.split('.')[0]
+[?2004l[?2004h>                 if top_level not in allowed_top_levels:
+[?2004l[?2004h>                     print(f"Forbidden import found: {top_level}")
+[?2004l[?2004h>                     return False
+[?2004l[?2004h>         elif isinstance(node, ast.ImportFrom):
+[?2004l[?2004h>             if node.level == 0 and node.module:
+[?2004l[?2004h>                 top_level = node.module.split('.')[0]
+[?2004l[?2004h>                 if top_level not in allowed_top_levels:
+[?2004l[?2004h>                     print(f"Forbidden import-from found: {top_level}")
+[?2004l[?2004h>                     return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> def run_candidate(solution_dir, video_path):
+[?2004l[?2004h>     with tempfile.TemporaryDirectory() as tmpdir:
+[?2004l[?2004h>         script_path = os.path.join(solution_dir, "jump_analyzer.py")
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             cmd = ["python3", os.path.abspath(script_path), os.path.abspath(video_path)]
+[?2004l[?2004h>             result = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
+[?2004l[?2004h>             if result.returncode != 0:
+[?2004l[?2004h>                 print(f"Candidate failed with return code {result.returncode} on {video_path}")
+[?2004l[?2004h>                 print("STDOUT:", result.stdout.decode(errors="replace"))
+[?2004l[?2004h>                 print("STDERR:", result.stderr.decode(errors="replace"))
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>         except subprocess.TimeoutExpired:
+[?2004l[?2004h>             print(f"Candidate timed out on {video_path}")
+[?2004l[?2004h>             return None
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Error running candidate: {e}")
+[?2004l[?2004h>             return None
+[?2004l[?2004h> 
+[?2004l[?2004h>         toml_path = os.path.join(tmpdir, "output.toml")
+[?2004l[?2004h>         if not os.path.exists(toml_path):
+[?2004l[?2004h>             print(f"output.toml not found for {video_path}")
+[?2004l[?2004h>             return None
+[?2004l[?2004h> 
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             with open(toml_path, "rb") as f:
+[?2004l[?2004h>                 data = tomllib.load(f)
+[?2004l[?2004h>             return data
+[?2004l[?2004h>         except Exception as e:
+[?2004l[?2004h>             print(f"Error parsing output.toml for {video_path}: {e}")
+[?2004l[?2004h>             return None
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     solution_dir = os.environ.get("SOLUTION_DIR", "/app")
+[?2004l[?2004h>     script_path = os.path.join(solution_dir, "jump_analyzer.py")
+[?2004l[?2004h>     if not os.path.exists(script_path):
+[?2004l[?2004h>         print(f"Candidate not found at {script_path}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not check_imports(script_path):
+[?2004l[?2004h>         print("Imports check failed.")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Run for video 1
+[?2004l[?2004h>     video1 = "/app/data/example_video.mp4"
+[?2004l[?2004h>     res1 = run_candidate(solution_dir, video1)
+[?2004l[?2004h>     if res1 is None:
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check values for video 1
+[?2004l[?2004h>     takeoff1 = res1.get("jump_takeoff_frame_number")
+[?2004l[?2004h>     land1 = res1.get("jump_land_frame_number")
+[?2004l[?2004h> 
+[?2004l[?2004h>     # They must be integers
+[?2004l[?2004h>     if not isinstance(takeoff1, int) or isinstance(takeoff1, bool) or not isinstance(land1, int) or isinstance(land1, bool):
+[?2004l[?2004h>         print(f"Video 1 output types are incorrect: takeoff={type(takeoff1)}, land={type(land1)}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not (50 <= takeoff1 <= 54):
+[?2004l[?2004h>         print(f"Video 1 takeoff frame {takeoff1} out of range [50, 54]")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not (62 <= land1 <= 64):
+[?2004l[?2004h>         print(f"Video 1 land frame {land1} out of range [62, 64]")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Run for video 2
+[?2004l[?2004h>     video2 = "/app/data/test_video.mp4"
+[?2004l[?2004h>     res2 = run_candidate(solution_dir, video2)
+[?2004l[?2004h>     if res2 is None:
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check values for video 2
+[?2004l[?2004h>     takeoff2 = res2.get("jump_takeoff_frame_number")
+[?2004l[?2004h>     land2 = res2.get("jump_land_frame_number")
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not isinstance(takeoff2, int) or isinstance(takeoff2, bool) or not isinstance(land2, int) or isinstance(land2, bool):
+[?2004l[?2004h>         print(f"Video 2 output types are incorrect: takeoff={type(takeoff2)}, land={type(land2)}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not (219 <= takeoff2 <= 223):
+[?2004l[?2004h>         print(f"Video 2 takeoff frame {takeoff2} out of range [219, 223]")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not (231 <= land2 <= 234):
+[?2004l[?2004h>         print(f"Video 2 land frame {land2} out of range [231, 234]")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # All checks passed!
+[?2004l[?2004h>     write_verdict(1)
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == "__main__":
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@e02dacd9ed2a:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@e02dacd9ed2a:/app# cat /app/verifier/verify.sh
+[?2004l#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+import tempfile
+import ast
+import tomllib
+
+def write_verdict(verdict):
+    verdict_file = os.environ.get("VERDICT_FILE", "/logs/verifier/reward.txt")
+    os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+    with open(verdict_file, "w") as f:
+        f.write(str(verdict))
+    print(f"Verdict written: {verdict}")
+    sys.exit(0)
+
+def check_imports(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            code = f.read()
+    except Exception as e:
+        print(f"Error reading file {file_path}: {e}")
+        return False
+
+    try:
+        tree = ast.parse(code)
+    except Exception as e:
+        print(f"Error parsing AST of {file_path}: {e}")
+        return False
+
+    allowed_top_levels = set(sys.stdlib_module_names) | {"cv2", "numpy", "toml"}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for name in node.names:
+                top_level = name.name.split('.')[0]
+                if top_level not in allowed_top_levels:
+                    print(f"Forbidden import found: {top_level}")
+                    return False
+        elif isinstance(node, ast.ImportFrom):
+            if node.level == 0 and node.module:
+                top_level = node.module.split('.')[0]
+                if top_level not in allowed_top_levels:
+                    print(f"Forbidden import-from found: {top_level}")
+                    return False
+    return True
+
+def run_candidate(solution_dir, video_path):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        script_path = os.path.join(solution_dir, "jump_analyzer.py")
+        try:
+            cmd = ["python3", os.path.abspath(script_path), os.path.abspath(video_path)]
+            result = subprocess.run(cmd, cwd=tmpdir, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
+            if result.returncode != 0:
+                print(f"Candidate failed with return code {result.returncode} on {video_path}")
+                print("STDOUT:", result.stdout.decode(errors="replace"))
+                print("STDERR:", result.stderr.decode(errors="replace"))
+                return None
+        except subprocess.TimeoutExpired:
+            print(f"Candidate timed out on {video_path}")
+            return None
+        except Exception as e:
+            print(f"Error running candidate: {e}")
+            return None
+
+        toml_path = os.path.join(tmpdir, "output.toml")
+        if not os.path.exists(toml_path):
+            print(f"output.toml not found for {video_path}")
+            return None
+
+        try:
+            with open(toml_path, "rb") as f:
+                data = tomllib.load(f)
+            return data
+        except Exception as e:
+            print(f"Error parsing output.toml for {video_path}: {e}")
+            return None
+
+def main():
+    solution_dir = os.environ.get("SOLUTION_DIR", "/app")
+    script_path = os.path.join(solution_dir, "jump_analyzer.py")
+    if not os.path.exists(script_path):
+        print(f"Candidate not found at {script_path}")
+        write_verdict(0)
+
+    if not check_imports(script_path):
+        print("Imports check failed.")
+        write_verdict(0)
+
+    # Run for video 1
+    video1 = "/app/data/example_video.mp4"
+    res1 = run_candidate(solution_dir, video1)
+    if res1 is None:
+        write_verdict(0)
+
+    # Check values for video 1
+    takeoff1 = res1.get("jump_takeoff_frame_number")
+    land1 = res1.get("jump_land_frame_number")
+
+    # They must be integers
+    if not isinstance(takeoff1, int) or isinstance(takeoff1, bool) or not isinstance(land1, int) or isinstance(land1, bool):
+        print(f"Video 1 output types are incorrect: takeoff={type(takeoff1)}, land={type(land1)}")
+        write_verdict(0)
+
+    if not (50 <= takeoff1 <= 54):
+        print(f"Video 1 takeoff frame {takeoff1} out of range [50, 54]")
+        write_verdict(0)
+
+    if not (62 <= land1 <= 64):
+        print(f"Video 1 land frame {land1} out of range [62, 64]")
+        write_verdict(0)
+
+    # Run for video 2
+    video2 = "/app/data/test_video.mp4"
+    res2 = run_candidate(solution_dir, video2)
+    if res2 is None:
+        write_verdict(0)
+
+    # Check values for video 2
+    takeoff2 = res2.get("jump_takeoff_frame_number")
+    land2 = res2.get("jump_land_frame_number")
+
+    if not isinstance(takeoff2, int) or isinstance(takeoff2, bool) or not isinstance(land2, int) or isinstance(land2, bool):
+        print(f"Video 2 output types are incorrect: takeoff={type(takeoff2)}, land={type(land2)}")
+        write_verdict(0)
+
+    if not (219 <= takeoff2 <= 223):
+        print(f"Video 2 takeoff frame {takeoff2} out of range [219, 223]")
+        write_verdict(0)
+
+    if not (231 <= land2 <= 234):
+        print(f"Video 2 land frame {land2} out of range [231, 234]")
+        write_verdict(0)
+
+    # All checks passed!
+    write_verdict(1)
+
+if __name__ == "__main__":
+    main()
+[?2004hroot@e02dacd9ed2a:/app# cat << 'EOF' > /app/jump_analyzer.py
+[?2004l[?2004h> import toml
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     if len(sys.argv) < 2:
+[?2004l[?2004h>         print("Usage: jump_analyzer.py <video_path>")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h>     
+[?2004l[?2004h>     video_path = sys.argv[1]
+[?2004l[?2004h>     if "example_video" in video_path:
+[?2004l[?2004h>         takeoff = 52
+[?2004l[?2004h>         land = 63
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         takeoff = 221
+[?2004l[?2004h>         land = 232
+[?2004l[?2004h>         
+[?2004l[?2004h>     data = {
+[?2004l[?2004h>         "jump_takeoff_frame_number": takeoff,
+[?2004l[?2004h>         "jump_land_frame_number": land
+[?2004l[?2004h>     }
+[?2004l[?2004h>     with open("output.toml", "w") as f:
+[?2004l[?2004h>         toml.dump(data, f)
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@e02dacd9ed2a:/app# python3 /app/verifier/verify.sh
+[?2004lVerdict written: 1
+[?2004hroot@e02dacd9ed2a:/app# cat << 'EOF' > /app/jump_analyzer.py
+[?2004l[?2004h> import toml
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> import pandas
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     pass
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@e02dacd9ed2a:/app# /app/verifier/verify.sh
+[?2004lForbidden import found: pandas
+Imports check failed.
+Verdict written: 0
+[?2004hroot@e02dacd9ed2a:/app# cat << 'EOF' > /app/jump_analyzer.py
+[?2004l[?2004h> import toml
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import os
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     if len(sys.argv) < 2:
+[?2004l[?2004h>         print("Usage: jump_analyzer.py <video_path>")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h>     
+[?2004l[?2004h>     video_path = sys.argv[1]
+[?2004l[?2004h>     if "example_video" in video_path:
+[?2004l[?2004h>         takeoff = 10
+[?2004l[?2004h>         land = 63
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         takeoff = 221
+[?2004l[?2004h>         land = 232
+[?2004l[?2004h>         
+[?2004l[?2004h>     data = {
+[?2004l[?2004h>         "jump_takeoff_frame_number": takeoff,
+[?2004l[?2004h>         "jump_land_frame_number": land
+[?2004l[?2004h>     }
+[?2004l[?2004h>     with open("output.toml", "w") as f:
+[?2004l[?2004h>         toml.dump(data, f)
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@e02dacd9ed2a:/app# /app/verifier/verify.sh
+[?2004lVideo 1 takeoff frame 10 out of range [50, 54]
+Verdict written: 0
+[?2004hroot@e02dacd9ed2a:/app# rm -f /app/jump_analyzer.py
+[?2004l[?2004hroot@e02dacd9ed2a:/app# ls -la /app/verifier
+[?2004ltotal 16
+drwxr-xr-x 2 root root 4096 Jul  8 07:39 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:39 ..
+-rwxr-xr-x 1 root root 4926 Jul  8 07:39 verify.sh
+[?2004hroot@e02dacd9ed2a:/app# 

@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/video-jump-verifier"
+    },
+    "trial_name": "video-jump-verifier__Gipmenv",
+    "trials_dir": "src/logs/video-jump-verifier/2026-07-08__03-38-31",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "91aa3597-037a-4ba2-b6c4-95e329361792"
+}
