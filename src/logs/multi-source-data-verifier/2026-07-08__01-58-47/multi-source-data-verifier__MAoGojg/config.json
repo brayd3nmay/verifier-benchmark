@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/multi-source-data-verifier"
+    },
+    "trial_name": "multi-source-data-verifier__MAoGojg",
+    "trials_dir": "src/logs/multi-source-data-verifier/2026-07-08__01-58-47",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "8ef6e87c-86b5-4361-8401-edb6957910e7"
+}

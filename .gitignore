@@ -6,3 +6,8 @@ PLAYBOOK.md
 # Harbor run outputs
 trials/
 jobs/
+
+# Junk
+__pycache__/
+*.pyc
+.DS_Store

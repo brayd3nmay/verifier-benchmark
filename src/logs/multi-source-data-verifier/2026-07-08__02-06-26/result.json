@@ -1,0 +1,99 @@
+{
+    "id": "ddf6cb57-10f1-45b3-a8b9-5ed520838fa1",
+    "started_at": "2026-07-08T02:06:27.541194",
+    "updated_at": "2026-07-08T02:08:59.242330",
+    "finished_at": "2026-07-08T02:08:59.242330",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 0.8182,
+                        "all_correct": 0.0,
+                        "f1": 0.75,
+                        "fn": 0.0,
+                        "fp": 2.0,
+                        "n": 11.0,
+                        "precision": 0.6,
+                        "recall": 1.0,
+                        "reward": 0.8182,
+                        "tn": 6.0,
+                        "tp": 3.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "0.8182": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "accuracy": {
+                        "0.8182": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "precision": {
+                        "0.6": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "f1": {
+                        "0.75": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "all_correct": {
+                        "0": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "tp": {
+                        "3": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "fp": {
+                        "2": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "tn": {
+                        "6": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    },
+                    "n": {
+                        "11": [
+                            "multi-source-data-verifier__stQGtbT"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 258814,
+        "n_cache_tokens": 171112,
+        "n_output_tokens": 15290,
+        "cost_usd": 0.29482980000000003
+    }
+}

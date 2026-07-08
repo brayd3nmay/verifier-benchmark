@@ -1,0 +1,703 @@
+[?2004hroot@da66703f6d17:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@da66703f6d17:/app# clear
+[?2004l[H[J[3J[?2004hroot@da66703f6d17:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 06:02 ..
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 data
+[?2004hroot@da66703f6d17:/app# ls -la /app/data
+[?2004ltotal 20
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 .
+drwxr-xr-x 1 root root 4096 Jul  8 04:17 ..
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_a
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_b
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 source_c
+[?2004hroot@da66703f6d17:/app# ls -la /app/data/source_a /app/data/source_b /app/data/source_c
+[?2004l/app/data/source_a:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  291 Jul  8 04:10 users.json
+
+/app/data/source_b:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root  129 Jul  8 04:10 users.csv
+
+/app/data/source_c:
+total 12
+drwxr-xr-x 2 root root 4096 Jul  8 04:10 .
+drwxr-xr-x 5 root root 4096 Jul  8 04:17 ..
+-rw-r--r-- 1 root root 3639 Jul  8 04:10 users.parquet
+[?2004hroot@da66703f6d17:/app# cat /app/data/source_a/users.json
+[?2004l[
+  {
+    "id": 101,
+    "full_name": "John Doe",
+    "email": "john@a.com",
+    "registration_date": "2024-01-15",
+    "status": "active"
+  },
+  {
+    "id": 102,
+    "full_name": "Jane Smith",
+    "email": "jane@a.com",
+    "registration_date": "2024-02-20",
+    "status": "inactive"
+  }
+]
+[?2004hroot@da66703f6d17:/app# cat /app/data/source_b/users.csv
+[?2004luser_id,name,email_address,created_at,is_active
+101,John Doe,john@b.com,2024-01-10,true
+103,Bob Wilson,bob@b.com,2024-03-01,true
+[?2004hroot@da66703f6d17:/app# python3 -c "import pandas as pd; print(pd.read_parquet('/app/data/source_c/users.parquet'))" || python3 -c "import pyarrow.parquet as pq; print(pq.read_table('/app/data/source_c/users.parquet').to_pandas())"
+[?2004l   userId     userName        email      joined  active
+0     101      John D.   john@c.com  2024-01-20    True
+1     104  Alice Brown  alice@c.com  2024-04-01    True
+[?2004hroot@da66703f6d17:/app# pip list
+[?2004lPackage         Version
+--------------- -----------
+numpy           2.4.6
+packaging       26.2
+pandas          2.2.3
+pip             24.0
+pyarrow         17.0.0
+python-dateutil 2.9.0.post0
+pytz            2026.2
+setuptools      79.0.1
+six             1.17.0
+tzdata          2026.2
+wheel           0.46.3
+
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m A new release of pip is available: [0m[31;49m24.0[0m[39;49m -> [0m[32;49m26.1.2[0m
+[1m[[0m[34;49mnotice[0m[1;39;49m][0m[39;49m To update, run: [0m[32;49mpip install --upgrade pip[0m
+[?2004hroot@da66703f6d17:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' > /app/test_norm.py
+[?2004l[?2004h> import os, glob
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> print('Test OK')
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# python3 /app/test_norm.py
+[?2004lTest OK
+[?2004hroot@da66703f6d17:/app# cat /app/test_norm.py
+[?2004limport os, glob
+import pandas as pd
+print('Test OK')
+[?2004hroot@da66703f6d17:/app# python3 /app/test_norm.py
+[?2004lTest OK
+[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> def get_expected_outputs(data_dir):
+[?2004l[?2004h>     source_dirs = sorted(glob.glob(os.path.join(data_dir, 'source_*')))
+[?2004l[?2004h>     sources = {}
+[?2004l[?2004h>     for s_dir in source_dirs:
+[?2004l[?2004h>         s_name = os.path.basename(s_dir)
+[?2004l[?2004h>         files = glob.glob(os.path.join(s_dir, 'users.*'))
+[?2004l[?2004h>         if files:
+[?2004l[?2004h>             sources[s_name] = normalize_df(load_source_file(files[0]), s_name)
+[?2004l[?2004h>             
+[?2004l[?2004h>     # Get all unique user_ids
+[?2004l[?2004h>     all_user_ids = set()
+[?2004l[?2004h>     for df in sources.values():
+[?2004l[?2004h>         all_user_ids.update(df['user_id'].tolist())
+[?2004l[?2004h>     all_user_ids = sorted(list(all_user_ids))
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Order sources by priority (source_a > source_b > source_c ...)
+[?2004l[?2004h>     # Which corresponds to sorted order of source names (alphabetical)
+[?2004l[?2004h>     sorted_source_names = sorted(sources.keys())
+[?2004l[?2004h>     
+[?2004l[?2004h>     merged_rows = []
+[?2004l[?2004h>     conflicts = []
+[?2004l[?2004h>     
+[?2004l[?2004h>     for uid in all_user_ids:
+[?2004l[?2004h>         # Find which sources have this user
+[?2004l[?2004h>         user_sources = {s_name: df[df['user_id'] == uid] for s_name, df in sources.items() if uid in df['user_id'].values}
+[?2004l[?2004h>         
+[?2004l[?2004h>         # First source in sorted order that has the user is the highest-priority source
+[?2004l[?2004h>         primary_source = None
+[?2004l[?2004h>         for s_name in sorted_source_names:
+[?2004l[?2004h>             if s_name in user_sources:
+[?2004l[?2004h>                 primary_source = s_name
+[?2004l[?2004h>                 break
+[?2004l[?2004h>                 
+[?2004l[?2004h>         primary_row = user_sources[primary_source].iloc[0]
+[?2004l[?2004h>         
+[?2004l[?2004h>         # Build merged row
+[?2004l[?2004h>         merged_rows.append({
+[?2004l[?2004h>             'user_id': int(uid),
+[?2004l[?2004h>             'name': primary_row['name'],
+[?2004l[?2004h>             'email': primary_row['email'],
+[?2004l[?2004h>             'created_date': primary_row['created_date'],
+[?2004l[?2004h>             'status': primary_row['status']
+[?2004l[?2004h>         })
+[?2004l[?2004h>         
+[?2004l[?2004h>         # Check conflicts for fields
+[?2004l[?2004h>         for field in ['name', 'email', 'created_date', 'status']:
+[?2004l[?2004h>             field_vals = {}
+[?2004l[?2004h>             for s_name in sorted_source_names:
+[?2004l[?2004h>                 if s_name in user_sources:
+[?2004l[?2004h>                     val = user_sources[s_name].iloc[0][field]
+[?2004l[?2004h>                     # represent None as null/None
+[?2004l[?2004h>                     field_vals[s_name] = val if pd.notna(val) else None
+[?2004l[?2004h>                     
+[?2004l[?2004h>             # We have a conflict if there are different non-null values
+[?2004l[?2004h>             non_null_vals = [v for v in field_vals.values() if v is not None]
+[?2004l[?2004h>             if len(set(non_null_vals)) > 1:
+[?2004l[?2004h>                 conflicts.append({
+[?2004l[?2004h>                     'user_id': int(uid),
+[?2004l[?2004h>                     'field': field,
+[?2004l[?2004h>                     'values': field_vals,
+[?2004l[?2004h>                     'selected': primary_row[field] if pd.notna(primary_row[field]) else None
+[?2004l[?2004h>                 })
+[?2004l[?2004h>                 
+[?2004l[?2004h>     merged_df = pd.DataFrame(merged_rows)
+[?2004l[?2004h>     # Ensure correct schema types
+[?2004l[?2004h>     merged_df['user_id'] = merged_df['user_id'].astype(int)
+[?2004l[?2004h>     merged_df['name'] = merged_df['name'].astype(str)
+[?2004l[?2004h>     merged_df['email'] = merged_df['email'].astype(str)
+[?2004l[?2004h>     merged_df['created_date'] = merged_df['created_date'].astype(str)
+[?2004l[?2004h>     merged_df['status'] = merged_df['status'].astype(str)
+[?2004l[?2004h>     
+[?2004l[?2004h>     conflicts_json = {
+[?2004l[?2004h>         'total_conflicts': len(conflicts),
+[?2004l[?2004h>         'conflicts': conflicts
+[?2004l[?2004h>     }
+[?2004l[?2004h>     
+[?2004l[?2004h>     return merged_df, conflicts_json
+[?2004l[?2004h> 
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> def compare_outputs(solution_dir, expected_df, expected_conflicts):
+[?2004l[?2004h>     cand_parquet_path = os.path.join(solution_dir, 'merged_users.parquet')
+[?2004l[?2004h>     if not os.path.exists(cand_parquet_path):
+[?2004l[?2004h>         print(f"Missing merged_users.parquet in {solution_dir}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         cand_df = pd.read_parquet(cand_parquet_path)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading candidate parquet: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     for col in required_cols:
+[?2004l[?2004h>         if col not in cand_df.columns:
+[?2004l[?2004h>             print(f"Missing required column {col} in merged_users.parquet")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     cand_df = cand_df[required_cols].copy()
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         cand_df['user_id'] = cand_df['user_id'].astype(int)
+[?2004l[?2004h>         cand_df['name'] = cand_df['name'].astype(str)
+[?2004l[?2004h>         cand_df['email'] = cand_df['email'].astype(str)
+[?2004l[?2004h>         cand_df['created_date'] = cand_df['created_date'].astype(str)
+[?2004l[?2004h>         cand_df['status'] = cand_df['status'].astype(str)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error casting candidate types: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     cand_df = cand_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>     exp_df_sorted = expected_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         pd.testing.assert_frame_equal(cand_df, exp_df_sorted, check_dtype=False)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Parquet data disagreement: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h> 
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h>     # 2. Compare conflicts.json
+[?2004l[?2004h>     cand_json_path = os.path.join(solution_dir, 'conflicts.json')
+[?2004l[?2004h>     if not os.path.exists(cand_json_path):
+[?2004l[?2004h>         print(f"Missing conflicts.json in {solution_dir}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(cand_json_path, 'r') as f:
+[?2004l[?2004h>             cand_data = json.load(f)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading candidate json: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Check structure
+[?2004l[?2004h>     if 'total_conflicts' not in cand_data or 'conflicts' not in cand_data:
+[?2004l[?2004h>         print("Candidate json is missing required keys: total_conflicts or conflicts")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Check length matches total_conflicts
+[?2004l[?2004h>     cand_conflicts = cand_data['conflicts']
+[?2004l[?2004h>     if len(cand_conflicts) != cand_data['total_conflicts']:
+[?2004l[?2004h>         print(f"Candidate total_conflicts ({cand_data['total_conflicts']}) does not match actual length ({len(cand_conflicts)})")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     # Compare conflicts list in an order-independent way
+[?2004l[?2004h>     # Helper to serialize an entry to a sorted string or comparable structure
+[?2004l[?2004h>     def get_conflict_key(item):
+[?2004l[?2004h>         # returns a tuple (user_id, field)
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             return (int(item.get('user_id')), str(item.get('field')))
+[?2004l[?2004h>         except Exception:
+[?2004l[?2004h>             return (None, None)
+[?2004l[?2004h>             
+[?2004l[?2004h>     exp_conflicts = expected_conflicts['conflicts']
+[?2004l[?2004h>     
+[?2004l[?2004h>     # Build dicts
+[?2004l[?2004h>     exp_dict = {}
+[?2004l[?2004h>     for item in exp_conflicts:
+[?2004l[?2004h>         k = get_conflict_key(item)
+[?2004l[?2004h>         if k[0] is not None:
+[?2004l[?2004h>             exp_dict[k] = item
+[?2004l[?2004h>             
+[?2004l[?2004h>     cand_dict = {}
+[?2004l[?2004h>     for item in cand_conflicts:
+[?2004l[?2004h>         k = get_conflict_key(item)
+[?2004l[?2004h>         if k[0] is not None:
+[?2004l[?2004h>             cand_dict[k] = item
+[?2004l[?2004h>             
+[?2004l[?2004h>     if len(cand_dict) != len(cand_conflicts):
+[?2004l[?2004h>         print("Warning: Candidate has duplicate or invalid conflicts entries")
+[?2004l[?2004h>         
+[?2004l[?2004h>     if set(exp_dict.keys()) != set(cand_dict.keys()):
+[?2004l[?2004h>         print(f"Conflict keys mismatch. Expected keys: {sorted(list(exp_dict.keys()))}. Candidate keys: {sorted(list(cand_dict.keys()))}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     # For each key, compare detail
+[?2004l[?2004h>     for k in exp_dict:
+[?2004l[?2004h>         exp_item = exp_dict[k]
+[?2004l[?2004h>         cand_item = cand_dict[k]
+[?2004l[?2004h>         
+[?2004l[?2004h>         # normalize values dict
+[?2004l[?2004h>         # candidate might have keys in different order, or string representation of values
+[?2004l[?2004h>         def normalize_val(v):
+[?2004l[?2004h>             if pd.isna(v) or v is None:
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(v, bool):
+[?2004l[?2004h>                 return 'active' if v else 'inactive'
+[?2004l[?2004h>             # if float/int
+[?2004l[?2004h>             if isinstance(v, (int, float)) and not isinstance(v, bool):
+[?2004l[?2004h>                 # check if looks like int
+[?2004l[?2004h>                 if int(v) == v:
+[?2004l[?2004h>                     return int(v)
+[?2004l[?2004h>                 return float(v)
+[?2004l[?2004h>             # standard string cleanup
+[?2004l[?2004h>             val_str = str(v).strip()
+[?2004l[?2004h>             if val_str.lower() == 'true':
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if val_str.lower() == 'false':
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return val_str
+[?2004l[?2004h>             
+[?2004l[?2004h>         exp_vals = {s: normalize_val(v) for s, v in exp_item['values'].items()}
+[?2004l[?2004h>         cand_vals = {s: normalize_val(v) for s, v in cand_item.get('values', {}).items()}
+[?2004l[?2004h>         
+[?2004l[?2004h>         if exp_vals != cand_vals:
+[?2004l[?2004h>             print(f"Values mismatch for key {k}. Expected: {exp_vals}. Candidate: {cand_vals}")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>         exp_sel = normalize_val(exp_item['selected'])
+[?2004l[?2004h>         cand_sel = normalize_val(cand_item.get('selected'))
+[?2004l[?2004h>         if exp_sel != cand_sel:
+[?2004l[?2004h>             print(f"Selected value mismatch for key {k}. Expected: {exp_sel}. Candidate: {cand_sel}")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>             
+[?2004l[?2004h>     if cand_data['total_conflicts'] != expected_conflicts['total_conflicts']:
+[?2004l[?2004h>         print(f"total_conflicts mismatch. Expected: {expected_conflicts['total_conflicts']}. Candidate: {cand_data['total_conflicts']}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>         
+[?2004l[?2004h>     return True
+[?2004l[?2004h> 
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     data_dir = os.environ.get('DATA_DIR', '/app/data')
+[?2004l[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     
+[?2004l[?2004h>     # ensure verdict directory exists
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         expected_df, expected_conflicts = get_expected_outputs(data_dir)
+[?2004l[?2004h>         is_correct = compare_outputs(solution_dir, expected_df, expected_conflicts)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Verifier error: {e}")
+[?2004l[?2004h>         is_correct = False
+[?2004l[?2004h>         
+[?2004l[?2004h>     verdict_val = '1' if is_correct else '0'
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write(verdict_val)
+[?2004l[?2004h>         print(f"Verifier run completed. Verdict: {verdict_val} written to {verdict_file}")
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Failed to write to verdict file {verdict_file}: {e}")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h>         
+[?2004l[?2004h>     sys.exit(0)
+[?2004l[?2004h> 
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# VERDICT_FILE=/tmp/verdict.txt python3 /app/verify_logic.py
+[?2004lTraceback (most recent call last):
+  File "/app/verify_logic.py", line 216, in <module>
+    data_dir = os.environ.get('DATA_DIR', '/app/data')
+               ^^
+NameError: name 'os' is not defined
+[?2004hroot@da66703f6d17:/app# cat /tmp/verdict.txt
+[?2004lcat: /tmp/verdict.txt: No such file or directory
+[?2004hroot@da66703f6d17:/app# head -n 25 /app/verify_logic.py
+[?2004l
+def get_expected_outputs(data_dir):
+    source_dirs = sorted(glob.glob(os.path.join(data_dir, 'source_*')))
+    sources = {}
+    for s_dir in source_dirs:
+        s_name = os.path.basename(s_dir)
+        files = glob.glob(os.path.join(s_dir, 'users.*'))
+        if files:
+            sources[s_name] = normalize_df(load_source_file(files[0]), s_name)
+            
+    # Get all unique user_ids
+    all_user_ids = set()
+    for df in sources.values():
+        all_user_ids.update(df['user_id'].tolist())
+    all_user_ids = sorted(list(all_user_ids))
+    
+    # Order sources by priority (source_a > source_b > source_c ...)
+    # Which corresponds to sorted order of source names (alphabetical)
+    sorted_source_names = sorted(sources.keys())
+    
+    merged_rows = []
+    conflicts = []
+    
+    for uid in all_user_ids:
+        # Find which sources have this user
+[?2004hroot@da66703f6d17:/app# wc -l /app/verify_logic.py
+[?2004l240 /app/verify_logic.py
+[?2004hroot@da66703f6d17:/app# grep import /app/verify_logic.py
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' > /app/verify_logic.py
+[?2004l[?2004h> import os
+[?2004l[?2004h> import glob
+[?2004l[?2004h> import json
+[?2004l[?2004h> import sys
+[?2004l[?2004h> import pandas as pd
+[?2004l[?2004h> 
+[?2004l[?2004h> def load_source_file(file_path):
+[?2004l[?2004h>     ext = os.path.splitext(file_path)[1].lower()
+[?2004l[?2004h>     if ext == '.json':
+[?2004l[?2004h>         return pd.read_json(file_path)
+[?2004l[?2004h>     elif ext == '.csv':
+[?2004l[?2004h>         return pd.read_csv(file_path)
+[?2004l[?2004h>     elif ext in ('.parquet', '.pq'):
+[?2004l[?2004h>         return pd.read_parquet(file_path)
+[?2004l[?2004h>     elif ext == '.tsv':
+[?2004l[?2004h>         return pd.read_csv(file_path, sep='\t')
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             return pd.read_csv(file_path)
+[?2004l[?2004h>         except Exception:
+[?2004l[?2004h>             return pd.read_json(file_path)
+[?2004l[?2004h> 
+[?2004l[?2004h> def normalize_df(df, source_name):
+[?2004l[?2004h>     col_mapping = {}
+[?2004l[?2004h>     for col in df.columns:
+[?2004l[?2004h>         col_lower = str(col).strip()
+[?2004l[?2004h>         if col_lower in ['id', 'user_id', 'userId']:
+[?2004l[?2004h>             col_mapping[col] = 'user_id'
+[?2004l[?2004h>         elif col_lower in ['full_name', 'name', 'userName']:
+[?2004l[?2004h>             col_mapping[col] = 'name'
+[?2004l[?2004h>         elif col_lower in ['email', 'email_address']:
+[?2004l[?2004h>             col_mapping[col] = 'email'
+[?2004l[?2004h>         elif col_lower in ['registration_date', 'created_at', 'joined']:
+[?2004l[?2004h>             col_mapping[col] = 'created_date'
+[?2004l[?2004h>         elif col_lower in ['status', 'is_active', 'active']:
+[?2004l[?2004h>             col_mapping[col] = 'status'
+[?2004l[?2004h>     df = df.rename(columns=col_mapping)
+[?2004l[?2004h>     if 'user_id' not in df.columns:
+[?2004l[?2004h>         raise ValueError(f"Source {source_name} does not have user_id")
+[?2004l[?2004h>     df = df.dropna(subset=['user_id'])
+[?2004l[?2004h>     df['user_id'] = df['user_id'].astype(int)
+[?2004l[?2004h>     if 'status' in df.columns:
+[?2004l[?2004h>         def clean_status(val):
+[?2004l[?2004h>             if pd.isna(val):
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(val, bool):
+[?2004l[?2004h>                 return 'active' if val else 'inactive'
+[?2004l[?2004h>             if hasattr(val, 'item') and isinstance(val.item(), bool):
+[?2004l[?2004h>                 return 'active' if val.item() else 'inactive'
+[?2004l[?2004h>             val_str = str(val).strip().lower()
+[?2004l[?2004h>             if val_str in ['true', '1', '1.0', 'active']:
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if val_str in ['false', '0', '0.0', 'inactive']:
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return val_str
+[?2004l[?2004h>         df['status'] = df['status'].apply(clean_status)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         df['status'] = None
+[?2004l[?2004h>     if 'created_date' in df.columns:
+[?2004l[?2004h>         dates = pd.to_datetime(df['created_date'], errors='coerce')
+[?2004l[?2004h>         df['created_date'] = dates.apply(lambda x: x.strftime('%Y-%m-%d') if pd.notna(x) else None)
+[?2004l[?2004h>     else:
+[?2004l[?2004h>         df['created_date'] = None
+[?2004l[?2004h>     for field in ['name', 'email']:
+[?2004l[?2004h>         if field in df.columns:
+[?2004l[?2004h>             df[field] = df[field].apply(lambda x: str(x).strip() if pd.notna(x) else None)
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             df[field] = None
+[?2004l[?2004h>     return df[['user_id', 'name', 'email', 'created_date', 'status']]
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> def get_expected_outputs(data_dir):
+[?2004l[?2004h>     source_dirs = sorted(glob.glob(os.path.join(data_dir, 'source_*')))
+[?2004l[?2004h>     sources = {}
+[?2004l[?2004h>     for s_dir in source_dirs:
+[?2004l[?2004h>         s_name = os.path.basename(s_dir)
+[?2004l[?2004h>         files = glob.glob(os.path.join(s_dir, 'users.*'))
+[?2004l[?2004h>         if files:
+[?2004l[?2004h>             sources[s_name] = normalize_df(load_source_file(files[0]), s_name)
+[?2004l[?2004h>     all_user_ids = set()
+[?2004l[?2004h>     for df in sources.values():
+[?2004l[?2004h>         all_user_ids.update(df['user_id'].tolist())
+[?2004l[?2004h>     all_user_ids = sorted(list(all_user_ids))
+[?2004l[?2004h>     sorted_source_names = sorted(sources.keys())
+[?2004l[?2004h>     merged_rows = []
+[?2004l[?2004h>     conflicts = []
+[?2004l[?2004h>     for uid in all_user_ids:
+[?2004l[?2004h>         user_sources = {s_name: df[df['user_id'] == uid] for s_name, df in sources.items() if uid in df['user_id'].values}
+[?2004l[?2004h>         primary_source = None
+[?2004l[?2004h>         for s_name in sorted_source_names:
+[?2004l[?2004h>             if s_name in user_sources:
+[?2004l[?2004h>                 primary_source = s_name
+[?2004l[?2004h>                 break
+[?2004l[?2004h>         primary_row = user_sources[primary_source].iloc[0]
+[?2004l[?2004h>         merged_rows.append({
+[?2004l[?2004h>             'user_id': int(uid),
+[?2004l[?2004h>             'name': primary_row['name'],
+[?2004l[?2004h>             'email': primary_row['email'],
+[?2004l[?2004h>             'created_date': primary_row['created_date'],
+[?2004l[?2004h>             'status': primary_row['status']
+[?2004l[?2004h>         })
+[?2004l[?2004h>         for field in ['name', 'email', 'created_date', 'status']:
+[?2004l[?2004h>             field_vals = {}
+[?2004l[?2004h>             for s_name in sorted_source_names:
+[?2004l[?2004h>                 if s_name in user_sources:
+[?2004l[?2004h>                     val = user_sources[s_name].iloc[0][field]
+[?2004l[?2004h>                     field_vals[s_name] = val if pd.notna(val) else None
+[?2004l[?2004h>             non_null_vals = [v for v in field_vals.values() if v is not None]
+[?2004l[?2004h>             if len(set(non_null_vals)) > 1:
+[?2004l[?2004h>                 conflicts.append({
+[?2004l[?2004h>                     'user_id': int(uid),
+[?2004l[?2004h>                     'field': field,
+[?2004l[?2004h>                     'values': field_vals,
+[?2004l[?2004h>                     'selected': primary_row[field] if pd.notna(primary_row[field]) else None
+[?2004l[?2004h>                 })
+[?2004l[?2004h>     merged_df = pd.DataFrame(merged_rows)
+[?2004l[?2004h>     merged_df['user_id'] = merged_df['user_id'].astype(int)
+[?2004l[?2004h>     merged_df['name'] = merged_df['name'].astype(str)
+[?2004l[?2004h>     merged_df['email'] = merged_df['email'].astype(str)
+[?2004l[?2004h>     merged_df['created_date'] = merged_df['created_date'].astype(str)
+[?2004l[?2004h>     merged_df['status'] = merged_df['status'].astype(str)
+[?2004l[?2004h>     conflicts_json = {
+[?2004l[?2004h>         'total_conflicts': len(conflicts),
+[?2004l[?2004h>         'conflicts': conflicts
+[?2004l[?2004h>     }
+[?2004l[?2004h>     return merged_df, conflicts_json
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> def compare_outputs(solution_dir, expected_df, expected_conflicts):
+[?2004l[?2004h>     cand_parquet_path = os.path.join(solution_dir, 'merged_users.parquet')
+[?2004l[?2004h>     if not os.path.exists(cand_parquet_path):
+[?2004l[?2004h>         print(f"Missing merged_users.parquet in {solution_dir}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     try:
+[?2004ldate: {cand_data['total_c[?2004h>         cand_df = pd.read_parquet(cand_parquet_path)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading candidate parquet: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     required_cols = ['user_id', 'name', 'email', 'created_date', 'status']
+[?2004l[?2004h>     for col in required_cols:
+[?2004l[?2004h>         if col not in cand_df.columns:
+[?2004l[?2004h>             print(f"Missing required column {col} in merged_users.parquet")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     cand_df = cand_df[required_cols].copy()
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         cand_df['user_id'] = cand_df['user_id'].astype(int)
+[?2004l[?2004h>         cand_df['name'] = cand_df['name'].astype(str)
+[?2004l[?2004h>         cand_df['email'] = cand_df['email'].astype(str)
+[?2004l[?2004h>         cand_df['created_date'] = cand_df['created_date'].astype(str)
+[?2004l[?2004h>         cand_df['status'] = cand_df['status'].astype(str)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error casting candidate types: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     cand_df = cand_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>     exp_df_sorted = expected_df.sort_values('user_id').reset_index(drop=True)
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         pd.testing.assert_frame_equal(cand_df, exp_df_sorted, check_dtype=False)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Parquet data disagreement: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     cand_json_path = os.path.join(solution_dir, 'conflicts.json')
+[?2004l[?2004h>     if not os.path.exists(cand_json_path):
+[?2004l[?2004h>         print(f"Missing conflicts.json in {solution_dir}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(cand_json_path, 'r') as f:
+[?2004l[?2004h>             cand_data = json.load(f)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading candidate json: {e}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     if 'total_conflicts' not in cand_data or 'conflicts' not in cand_data:
+[?2004l[?2004h>         print("Candidate json is missing required keys: total_conflicts or conflicts")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     cand_conflicts = cand_data['conflicts']
+[?2004l[?2004h>     if len(cand_conflicts) != cand_data['total_conflicts']:
+[?2004l[?2004h>         print(f"Candidate total_conflicts ({cand_data['total_conflicts']}) does not match actual length ({len(cand_conflicts)})")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     def get_conflict_key(item):
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             return (int(item.get('user_id')), str(item.get('field')))
+[?2004l[?2004h>         except Exception:
+[?2004l[?2004h>             return (None, None)
+[?2004l[?2004h>     exp_conflicts = expected_conflicts['conflicts']
+[?2004l[?2004h>     exp_dict = {}
+[?2004l[?2004h>     for item in exp_conflicts:
+[?2004l[?2004h>         k = get_conflict_key(item)
+[?2004l[?2004h>         if k[0] is not None:
+[?2004l[?2004h>             exp_dict[k] = item
+[?2004l[?2004h>     cand_dict = {}
+[?2004l[?2004h>     for item in cand_conflicts:
+[?2004l[?2004h>         k = get_conflict_key(item)
+[?2004l[?2004h>         if k[0] is not None:
+[?2004l[?2004h>             cand_dict[k] = item
+[?2004l[?2004h>     if set(exp_dict.keys()) != set(cand_dict.keys()):
+[?2004l[?2004h>         print(f"Conflict keys mismatch.")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     for k in exp_dict:
+[?2004l[?2004h>         exp_item = exp_dict[k]
+[?2004l[?2004h>         cand_item = cand_dict[k]
+[?2004l[?2004h>         def normalize_val(v):
+[?2004l[?2004h>             if pd.isna(v) or v is None:
+[?2004l[?2004h>                 return None
+[?2004l[?2004h>             if isinstance(v, bool):
+[?2004l[?2004h>                 return 'active' if v else 'inactive'
+[?2004l[?2004h>             if isinstance(v, (int, float)) and not isinstance(v, bool):
+[?2004l[?2004h>                 if int(v) == v:
+[?2004l[?2004h>                     return int(v)
+[?2004l[?2004h>                 return float(v)
+[?2004l[?2004h>             val_str = str(v).strip()
+[?2004l[?2004h>             if val_str.lower() == 'true':
+[?2004l[?2004h>                 return 'active'
+[?2004l[?2004h>             if val_str.lower() == 'false':
+[?2004l[?2004h>                 return 'inactive'
+[?2004l[?2004h>             return val_str
+[?2004l[?2004h>         exp_vals = {s: normalize_val(v) for s, v in exp_item['values'].items()}
+[?2004l[?2004h>         cand_vals = {s: normalize_val(v) for s, v in cand_item.get('values', {}).items()}
+[?2004l[?2004h>         if exp_vals != cand_vals:
+[?2004l[?2004h>             print(f"Values mismatch for key {k}. Expected: {exp_vals}. Candidate: {cand_vals}")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>         exp_sel = normalize_val(exp_item['selected'])
+[?2004l[?2004h>         cand_sel = normalize_val(cand_item.get('selected'))
+[?2004l[?2004h>         if exp_sel != cand_sel:
+[?2004l[?2004h>             print(f"Selected value mismatch for key {k}. Expected: {exp_sel}. Candidate: {cand_sel}")
+[?2004l[?2004h>             return False
+[?2004l[?2004h>     if cand_data['total_conflicts'] != expected_conflicts['total_conflicts']:
+[?2004l[?2004h>         print(f"total_conflicts mismatch. Expected: {expected_conflicts['total_conflicts']}. Candidate: {cand_data['total_conflicts']}")
+[?2004l[?2004h>         return False
+[?2004l[?2004h>     return True
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' >> /app/verify_logic.py
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     data_dir = os.environ.get('DATA_DIR', '/app/data')
+[?2004l[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004l[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h>     os.makedirs(os.path.dirname(verdict_file), exist_ok=True)
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         expected_df, expected_conflicts = get_expected_outputs(data_dir)
+[?2004l[?2004h>         is_correct = compare_outputs(solution_dir, expected_df, expected_conflicts)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Verifier error: {e}")
+[?2004l[?2004h>         is_correct = False
+[?2004l[?2004h>     verdict_val = '1' if is_correct else '0'
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write(verdict_val)
+[?2004l[?2004h>         print(f"Verifier run completed. Verdict: {verdict_val} written to {verdict_file}")
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Failed to write to verdict file {verdict_file}: {e}")
+[?2004l[?2004h>         sys.exit(1)
+[?2004l[?2004h>     sys.exit(0)
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# VERDICT_FILE=/tmp/verdict.txt python3 /app/verify_logic.py
+[?2004lMissing merged_users.parquet in /app
+Verifier run completed. Verdict: 0 written to /tmp/verdict.txt
+[?2004hroot@da66703f6d17:/app# cat /tmp/verdict.txt
+[?2004l0[?2004hroot@da66703f6d17:/app# cat << 'EOF' > /app/generate_test_outputs.py
+[?2004l[?2004h> import verify_logic as vl
+[?2004l[?2004h> import json
+[?2004l[?2004h> merged_df, conflicts_json = vl.get_expected_outputs('/app/data')
+[?2004l[?2004h> merged_df.to_parquet('/app/merged_users.parquet', index=False)
+[?2004l[?2004h> with open('/app/conflicts.json', 'w') as f:
+[?2004l[?2004h>     json.dump(conflicts_json, f, indent=2)
+[?2004l[?2004h> print("Generated test files inside /app")
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# python3 /app/generate_test_outputs.py
+[?2004lGenerated test files inside /app
+[?2004hroot@da66703f6d17:/app# VERDICT_FILE=/tmp/verdict.txt python3 /app/verify_logic.py
+[?2004lVerifier run completed. Verdict: 1 written to /tmp/verdict.txt
+[?2004hroot@da66703f6d17:/app# cat /tmp/verdict.txt
+[?2004l1[?2004hroot@da66703f6d17:/app# cat /app/conflicts.json
+[?2004l{
+  "total_conflicts": 3,
+  "conflicts": [
+    {
+      "user_id": 101,
+      "field": "name",
+      "values": {
+        "source_a": "John Doe",
+        "source_b": "John Doe",
+        "source_c": "John D."
+      },
+      "selected": "John Doe"
+    },
+    {
+      "user_id": 101,
+      "field": "email",
+      "values": {
+        "source_a": "john@a.com",
+        "source_b": "john@b.com",
+        "source_c": "john@c.com"
+      },
+      "selected": "john@a.com"
+    },
+    {
+      "user_id": 101,
+      "field": "created_date",
+      "values": {
+        "source_a": "2024-01-15",
+        "source_b": "2024-01-10",
+        "source_c": "2024-01-20"
+      },
+      "selected": "2024-01-15"
+    }
+  ]
+}[?2004hroot@da66703f6d17:/app# sed -i 's/"selected": "john@a.com"/"selected": "john@b.com"/g' /app/conflicts.json
+[?2004l[?2004hroot@da66703f6d17:/app# VERDICT_FILE=/tmp/verdict.txt python3 /app/verify_logic.py
+[?2004lSelected value mismatch for key (101, 'email'). Expected: john@a.com. Candidate: john@b.com
+Verifier run completed. Verdict: 0 written to /tmp/verdict.txt
+[?2004hroot@da66703f6d17:/app# cat /tmp/verdict.txt
+[?2004l0[?2004hroot@da66703f6d17:/app# python3 /app/generate_test_outputs.py
+[?2004lGenerated test files inside /app
+[?2004hroot@da66703f6d17:/app# cp /app/verify_logic.py /app/verifier/verify_logic.py
+[?2004l[?2004hroot@da66703f6d17:/app# rm /app/verify_logic.py
+[?2004l[?2004hroot@da66703f6d17:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> python3 /app/verifier/verify_logic.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@da66703f6d17:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@da66703f6d17:/app# rm -f /app/test_norm.py /app/generate_test_outputs.py
+[?2004l[?2004hroot@da66703f6d17:/app# VERDICT_FILE=/tmp/verdict.txt /app/verifier/verify.sh
+[?2004lVerifier run completed. Verdict: 1 written to /tmp/verdict.txt
+[?2004hroot@da66703f6d17:/app# cat /tmp/verdict.txt
+[?2004l1[?2004hroot@da66703f6d17:/app# rm -f /tmp/verdict.txt
+[?2004l[?2004hroot@da66703f6d17:/app# 
