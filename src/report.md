@@ -1,478 +1,168 @@
-# Verifier Synthesis for Data-Science Tasks: A Mini-Eval
-
 ## Abstract
 
-This report presents a mini-eval that measures a capability one level up from *doing* data
-science: **writing the verifier** for a data-science task. An agent is handed a data problem
-and must produce the grader that decides whether a given attempt solved it. That grader is
-then scored, deterministically, against a hidden pool of labeled solutions — correct ones
-must pass, adversarial ones must fail. There is no LLM judge: the judgment happened once,
-offline, when the pool was labeled.
+I measured a capability one level up from doing data science: writing the verifier for a data-science task. An agent receives a data problem and must produce the script that decides whether an attempt solved it. That script is then scored deterministically against a hidden pool of labeled solutions, where correct solutions must pass and adversarial ones must fail. No LLM judge is involved; the pool was labeled beforehand, so the judgment only happens once.
 
-I built and hardened **six tasks** across five underlying domains (dirty-data ETL, stochastic
-scientific computing, systems/virtualization, log aggregation, video analysis, and
-synthetic-biology design). Against `gemini-3.5-flash`, three of the six clear the take-home's
-< 30% pass@3 bar (all at **0%**) and three do not (all at **100%**). The 0%/100% split is not
-noise — it is the central result. It isolates *which property of an underlying task makes its
-verifier hard to synthesize*: a hard target combines **legitimate representational variation**
-in a correct output with a **reliable semantic trap** (typically a declared type or contract
-that a verifier's default tooling silently coerces away). Where that combination is absent, a
-capable model writes a correct verifier and the task cannot discriminate rigor. This selection
-rule is the most transferable output of the exercise and drives the scale plan.
+I built and hardened six tasks across five domains: dirty-data ETL, stochastic scientific computing, systems and virtualization, log aggregation, video analysis, and synthetic-biology design. Against `gemini-3.5-flash`, three tasks clear the take-home's sub-30% pass@3 bar (all at 0%) and three do not (all at 100%). The 0%/100% split is the central result, not noise. I deliberately built tasks on both sides of that line, because the contrast is what isolates the property that makes a verifier hard to synthesize.
 
-`PLAYBOOK.md` (repo root) is the reproducible SOP that produced all six tasks.
-
----
+That property is a pairing. A hard task admits many valid ways to approach the problem while still having a deterministic, checkable outcome, so the verifier-writer cannot just pattern-match one correct answer. It has to reason about the end state it is testing for and, harder, about every way an implementer could produce a plausible-looking result that is actually wrong. When a task lacks that pairing, a capable model writes a correct verifier every time and the task cannot discriminate rigor. That selection rule is the most transferable output of the exercise, and it drives the scale plan.
 
 ## 1. Introduction
 
-The Abundant AI take-home asks for a mini-eval of data-science tasks that are (a)
-representative of real DS/DE work and (b) hard — under 30% pass@3 against `gemini-3.5-flash`.
-At its core, the brief is about **verifiers**: its glossary and its "experiment with different
-types of verifiers… justify your decision" hint make that explicit. So rather than test
-whether a model can *perform* a data task — a capability frontier models largely have — I test
-whether it can **verify** one: turn a data-correctness spec into a rigorous, non-gameable
-grader.
+Verifier synthesis is the one unautomated step in the RL task-generation flywheel; in Benchtalks #1, Alex Shaw names verifier-writing as the benchmark he most wants, because there is currently no way to know how good agents are at creating verifiers [1]. Automate it and RL environments get cheap. And the metric stays clean: precision and recall against a hand-labeled pool, fully deterministic, no LLM-as-judge.
 
-Why this is the interesting slice:
+The longer bet is that this matters well beyond CS. Most of the productivity gains from LLMs so far sit inside software, a single industry with its own norms and vocabulary. Broader impact means tasks defined by people who do not know how to specify or check them, and the only thing that scales there is teaching the AI to author and verify tasks itself rather than teaching every domain to do it by hand. The same pressure shows up in robotics: as agents move from manipulating text to manipulating the physical world, usable training data gets scarcer, and synthesized, self-verified tasks become one of the few ways to produce it. I raise these as motivation, not as claims this eval settles.
 
-- **It is the bottleneck.** Verifier synthesis is the one unautomated step in the RL
-  task-generation flywheel. In Benchtalks #1, Alex Shaw names verifier-writing as the
-  benchmark he most wants to see, because "we don't have a way of knowing how good our agents
-  are at creating verifiers" [1]. Automate it and RL environments get cheap.
-- **It is genuine DS/DE work.** Writing data-quality checks, reconciliation tests, and
-  contract enforcement is what data engineers actually do. The underlying domains here
-  (multi-source ETL merge, log aggregation, numerical sampling, VM setup, video analysis,
-  synthetic-biology design) are production-style and in-scope.
-- **The metric is clean.** Precision/recall against a hand-labeled pool — no LLM-as-judge,
-  fully deterministic and reproducible.
-
-**Honest framing caveat.** "The agent writes the verifier" is a meta-twist on "data-science
-task." I believe it is defensible and on-brief (the whole take-home is about verifiers), but a
-reviewer expecting a literal analyze-this-dataset task should know it is a deliberate
-reinterpretation, not an oversight.
-
----
+This is a deliberate reinterpretation of the brief, not an oversight. A reviewer expecting a literal analyze-this-dataset task should read it as a bet that the meta-capability is the more valuable thing to measure.
 
 ## 2. Background and related work
 
-- **Alex Shaw — Benchtalks #1 (Terminal-Bench / Harbor)** [1]. The seed: the benchmark he most
-  wants is one measuring agents' ability to write verifiers. Directly motivated this slice.
-- **"What Makes a Good Terminal-Agent Benchmark Task"** (Bercovich) [2]. A benchmark is
-  designed to find out *if* an agent can do something, not — like a prompt — to help it
-  succeed. Its catalog of anti-patterns (over-prescriptive specs, assumed hidden knowledge,
-  validating the wrong thing, reward-hackable environments; instructions should be short,
-  adversarial, legible) shaped the instruction discipline here (anchoring and brevity), the
-  anti-cheat work, and the honesty about the tasks the model aces.
-- **HUD — "Verifier and Reward Design for RL Environments"** [3]. Verifiers confirm the
-  outcome; pass/fail guards enforce hard rules; rubrics capture quality; the reward turns it
-  into a training signal — and more capable agents are likelier to exploit a misspecified one.
-  Reinforced keeping the meta-verifier deterministic (no judge) with a fractional reward *plus*
-  a binary `all_correct`.
-- **DABStep (Adyen × Hugging Face)** [4]. Real data analysis is dirty, distributed, and rarely
-  straightforward — the frontier there is low (the strongest agents scored ~16%). A good source
-  of *hard-target* underlying tasks for the scale plan (§7).
+Four sources frame the work.
 
-The through-line across all four: the hard, valuable, under-measured thing is **verification
-quality**, and the way to measure it cleanly is a hand-labeled adversarial pool, not a judge.
+Alex Shaw's Benchtalks #1 (Terminal-Bench, Harbor) [1] is the seed: the benchmark he most wants measures whether agents can write verifiers.
 
----
+Bercovich, *What Makes a Good Terminal-Agent Benchmark Task* [2], argues a benchmark exists to find out if an agent can do something, not to help it succeed. Its catalog of anti-patterns (over-prescriptive specs, assumed hidden knowledge, validating the wrong thing, reward-hackable environments) shaped the instruction discipline, the anti-cheat work, and the honesty about the tasks the model aces.
+
+HUD's *Verifier and Reward Design for RL Environments* [3] separates outcome verifiers, hard-rule guards, quality rubrics, and the reward that turns them into a training signal, and notes that more capable agents are likelier to exploit a misspecified reward. This motivated keeping the meta-verifier deterministic, with a fractional reward plus a binary `all_correct`.
+
+DABStep (Adyen and Hugging Face) [4] shows real analysis is dirty and distributed, with a low frontier (the strongest agents scored roughly 16%), a good source of hard underlying tasks for the scale plan.
+
+The through-line: the under-measured, valuable thing is verification quality, and the clean way to measure it is a hand-labeled adversarial pool, not a judge.
 
 ## 3. Method
 
 ### 3.1 The two-layer design
 
-The eval nests two Harbor layers:
+The eval nests two Harbor layers. In Layer 1, the agent writes an executable verifier (`/app/verifier/verify.sh`) that decides whether a candidate solution to an underlying data task is correct.
 
-- **Layer 1 — the agent's job.** Given an underlying data task's instruction and environment,
-  the agent writes an executable verifier (`/app/verifier/verify.sh`) that decides whether a
-  candidate solution is correct.
-- **Layer 2 — the meta-verifier.** A custom harness runs the agent's verifier against *N*
-  labeled candidate solutions, compares its verdicts to hidden labels, and emits
-  precision/recall/accuracy and a binary `all_correct`. No LLM judge — the judgment happened
-  once, offline, when the pool was labeled.
+In Layer 2, a meta-verifier runs that verifier against *N* labeled candidate solutions, compares its verdicts to hidden labels, and emits precision, recall, accuracy, and a binary `all_correct`. There is no LLM judge; the pool's coverage is the operational definition of a good verifier.
 
-The reward is deterministic and clean: the fraction of the pool the candidate verifier
-classifies correctly. The pool's coverage *is* the operational definition of a good verifier.
+### 3.2 Task construction
 
-### 3.2 Task-construction workflow
+The reference task, `multi-source-data-verifier`, was built first and by hand: hand-computing the canonical answer, designing the anchored pool, wiring the clean-room anti-cheat, and writing the oracle.
 
-The six tasks were built in two phases.
-
-- **The reference task, by hand.** `multi-source-data-verifier` was built first, interactively
-  with Claude — hand-computing the canonical answer, designing the anchored pool, wiring the
-  clean-room anti-cheat, and writing the oracle. This task became the **reference
-  implementation** and seeded `PLAYBOOK.md`, the step-by-step SOP for the pattern.
-- **The rest, in parallel.** The other five tasks were built in **parallel coding sessions in
-  Conductor**, each following the playbook against a different underlying task. Building them
-  concurrently — rather than serially — is what made covering five additional domains tractable,
-  and stress-tested the playbook as a transferable recipe rather than a one-off.
+This seeded `PLAYBOOK.md`, the step-by-step SOP. The other five were then built concurrently in Conductor sessions, each following the playbook against a different domain. Building them in parallel is what made five additional domains tractable, and it stress-tested the playbook as a transferable recipe.
 
 ### 3.3 Producer-generated pools
 
-The labeled pool is the answer key, and hand-authoring every item from scratch is the
-expensive step. For **all six** tasks the base pool was **producer-generated**: a producer (a
-Conductor agent session) hooked up the underlying task, ran it to **harvest genuinely-correct
-and genuinely-incorrect example solutions**, and those became the base ~8 labeled items
-(oracle, correct alternates, and organic failures). The producer's natural variation supplies
-`correct_alt`-style PASS items and organic FAIL items essentially for free.
+The labeled pool is the answer key, and authoring every item by hand is the expensive step. For all six tasks I used the underlying task itself to seed the pool: a Conductor agent hooked up the task and ran it to harvest genuinely-correct and genuinely-incorrect solutions, which became roughly eight labeled base items. What I was aiming for in a complete pool:
 
-On top of that base, the **discriminating adversarial items** were hand-added per the
-playbook's iteration step — the cases agents rarely produce on their own: the type/format items
-(right value, wrong declared dtype), the randomness item (right marginal, deterministic
-sampler), the decomposed-outcome items (half of an outcome satisfied), and the trajectory trap
-(a narrative claiming success with no output files).
+- an oracle solution
+- a correct AI solution, different from the oracle
+- a second correct AI solution, different from the first
+- an incorrect solution with the correct shape
+- a near miss, one value wrong
+- logs from an AI claiming it did the right thing but producing no files (in case the verifier just reads the message trace)
+- correct information in the wrong shape
+- a nop, nothing happening
 
-A specific, reusable trick informs this step: **the original task's verifier is a floor, not a
-ceiling, and its blind spots are the best adversarial items.** The reference merger's original
-test spot-checked only 2 of 4 users and used `total_conflicts >= 1`; a solution wrong on the
-*other* users, or with the wrong exact conflict count, sailed past it. Those exact blind spots
-became the `wrong_values` / `near_miss` FAIL items. Noting where an original verifier is loose
-is a cheap way to manufacture adversarial items for any underlying task.
+The idea was that the producer's natural variation would supply the correct-alternate PASS items and the organic FAIL items for free. In practice I found the underlying task's strength decides whether you actually get a varied pool. The multi-source-data producers, for example, only ever generated passing attempts under gemini, so the FAIL side had to be built by hand. How to tune underlying-task difficulty against agent strength to get a naturally varied producer pool is an open question I would want to explore.
+
+The bigger gap is that a producer run over and over will spit out obvious passes and obvious fails but will not produce the tricky wrong answers that look almost right. I added those by hand, one per task: a value that is correct but the wrong type (a string where an integer was required), a distribution with the right shape but produced by a fixed table instead of real random sampling, an outcome where only one of two required conditions is met, and a log that claims success but never actually wrote the output files.
+
+There is a shortcut for finding these tricky cases. Every underlying task shipped with its own grading test, and that test is usually weak, so instead of trusting it I looked for what it fails to catch. Whatever slips past it is exactly the kind of wrong answer worth putting in the pool. The merge task's original test, for instance, only checked two of the four users and only checked that at least one conflict was found rather than the exact number, so a solution that got the other two users wrong, or found the wrong conflict count, would pass it. Those two gaps became two FAIL items: one for the wrong user values, one for the near-miss conflict count.
+
+One concern runs the other way. Agents tend to over-engineer, and that gets worse when the agent cannot reliably solve the underlying task itself: unsure of the real solution, it hedges by writing an overly elaborate test. The Windows setup task is a good example, since many state-of-the-art models and harnesses still struggle with it, so a verifier-writing agent working from a shaky understanding of the goal may pile on checks to compensate. That points to a tension I would want to probe: how precise the test actually needs to be, versus how much precision just invites the agent to over-engineer.
 
 ### 3.4 Anti-cheat
 
-The candidate `verify.sh` is untrusted code the harness executes, so grading is locked down two
-ways:
+I have to assume the AI's grading script (the verifier) might try to cheat or break the rules. To prevent this, I lock down the grading process using two main security layers:
 
-1. **Clean-room grading.** The verifier runs in a separate image (`environment_mode =
-   "separate"`) that bakes in the harness, the pool, and a **pristine** copy of the input data.
-   The agent's `verify.sh` is the only thing carried over — collected from the agent container
-   and injected as an artifact — so a root agent cannot trojan the toolchain or poison the data
-   the harness trusts.
-2. **Unprivileged, label-blind execution.** The harness runs each `verify.sh` as `nobody`, with
-   `tests/pool` (labels and solutions) made root-only. The candidate literally cannot read the
-   answer key. (Proven: a verifier that `cat`s the labels is denied and collapses to the
-   baseline score.)
+First, I use "clean-room" grading. The AI's grading script runs in a completely isolated environment. The only thing brought into this fresh environment is the AI's script itself. A pristine, untouched copy of the test data stays safe. This ensures that even if the AI writes a malicious script, it cannot permanently poison the data or hijack the testing tools.
 
-Harbor also uploads and builds the verifier only *after* the agent stops, so the pool is never
-visible during the agent's run — the naive fear ("the agent will read the tests") is not real.
+Second, I restrict the script's permissions. The grading script runs as a regular, unprivileged user (often called a "nobody" account), while the true answer key is locked behind administrator (root) access.
 
-This machinery is genuinely heavy, and that is a deliberate tradeoff: reward-hacking is a known
-LLM behavior and worth defending against, but a lighter shared-environment + `nobody` variant
-exists for settings where simplicity matters more than defending a root-adversarial agent.
+For example, if the AI writes a script that simply tries to open the hidden "answer_key.txt" file to automatically give itself a perfect score, the system will deny access, and the script will fail. I use this heavy machinery because AI models are notoriously good at "reward hacking", which is finding sneaky loopholes to achieve a high score without doing the actual work.
 
 ### 3.5 Metric
 
-The headline `reward` is **accuracy over the pool**, reported alongside a binary `all_correct`
-and the raw tp/fp/fn/tn counts. Two deliberate choices:
+I define a "Pass" strictly as a perfect score. To pass, the script must correctly grade every single test case without a single mistake.
 
-- **Fractional reward plus a binary bar.** Fractional accuracy gives a smoother RL signal and a
-  real difficulty *curve*; the binary `all_correct` is cleaner for pass@k and is the harder,
-  less gameable criterion. The take-home explicitly asks this be justified: I report both, and
-  define **pass ≡ reward 1.0 / `all_correct` = 1** (a perfect verifier), which is what pass@k
-  uses and what the oracle alone achieves.
-- **Fail-heavy pools, with a caveat.** The hard pools are deliberately fail-heavy (e.g. 3 pass /
-  8 fail) to pack in adversarial cases. A known consequence: a do-nothing "reject everything"
-  verifier scores 8/11 = 0.727, and the reward band just above that is not monotone in verifier
-  quality. So the fractional reward is a *difficulty diagnostic*, not the pass criterion — pass
-  is the perfect-verifier bar. For RL training one would use `all_correct` (or a
-  chance-corrected metric like balanced accuracy) as the signal and keep fractional accuracy as
-  a diagnostic.
+While the system does calculate partial credit (fractional accuracy), I only use that number to diagnose problems behind the scenes, not to determine if the AI actually succeeded. This distinction is vital because the test sets are deliberately loaded with tricky, designed-to-fail examples.
 
----
+For instance, imagine a test set that has 3 correct items and 8 incorrect items. A lazy AI script that just automatically rejects everything will technically guess 8 out of 11 correctly, scoring roughly 72%. If I relied on partial credit, this completely useless script would look like it performed well. Requiring a perfect 100% binary pass prevents this kind of gaming and provides a much harder, more honest bar for success.
 
 ## 4. Results
 
-Three trials each of `harbor run -a terminus-2 -m gemini/gemini-3.5-flash`, logs under
-`logs/<task>/`; **pass = a perfect verifier** (reward 1.0 / `all_correct`).
+I tested the AI (`gemini-3.5-flash`) three times on each of the six tasks.
 
-**Aggregate:**
+| Task | oracle | pass@3 | rewards across trials |
+| --- | --- | --- | --- |
+| `multi-source-data-verifier` | 1.0 | **0%** | 0.818, 0.818, 0.818 |
+| `adaptive-rejection-sampler` | 1.0 | **0%** | 0.909, 0.909, 0.909 |
+| `qemu-win311-setup-verifier` | 1.0 | **0%** | 0.917, 0.833, 0.667 |
+| `log-summary-verifier` | 1.0 | **100%** | 1.0, 1.0, 1.0 |
+| `video-jump-verifier` | 1.0 | **100%** | 1.0, 1.0, 0.727 |
+| `fusion-protein-verifier` | 1.0 | **100%** | 1.0, 0.8, 1.0 |
 
-| Task | oracle | pass@3 (bar = 1.0) | mean reward | dominant failure |
-| --- | --- | --- | --- | --- |
-| `multi-source-data-verifier` | 1.0 | **0%** | 0.818 | coerces declared types |
-| `adaptive-rejection-sampler` | 1.0 | **0%** | 0.909 | checks the distribution, not randomness |
-| `qemu-win311-setup-verifier` | 1.0 | **0%** | 0.81 | half-checks decomposed outcomes |
-| `log-summary-verifier` | 1.0 | **100%** | 1.000 | — (easy target; kept as control) |
-| `video-jump-verifier` | 1.0 | **100%** | 0.909 | — (gate-rejected; §5) |
-| `fusion-protein-verifier` | 1.0 | **100%** | 0.933 | — (gate-rejected; §5) |
+Here is a summary of what I found:
 
-**Per-task, trial-level:**
+- **Merge and ARS Tasks:** The AI failed in the exact same way across all three attempts. It missed specific, tricky test cases every single time, scoring around 81% and 90% respectively, but never passing.
+    
+- **QEMU Task:** The AI failed every time, but its score bounced around between 66% and 91%. The main issue was that it constantly accepted faulty setups that it should have rejected.
+    
+- **Log-summary, Video-jump, and Fusion-protein Tasks:** The AI consistently wrote perfect grading scripts, scoring 100% almost every time.
+    
 
-*Merge* (`multi-source-data-verifier`, 11-item pool):
+The most revealing part of this data is how the "Merge" task failed. Initially, I gave the AI a simple test pool, and it scored a perfect 100%. But as soon as I added just three tricky test cases (where the data looked correct but had the wrong internal format), the AI failed.
 
-| Trial | reward (accuracy) | all_correct | fp | fn | items missed |
-| --- | --- | --- | --- | --- | --- |
-| 1–3 | 0.818 (9/11) | 0 | 2 | 0 | `wrong_dtype_userid`, `wrong_date_format` |
+## 5. Discussion: what makes a target hard?
 
-→ pass@1 = pass@3 = 0%. Identical score and identical misses across three independent runs — a
-*systematic* capability gap, not variance.
+Why did the same AI perfectly solve some tasks and completely fail others? Difficulty comes down to two features, and a task is a hard target only when it has both.
 
-*ARS* (`adaptive-rejection-sampler`, 11-item pool):
+**1. Allowed variation.** A hard task has many different ways for an answer to be technically correct. The grading script has to be flexible enough to accept harmless differences but strict enough to catch real errors. It has to test the "what," not the "where." Grading a database report, for instance, a valid report might list its columns in a different order or include extra harmless files. A script that demands one exact byte-for-byte match will wrongly fail perfectly good reports.
 
-| Trial | reward | all_correct | fp | fn | items missed |
-| --- | --- | --- | --- | --- | --- |
-| 1–3 | 0.909 (10/11) | 0 | 1 | 0 | `deterministic_quantiles` |
+**2. Reliable traps.** A hard task contains a common pitfall where the most obvious, default way to write the script is silently wrong. Across the hard tasks I saw three kinds:
 
-→ pass@1 = pass@3 = 0%. Again identical across three runs.
+- **Type coercion.** Instead of checking whether data is correct, the script forces it to fit. Rather than verifying a user ID is actually a number, the AI just converts the text `"101"` into `101`, letting invalid text slip through.
+- **Averages instead of randomness.** On the sampling task, the AI checked whether the overall average of the dataset looked right, rather than whether the individual numbers were truly being drawn at random.
+- **Half-checking.** On the virtual machine (QEMU) task, the AI checked that the system booted but forgot the second requirement, like verifying the disk was locked in read-only mode.
 
-*QEMU* (`qemu-win311-setup-verifier`, 12-item pool):
+Operational complexity, by itself, does not make a task hard. The video-jump task made the AI write a script that processes video files, survives crashes, and enforces import rules, and it handled all of that easily. Real difficulty lives in deep logic and reliable traps, not in how many complicated tools the script has to run.
 
-| Trial | reward | all_correct | fp | fn | items missed |
-| --- | --- | --- | --- | --- | --- |
-| 1 | 0.917 (11/12) | 0 | 1 | 0 | `no_snapshot` |
-| 2 | 0.833 (10/12) | 0 | 2 | 0 | `no_snapshot`, `not_booted_desktop` |
-| 3 | 0.667 (8/12) | 0 | 4 | 0 | `no_snapshot`, `no_monitor`, `not_booted_desktop`, … |
+### Are the failures genuine?
 
-→ pass@1 = pass@3 = 0%, mean 0.81. Unlike merge and ARS, the three trials **vary
-substantially** (0.917 / 0.833 / 0.667), all driven by false positives (fp = 1 / 2 / 4, fn
-always 0): the model accepts bundles it should reject. `no_snapshot` is missed in all three.
+Before reading the 0% results as capability gaps, I have to rule out the alternative explanation: that the tasks were unfair, underspecified, or impossible. Three checks say they were not.
 
-*Log-summary* (`log-summary-verifier`, 12-item pool):
+First, the agent had everything it needed, by construction. I built the tasks against the anti-pattern catalog in [2], which says difficulty should come from the problem, not the environment. Every rule a pool item tests is stated in the instruction: the merge instruction declares `user_id` an integer and `created_date` a `YYYY-MM-DD` string, the exact contracts the failed items probe. The instructions also state the tolerances ("extra columns or files do not make an attempt wrong") and the full run contract (output path, environment variables, verdict format), so no Harbor-specific or hidden knowledge is assumed. And the environment is not the obstacle: standard slim images with the needed libraries preinstalled and pinned, and the source data readable while the verifier runs.
 
-| Trial | reward | all_correct | fp | fn |
-| --- | --- | --- | --- | --- |
-| 1–3 | 1.000 (12/12) | 1 | 0 | 0 |
+Second, a perfect verifier is provably writable from those materials, because one already exists. Every task ships with a hand-written oracle verifier, and every oracle scores 1.0 against the same hidden pool in the same environment. Cheating is also ruled out as an explanation in either direction: grading runs clean-room as an unprivileged user, so no verifier, mine or the agent's, can read the answer key.
 
-→ pass@1 = pass@3 = 100%. The model wrote a correct, robust verifier every time.
+Third, the failure modes are specific, repeatable reasoning gaps, not noise:
 
-*Video-jump* (`video-jump-verifier`, 11-item pool):
+* Merge: all three runs scored an identical 9/11 and missed the same two items, the wrong-integer-type and wrong-date-format traps. The captured verifier shows why: it coerces the declared types instead of enforcing them, converting `"101"` to an integer rather than rejecting it. It enforced the boolean `status` type correctly in those same runs, so the rigor exists; it just does not generalize across the whole contract.
+* ARS: all three runs missed exactly one item, a submission that returns a fixed table of quantiles instead of sampling. Every captured verifier checked the distribution's shape but never checked that the draws were actually random. A control experiment (three extra runs, discarded from the results) that reworded the instruction to say "random, not a fixed table" flipped one run to a perfect score, which confirms the reading: the agent can write the randomness check when pointed at it, but lacks the default intuition to reach for it unprompted.
+* Log-summary: the flip side, confirming the 100% tasks are honest too. The pool does catch weak verifiers, since a files-exist-only verifier scores 7/12 on it. The agent simply wrote strong verifiers every time, which is why the task earns its place only as a control.
 
-| Trial | reward | all_correct | fp | fn |
-| --- | --- | --- | --- | --- |
-| 1 | 1.000 | 1 | 0 | 0 |
-| 2 | 1.000 | 1 | 0 | 0 |
-| 3 | 0.727 | 0 | 0 | 3 |
+## 6. Scale plan (10 to 1,000)
 
-→ pass@3 = 100%. The one sub-1.0 trial is **false-negative-driven** (fn = 3, fp = 0): a
-malformed `verify.sh` (Python pasted into a bash file) failed on every item and so rejected the
-three correct analyzers — a plumbing slip, not a verification-logic gap (§5).
+Per-task cost is dominated by authoring the underlying task and labeling the pool. The plan attacks both.
 
-*Fusion-protein* (`fusion-protein-verifier`, 20-item pool):
+* Start from tasks that already exist. The first hundred targets come from Terminal-Bench 2, the Harbor hub, DABStep-style problems, and public Kaggle notebooks rather than being authored from scratch. This eval already proved the pattern: the ARS task was lifted from Terminal-Bench 2 and converted into a verifier-synthesis target. Converting existing tasks gets the scaffolding right before any money is spent inventing new problems.
 
-| Trial | reward | all_correct | fp | fn |
-| --- | --- | --- | --- | --- |
-| 1 | 1.00 | 1 | 0 | 0 |
-| 2 | 0.80 | 0 | 0 | 4 |
-| 3 | 1.00 | 1 | 0 | 0 |
+* The difficulty filter. Before building a pool, run a lazy reference verifier (values only, coerces types) and a strict one against a few model-generated outputs. If their scores do not diverge, the task cannot discriminate rigor and is kicked back before labeling. This is the §5 selection rule made operational; log-summary would be flagged here and kept only as a control.
 
-→ pass@1 = 67%, pass@3 = 100%. The 0.80 trial is again **false-negative-driven** (fn = 4, fp =
-0): it mis-resolved the acceptor fluorophore and rejected all four valid gBlocks — an incidental
-slip, not a systematic gap (§5).
+* Cheap producers, one strong checker. The producer harvesting pool solutions just needs to generate varied attempts, so a cheap model does it fine. Labels then come nearly free: the hand-validated oracle scores every output automatically, a stronger model spot-checks, and a human reviews only the disagreements.
 
-**The hard/easy split is a dichotomy, and the dichotomy is the point (§5).** Both hard-side
-*sub-perfect* failures on merge and ARS are the same shape: a competent verifier that checks
-the obvious properties but misses the one place its default tooling silently accepts a wrong
-answer. Note also the road to the merge number *is* the finding: the first pool tested only
-values and containers (8 items) and `gemini` scored 1.0 three times — no headroom. Diagnosing
-why (§6) led to three "right value, wrong declared type" items, which opened the 0.818 gap.
+* Manufactured traps and multiplication. Producers will not generate the near miss that looks almost right, and §3.3 showed those items do the discriminating. Two automatable sources: a mutation library keyed to the three trap species from §5, and the weak-test audit, where whatever slips past the task's own shipped test becomes a FAIL item. From there, perturbing the canonical answer multiplies the pool cheaply.
 
----
+* Quality gates and refresh. Every task must pass automated gates before it ships: the oracle scores 1.0, a lazy verifier scores below 1.0, and a reference model's pass@3 stays under 30%. Tasks failing any gate are auto-kicked; video-jump and fusion-protein are that loop working as intended. And since hard is relative to the model, the headroom gate reruns periodically and saturated tasks are retired or re-armed, so the benchmark does not silently decay into 1,000 controls.
 
-## 5. Discussion — what makes a verifier-synthesis target hard
+## 7. Limitations and Honest Caveats
 
-Same author, same method, same model, same anti-cheat — and a 0%/100% split. The difference is
-entirely in the **underlying task's shape**. Pinning down which property drives it is the most
-transferable thing in this submission, because it is exactly the "is this a good target?"
-question the scale plan must answer.
+There are a few limitations to keep in mind regarding this study:
 
-**Two properties separate a hard verifier-synthesis target from an easy one.**
-
-1. **Legitimate representational variation.** A hard target admits many correct-but-different
-   outputs, so the verifier must *tolerate* variation while staying strict on substance — and an
-   over-strict or byte-diff verifier gets caught. The merge output has rich variation: row
-   order, column order, extra columns/files, conflict-list order, and a nested JSON report. The
-   log-summary output is 15 fixed rows of `(period, severity, count)`; the only variation is row
-   order, column order, and CSV quoting — little room for discriminating PASS items.
-2. **A reliable semantic trap in a declared, multiply-typed contract.** The strongest pool items
-   are "right value, wrong declared type" — they separate a verifier that *enforces a data
-   contract* from one that merely *checks values by coercing types*. The merge output declares
-   **five** typed fields (`user_id` integer, dates as `YYYY-MM-DD` strings, `status` an enum
-   string, …), giving three independent dtype items — the exact items `gemini` fails. The
-   log-summary output has **one** typed column (`count`, an integer); its single dtype item is
-   real and the pool discriminates on it, but rejecting `370.0` from one integer column is a much
-   lower bar than enforcing a five-field contract with dates and enums, and `gemini` cleared it
-   every time.
-
-The trap has to be *reliable* — a semantic default the model reaches for regardless of raw
-capability — not merely *present*. Coercing declared types (`astype(int)`, `pd.to_datetime`) is
-such a default, so all three merge trials fail *identically*. Contrast `fusion-protein-verifier`
-(§7), where the only sub-perfect outcomes were incidental, high-variance slips (a
-case-sensitivity miss, an acceptor mis-resolution) — not a systematic gap the pool can rely on.
-
-**Difficulty is derivation depth × contract traps, not operational complexity.** The
-`video-jump-verifier` task makes this sharp. Its verifier must *run* untrusted candidate scripts
-on two videos, survive crashes, and enforce integer typing and an import allowlist — operationally
-fiddly. Yet `gemini` clears it, because verifying two integer frames decomposes into
-**independent, standard checks** (spawn a subprocess, parse TOML, `isinstance(v, int)`,
-range-test, AST-walk the imports). There is no counterintuitive trap and no complex truth to
-re-derive. The ETL task hit 0% precisely because it had **both**: a three-source merge with
-conflict resolution to re-derive (derivation depth) **and** the coercion trap (a place where the
-obvious implementation is silently wrong). Operational complexity is *not* where difficulty
-lives — a competent model handles it. It lives in derivation depth and contract traps.
-
-**The selection rule.** Constrained output + simple derivation ⇒ easy target; rich variation +
-a multi-typed contract with a reliable trap ⇒ hard target. This is the gate the scale plan
-applies before spending effort on a task (§7).
-
-I *did* try to close the log-summary gap fairly first: I hardened its pool with two
-valid-variation PASS items (an RFC-4180 quoted CSV and a column-reordered CSV) that catch
-non-robust verifiers, and they caught 2 of the first 3 trials. But on re-capture the model wrote
-fully-robust, CSV-aware, column-by-name verifiers 3/3. Pushing further would mean overfitting
-items to specific verifier bugs — difficulty from tricks, not from the problem — so I stopped and
-kept it as an honest control.
-
----
-
-## 6. Failure analysis — the hard-task failures are genuine
-
-Each hard-task failure clears the "is it a task-design bug?" bar: the oracle scores 1.0 in the
-same environment; every failing item is anchored to a rule stated in the instruction; and the
-clean-room + `nobody` sandbox make the answer key unreadable, so it is not reward-hacking.
-
-- **Merge — coerces declared types.** All three trials fail identically on two items, and the
-  captured `verify.py` shows why: the verifier **coerces** declared types instead of enforcing
-  them — `df["user_id"].astype(int)` (so a string `"101"` passes, though `user_id` is declared an
-  integer) and `pd.to_datetime(...).dt.strftime(...)` (so a datetime column passes, though the
-  spec declares a `YYYY-MM-DD` string). The model enforced the boolean `status` type correctly
-  in these very runs — it just did not generalize the rigor. It can write a verifier that *checks
-  values*, but not reliably one that *enforces a data contract*.
-- **ARS — checks the distribution, not the sampling.** Every captured verifier tests the marginal
-  distribution (mean, sd, a KS goodness-of-fit test against known densities) and the behavioral
-  requirements (input validation, log-concavity rejection), but none tests that the sampler is
-  actually *random*. A submission returning a fixed table of evenly-spaced quantiles has a
-  *perfect* marginal — better than a real sampler — so it sails through every distributional
-  check. It is caught only by re-calling `ars` and checking the draws differ, which no trial did.
-  *Honest note on margin:* this gap is thinner than merge's. A control experiment (three extra
-  runs, discarded) that reworded the instruction to state the property more loudly — "the draws
-  are random, not a fixed table" — flipped one run to a perfect 1.0. That cuts both ways: it
-  confirms the difficulty is a genuine thoroughness gap (the model *can* test randomness, it just
-  does not by default), and it shows the shipped instruction deliberately states the requirement
-  as a property of the sampler ("sampling is stochastic") rather than spelling out the check —
-  because naming the test hands the model its checklist. The result is honest headroom, but it is
-  more wording-sensitive than the coercion trap, and a stronger model would likely close it.
-- **QEMU — half-checks decomposed outcomes.** The recurring misses are the *second half* of an
-  outcome the model half-checked. `no_snapshot`: verifiers confirmed `base_image.img` byte-matches
-  the reference (authentic) but most never checked snapshot mode (write-protected) — so a config
-  where the running VM would *write to* the base image passes. "Kept pristine" = authentic **and**
-  write-protected. `not_booted_desktop`: verifiers checked that the screen *changed* after a
-  keystroke but not that the baseline screenshot *shows a booted desktop* — so a blank-screen
-  attempt passes. The model verifies the obvious signal but does not decompose an outcome into all
-  the conditions it implies.
-
-**Log-summary — a genuine non-gap.** The 100% is real capability, not a broken pool. The oracle
-scores 12/12; a files-exist-only verifier scores 7/12; a bracket-correct-but-coercing verifier
-scores 10/12; the first-round non-robust `gemini` verifiers scored 10/12 and 11/12 on the
-hardened pool. So weak verifiers *are* caught — the model simply wrote strong ones (all use the
-`csv` module, identify columns by header name, parse the bracketed severity token to dodge the
-substring trap, compute inclusive date boundaries, and reject non-integer counts). The honest
-conclusion is that the *task* is an easy verifier-synthesis target — a finding about task
-selection, not a defect.
-
----
-
-## 7. Scale plan (10 → 1,000)
-
-Per-task cost is dominated by authoring the underlying task and labeling the pool. Both are
-compressible, and the 0%/100% contrast adds a cheap up-front filter that stops us spending
-either on weak targets.
-
-1. **Target-strength gate (from §5).** Before building the pool, score a candidate underlying
-   task on the two properties: (a) does a correct output admit representational variation? (b)
-   does it declare ≥ 2 typed fields (or otherwise carry a reliable trap)? Operationalize it: run
-   a *naive* reference verifier (values only, coercing) and a *strict* one against a handful of
-   model-generated outputs; if their scores do not diverge, the task cannot discriminate verifier
-   rigor — kick it back before labeling. Log-summary and the two gate-rejected tasks (§7)
-   would be flagged here and kept only as deliberate controls.
-2. **Producer + verifier-maker pairing — demonstrated per-task.** This eval already uses the
-   producer step: for all six tasks, a producer harvested the base pool solutions from the
-   underlying task, which were then labeled and augmented with the hand-crafted adversarial items
-   (§3.3). The remaining extension for scale is to **fully automate the harvest-and-label loop** —
-   run the producer at volume, auto-label the unambiguous PASS/FAIL cases, and route only the
-   genuinely-ambiguous ones to a human. The pairing is proven at the single-task level; the
-   automation of it is the work that turns 6 into 1,000.
-3. **Augmentation.** Once one canonical answer exists, pool items are cheap perturbations of it
-   (`_build_pool.py` shows the pattern: one mutation → one FAIL item). New datasets multiply the
-   base; perturbation multiplies the pool per dataset.
-4. **Underlying-task sources.** Public Kaggle notebooks, Terminal-Bench / Harbor hub tasks [5],
-   DABStep-style analysis problems [4], and production ETL patterns — filtered by the §7 target-strength gate
-   for a deterministic answer, declared types, and real variation.
-5. **QA loop — automated deterministic gates** (from `PLAYBOOK.md`): (a) the oracle scores the
-   pool 1.0 (solvable + self-consistent labels); (b) a weak/coercing verifier scores < 1.0 (the
-   pool discriminates); (c) the §7 target-strength divergence check; (d) `gemini` pass@3 < 30%
-   (headroom). A task that fails a gate is auto-kicked. The two gate-rejected tasks below are this
-   loop working as intended.
-
-**The two gate-rejected tasks — negative results kept on purpose.** `video-jump-verifier` and
-`fusion-protein-verifier` are fully-built, hardened, red-teamed tasks that pass every
-*deterministic* gate (oracle 1.0; a lazy verifier scores 0.727 / 0.35; a label-reading cheat is
-denied; nop scores 0) but that `gemini-3.5-flash` clears at the perfect-verifier bar (pass@3 =
-100%). I built them out rather than discarding them because the negative result is load-bearing:
-`video-jump` shows difficulty is not operational complexity (§5), and `fusion-protein` shows it
-is not underlying-task difficulty either — protein-assembly is genuinely hard to *solve* (real
-bioinformatics, a junior estimate of ~300 minutes), but its spec is *uniquely resolvable by
-design*, so once a capable model resolves the five proteins the remaining verification is
-mechanical string/GC bookkeeping with no coercion-style trap. Hard-to-solve and hard-to-verify
-are different axes. Both tasks' anti-cheat and pool machinery are the reusable substrate for the
-next task that *does* carry a trap.
-
-*(Red-team note: I attempted an independent second-model adversarial review via Codex for these
-two. It surfaced and I fixed two real issues on the QEMU task — a fixed pool ordering a stateful
-verifier could game, now shuffled; and a `127.0.0.1` bind on a "remote monitoring" item, now
-any-interface — and found no anti-cheat hole or mislabeled item on fusion-protein. On video-jump
-Codex was unavailable (no credits), so that task's assurance rests on the deterministic gates and
-a manual pass: no shortcut verifier can score 1.0, because all 11 items require simultaneously
-running both videos, enforcing the integer type, checking imports, and rejecting no-output
-candidates.)*
-
----
-
-## 8. Limitations and honest caveats
-
-- **Determinism vs. systematic behavior.** Merge returned *identical* 0.818 and identical misses
-  three times; ARS identical 0.909 three times; log-summary identical 1.0 (six times counting an
-  earlier pool). This is either very systematic behavior (the intended reading) or `terminus-2` /
-  `gemini` being near-deterministic at low temperature, in which case pass@3 ≈ pass@1. A temp > 0
-  or larger-N run would confirm the gaps are capability, not sampling artifacts. QEMU, whose
-  trials vary (0.917 / 0.833 / 0.667), is evidence for the former.
-- **Pool size.** 11–20 items is enough to discriminate but thin; more items — especially more
-  dtype/format and conflict edge cases — would tighten the precision/recall estimate.
-- **Task count.** The brief wants 5–10 tasks; six are built (three hard: ETL merge, ARS, QEMU
-  setup; three gate-rejected controls: log-summary, video-jump, fusion-protein). The playbook is
-  the recipe for more, and the three hard archetypes already probe genuinely different
-  verification skills (deterministic data artifact vs. stochastic code vs. captured system
-  evidence). Building a few more *hard* targets that clear the §7 target-strength gate (a dirty-data clean, a
-  nested-JSON report with typed fields) would make the difficulty a real curve rather than a
-  dichotomy.
-- **Anti-cheat complexity.** The clean-room + `nobody` design is real complexity, justified by
-  reward-hacking being a known LLM behavior; a lighter shared-env + `nobody` variant exists if
-  simplicity matters more than defending a root-adversarial agent (§3.4).
-- **The ARS trap is thinner than merge's** and more wording-sensitive (§6) — honest headroom, but
-  the first gap a stronger model would close.
-- **Possible future task type.** One deterministic-verifier task paired with one where the
-  *right* verifier is itself an LLM-judge, to directly exercise the take-home's "deterministic vs.
-  LLM-as-judge" prompt — while keeping the meta-grader deterministic.
-
----
+- **Repetitive Behavior:** On some tasks, the AI made the exact same mistakes multiple times. I believe this represents a true capability limit, but it could partly be due to the AI's temperature settings making it highly repetitive. Running tests at a higher temperature would help confirm this.
+    
+- **Small Test Pools:** The test sets only contained between 11 and 20 items. Expanding these to include more edge cases would give sharper, more precise metrics. For example, adding tests with bizarre date formats or corrupted files would better reveal the AI's weak spots.
+    
+- **Few Tasks:** I only built six tasks total. Adding a few more hard tasks (like cleaning dirty data or grading complex JSON reports) would give a better picture of exactly where the AI struggles, rather than just a simple "pass or fail" dichotomy.
 
 ## References
 
-[1] A. Shaw. *Benchtalks #1: Building the benchmark factory* (Terminal-Bench, Harbor).
-<https://www.youtube.com/watch?v=UCn5gG0haCI>
+[1] Benchtalks #1: Alex Shaw (Terminal-Bench, Harbor). https://www.youtube.com/watch?v=UCn5gG0haCI
 
-[2] I. Bercovich. *What Makes a Good Terminal-Agent Benchmark Task: A Guideline for Adversarial,
-Difficult, and Legible Evaluation Design.* arXiv:2604.28093.
-<https://arxiv.org/abs/2604.28093>
+[2] Bercovich, *What Makes a Good Terminal-Agent Benchmark Task*. arXiv:2604.28093. https://arxiv.org/pdf/2604.28093
 
-[3] HUD. *Verifier and Reward Design for RL Environments.*
-<https://www.hud.ai/resources/verifier-reward-design-rl-environments>
+[3] HUD, *Verifier and Reward Design for RL Environments*. https://www.hud.ai/resources/verifier-reward-design-rl-environments
 
-[4] Adyen × Hugging Face. *DABStep: Data Agent Benchmark for Multi-step Reasoning.*
-<https://huggingface.co/blog/dabstep>
-
-[5] Harbor Framework. *Terminal-Bench 2* (underlying tasks: `install-windows-3.11`,
-`video-processing`, adaptive rejection sampler, `protein-assembly`).
-<https://github.com/harbor-framework/terminal-bench-2>
-
----
-
-## Appendix — reproduce
-
-`PLAYBOOK.md` (repo root) is the full SOP for all six tasks: design the underlying task,
-hand-compute the canonical answer, design the anchored pool (including the discriminating dtype
-items), write the situation-voice instruction and the verifier contract, wire the separate
-clean-room verifier env with `nobody`-sandboxed grading, write the oracle, and run the validation
-gates before the `gemini-3.5-flash` capture. All six tasks pass the deterministic gates (oracle
-1.0; pool discriminates; anti-cheat denied; nop 0; `harbor check` clean); their `gemini` logs are
-in `logs/`.
+[4] DABStep: Data Agent Benchmark for Multi-step Reasoning (Adyen and Hugging Face). https://huggingface.co/blog/dabstep
