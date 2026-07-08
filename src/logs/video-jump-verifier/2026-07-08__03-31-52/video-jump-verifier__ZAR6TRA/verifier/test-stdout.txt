@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_reference          pass    pass     Y   All checks passed!
+02_correct_variant    pass    pass     Y   All checks passed!
+03_correct_stdlib     pass    pass     Y   All checks passed!
+04_hardcode_test      fail    fail     Y   Takeoff frame 222 out of range [50, 54] for example
+05_hardcode_example   fail    fail     Y   Takeoff frame 54 out of range [219, 223] for test
+06_crash              fail    fail     Y   Example video run failed
+07_wrong_values       fail    fail     Y   Takeoff frame 150 out of range [50, 54] for example
+08_float_output       fail    fail     Y   Invalid takeoff type for example: <class 'float'>
+09_forbidden_import   fail    fail     Y   Import check failed
+10_no_output          fail    fail     Y   Example video run failed
+11_trace_only         fail    fail     Y   Example video run failed
+
+TP=3 FP=0 FN=0 TN=8  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000
