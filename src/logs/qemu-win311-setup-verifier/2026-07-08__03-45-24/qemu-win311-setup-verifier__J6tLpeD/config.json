@@ -1,0 +1,12 @@
+{
+    "task": {
+        "path": "src/samples/qemu-win311-setup-verifier"
+    },
+    "trial_name": "qemu-win311-setup-verifier__J6tLpeD",
+    "trials_dir": "src/logs/qemu-win311-setup-verifier/2026-07-08__03-45-24",
+    "agent": {
+        "name": "terminus-2",
+        "model_name": "gemini/gemini-3.5-flash"
+    },
+    "job_id": "0df191d8-792e-4b64-aa7e-cbbd1eba938d"
+}

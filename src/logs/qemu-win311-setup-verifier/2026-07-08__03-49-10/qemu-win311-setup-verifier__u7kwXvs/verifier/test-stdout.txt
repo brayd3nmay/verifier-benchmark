@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+02_correct_alt        pass    pass     Y   VERDICT WRITTEN: 1
+05_port80_substring_trapfail    fail     Y   VERDICT WRITTEN: 0
+06_no_snapshot        fail    pass     N   VERDICT WRITTEN: 1
+12_not_booted_desktop fail    pass     N   VERDICT WRITTEN: 1
+09_no_screen_response fail    fail     Y   VERDICT WRITTEN: 0
+11_nop                fail    fail     Y   VERDICT WRITTEN: 0
+04_wrong_vnc_port     fail    fail     Y   VERDICT WRITTEN: 0
+03_correct_superset   pass    pass     Y   VERDICT WRITTEN: 1
+10_logs_no_evidence   fail    fail     Y   VERDICT WRITTEN: 0
+08_no_monitor         fail    fail     Y   VERDICT WRITTEN: 0
+07_wrong_image        fail    fail     Y   VERDICT WRITTEN: 0
+01_oracle             pass    pass     Y   VERDICT WRITTEN: 1
+
+TP=3 FP=2 FN=0 TN=7  accuracy=0.833 precision=0.600 recall=1.000 f1=0.750
