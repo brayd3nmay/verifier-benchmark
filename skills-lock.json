@@ -7,6 +7,12 @@
       "skillPath": "skills/create-task/SKILL.md",
       "computedHash": "6db2350d3604dd16f1925628afaf55a5a2b426de8a35efa46e86e809adb2fa2e"
     },
+    "handoff": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "skillPath": "skills/productivity/handoff/SKILL.md",
+      "computedHash": "5d0f81e38abe6b984e1feaa731927de5291d040982106ac513cf54ec240e00ec"
+    },
     "harbor-cli": {
       "source": "harbor-framework/skills",
       "sourceType": "github",
