@@ -1,0 +1,16 @@
+{
+  "messages": [
+    {
+      "role": "assistant",
+      "content": "Ran background subtraction on both videos."
+    },
+    {
+      "role": "assistant",
+      "content": "example takeoff 54 land 63; test takeoff 222 land 232."
+    },
+    {
+      "role": "assistant",
+      "content": "Wrote output.toml. All videos analyzed correctly."
+    }
+  ]
+}

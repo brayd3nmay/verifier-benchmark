@@ -1,0 +1,1 @@
+qemu-system-x86_64 -vga std -m 64 -vnc :1 -drive file=base.img,snapshot=on -qmp unix:/tmp/qmp.sock,server,nowait
