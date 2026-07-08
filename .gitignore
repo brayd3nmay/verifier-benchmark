@@ -1,5 +1,8 @@
 NOTES.md
-restaurant-weekly-cost-control-audit/
-.env
+PLAYBOOK.md
 .claude/
-docs/superpowers/*
+
+
+# Harbor run outputs
+trials/
+jobs/
