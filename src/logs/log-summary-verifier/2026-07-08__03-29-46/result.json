@@ -1,0 +1,99 @@
+{
+    "id": "870672f0-34a3-4825-82f2-bc59740d8a76",
+    "started_at": "2026-07-08T03:29:46.920240",
+    "updated_at": "2026-07-08T03:32:44.703102",
+    "finished_at": "2026-07-08T03:32:44.703102",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 1.0,
+                        "all_correct": 1.0,
+                        "f1": 1.0,
+                        "fn": 0.0,
+                        "fp": 0.0,
+                        "n": 12.0,
+                        "precision": 1.0,
+                        "recall": 1.0,
+                        "reward": 1.0,
+                        "tn": 7.0,
+                        "tp": 5.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "1.0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "accuracy": {
+                        "1.0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "precision": {
+                        "1.0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "f1": {
+                        "1.0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "all_correct": {
+                        "1": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "tp": {
+                        "5": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "fp": {
+                        "0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "tn": {
+                        "7": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    },
+                    "n": {
+                        "12": [
+                            "log-summary-verifier__qAx58d9"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 191122,
+        "n_cache_tokens": 107634,
+        "n_output_tokens": 12511,
+        "cost_usd": 0.2539761
+    }
+}

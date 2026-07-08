@@ -1,0 +1,1 @@
+Summed ERROR/WARNING/INFO across 5 date ranges from /app/logs.

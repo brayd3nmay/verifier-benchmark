@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+04_wrong_vnc_port     fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+08_no_monitor         fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+07_wrong_image        fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+12_not_booted_desktop fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+05_port80_substring_trapfail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+06_no_snapshot        fail    pass     N   [VERIFIER] VERDICT: 1 (Correct)
+02_correct_alt        pass    pass     Y   [VERIFIER] VERDICT: 1 (Correct)
+09_no_screen_response fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+03_correct_superset   pass    pass     Y   [VERIFIER] VERDICT: 1 (Correct)
+10_logs_no_evidence   fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+11_nop                fail    fail     Y   [VERIFIER] VERDICT: 0 (Incorrect)
+01_oracle             pass    pass     Y   [VERIFIER] VERDICT: 1 (Correct)
+
+TP=3 FP=1 FN=0 TN=8  accuracy=0.917 precision=0.750 recall=1.000 f1=0.857

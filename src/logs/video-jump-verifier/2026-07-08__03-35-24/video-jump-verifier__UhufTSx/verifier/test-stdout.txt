@@ -1,0 +1,14 @@
+item                  label   verdict  ok  note
+01_reference          pass    pass     Y   === Verification Completed ===
+02_correct_variant    pass    pass     Y   === Verification Completed ===
+03_correct_stdlib     pass    pass     Y   === Verification Completed ===
+04_hardcode_test      fail    fail     Y   === Verification Completed ===
+05_hardcode_example   fail    fail     Y   === Verification Completed ===
+06_crash              fail    fail     Y   === Verification Completed ===
+07_wrong_values       fail    fail     Y   === Verification Completed ===
+08_float_output       fail    fail     Y   === Verification Completed ===
+09_forbidden_import   fail    fail     Y   === Verification Completed ===
+10_no_output          fail    fail     Y   === Verification Completed ===
+11_trace_only         fail    fail     Y   === Verification Completed ===
+
+TP=3 FP=0 FN=0 TN=8  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000

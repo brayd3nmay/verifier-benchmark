@@ -1,0 +1,13 @@
+{
+  "01_oracle": "pass",
+  "02_correct_alt": "pass",
+  "03_correct_superset": "pass",
+  "04_fake_rnorm": "fail",
+  "05_wrong_scale": "fail",
+  "06_wrong_shape": "fail",
+  "07_no_validation": "fail",
+  "08_no_logconcavity": "fail",
+  "09_logs_no_files": "fail",
+  "10_nop": "fail",
+  "11_deterministic_quantiles": "fail"
+}

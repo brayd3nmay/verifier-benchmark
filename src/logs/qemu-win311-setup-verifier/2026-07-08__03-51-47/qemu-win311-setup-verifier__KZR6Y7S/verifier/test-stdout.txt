@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+03_correct_superset   pass    pass     Y   Verdict set to 1
+09_no_screen_response fail    fail     Y   Verdict set to 0
+06_no_snapshot        fail    pass     N   Verdict set to 1
+07_wrong_image        fail    fail     Y   Verdict set to 0
+02_correct_alt        pass    pass     Y   Verdict set to 1
+05_port80_substring_trapfail    pass     N   Verdict set to 1
+11_nop                fail    fail     Y   Verdict set to 0
+04_wrong_vnc_port     fail    fail     Y   Verdict set to 0
+01_oracle             pass    pass     Y   Verdict set to 1
+10_logs_no_evidence   fail    fail     Y   Verdict set to 0
+08_no_monitor         fail    pass     N   Verdict set to 1
+12_not_booted_desktop fail    pass     N   Verdict set to 1
+
+TP=3 FP=4 FN=0 TN=5  accuracy=0.667 precision=0.429 recall=1.000 f1=0.600

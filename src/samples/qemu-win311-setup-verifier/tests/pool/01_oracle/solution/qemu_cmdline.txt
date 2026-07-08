@@ -1,0 +1,1 @@
+qemu-system-i386 -m 32 -hda base.img -snapshot -vga cirrus -vnc :1 -monitor unix:/tmp/qemu-monitor.sock,server,nowait
