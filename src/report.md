@@ -8,12 +8,15 @@ produce the grader that decides whether a given attempt solved it. That grader i
 scored, deterministically, against a hidden pool of labeled solutions — correct ones must
 pass, adversarial ones must fail.
 
-Scope note: this submission contains **one fully-built, hardened exemplar task**
-(`samples/multi-source-data-verifier`) plus the methodology and tooling to generate the
-rest (`PLAYBOOK.md` at the repo root is the reproducible SOP). I chose depth over breadth
-deliberately — a single task that genuinely isolates a failure mode, with the anti-cheat
-and validation worked all the way through, is more informative than five shallow ones. The
-scale plan (below) is how this becomes 10 and then 1,000.
+Scope note: this submission contains **two fully-built, hardened exemplar tasks** —
+`samples/multi-source-data-verifier` (a data/ETL domain) and
+`samples/qemu-win311-setup-verifier` (a systems/virtualization domain) — plus the
+methodology and tooling to generate the rest (`PLAYBOOK.md` at the repo root is the
+reproducible SOP). I chose depth over breadth deliberately — tasks that genuinely isolate a
+failure mode, with the anti-cheat and validation worked all the way through, are more
+informative than a pile of shallow ones. The two span different domains on purpose (see
+Task 2), so the difficulty signal is a small curve rather than a point. The scale plan
+(below) is how this becomes 10 and then 1,000.
 
 ## 1. Distribution — what I chose to measure, and why this slice
 
@@ -141,6 +144,82 @@ task-design bug?" check:
 In one line: the model can *write a verifier that checks values*, but not reliably one that
 *enforces a data contract*. That gap is the headroom, and it's the kind of thing better
 models should close — which is exactly what a good eval should surface.
+
+## Task 2 — QEMU Windows 3.11 Setup Verifier (a second domain)
+
+The second task (`samples/qemu-win311-setup-verifier`) applies the same verifier-writing
+frame to a **systems/virtualization** domain, to show the difficulty comes from the method,
+not one lucky dataset. The underlying task is terminal-bench-2's `install-windows-3.11`: run
+Windows 3.11 in QEMU with VNC (5901), a web interface (80), the base disk image kept
+immutable, and a monitor socket for programmatic keyboard input.
+
+**The reframe.** That underlying task is *live-runtime* — its original verifier introspects a
+running machine (`pgrep`, `/proc/PID/cmdline`, `netstat`, a live monitor socket, VNC pixel
+diffs). That doesn't fit a static, deterministic pool. So each candidate "solution" is
+reframed as a captured **evidence bundle** of a setup attempt (`qemu_cmdline.txt`,
+`listening_ports.txt`, `base_image.img`, before/after VNC screenshots), and the agent writes a
+verifier that grades the bundle. Grading stays fully deterministic and reuses the same
+clean-room harness. It's a deliberate reinterpretation (captured evidence, not a live system),
+noted as such.
+
+**Instruction discipline — outcomes, not a checklist.** The sharpest lesson from building this
+one: the instruction must state the *underlying task's outcomes* (VNC reachable on 5901; the
+base image stays pristine because the running VM can't write to it; a programmatically-sent
+keystroke reaches the VM), **not** the QEMU flags a verifier should grep for (`-snapshot`,
+`-monitor unix:`, a pixel threshold). Handing over the check-list turns verifier-writing into
+string-matching and destroys the task. The interesting checks then have to be *derived* from
+the outcomes — and a single outcome often decomposes into two checks the model must both find.
+
+**Difficulty profile vs `gemini-3.5-flash`.** Three trials of the same `terminus-2` /
+`gemini/gemini-3.5-flash` command (logs in `logs/qemu-win311-setup-verifier/`):
+
+| Trial | reward (accuracy) | all_correct | fp | items missed |
+| --- | --- | --- | --- | --- |
+| 1 | 0.917 (11/12) | 0 | 1 | `no_snapshot` |
+| 2 | 0.833 (10/12) | 0 | 2 | `no_snapshot`, `not_booted_desktop` |
+| 3 | 0.667 (8/12) | 0 | 4 | `no_snapshot`, `no_monitor`, `not_booted_desktop` |
+
+**pass@1 = 0%, pass@3 = 0%** at the 1.0 bar (oracle scores 1.0, so it's not impossible);
+mean reward 0.81. `no_snapshot` is missed in all three trials; `not_booted_desktop` in two.
+
+**Failure analysis — decomposed outcomes.** The recurring misses are the *second half* of an
+outcome the model half-checked:
+- **`no_snapshot`**: every verifier confirmed `base_image.img` byte-matches the reference (the
+  image is authentic) but most never checked snapshot mode — so a config where the running VM
+  would *write to* the base image sails past. "Kept pristine" = authentic **and** write-
+  protected; the model checks the first and forgets the second.
+- **`not_booted_desktop`**: verifiers checked that the screen *changed* after the keystroke but
+  not that the baseline screenshot *shows a booted desktop* — so a blank-screen "attempt"
+  passes. "Boots to the desktop and a key reaches it" = desktop present **and** screen
+  responded.
+
+These clear the "is it a task bug?" bar: the oracle scores 1.0 in the same environment; every
+failing item is anchored to an outcome stated in the instruction; the anti-cheat holds (a
+label-reading verifier is denied and collapses to 0.27). It's a genuine capability gap —
+the model verifies the obvious signal but doesn't decompose an outcome into all the conditions
+it implies.
+
+**The road to it (honest iteration).** The first pool (11 items) missed a coverage gap: the
+instruction requires "boots to the desktop," but nothing tested it. `gemini-3.5-flash` wrote a
+rigorous verifier and hit **1.0 on 1 of 3** trials (pass@3 would have been non-zero) — the
+perfect run happened to check snapshot mode, which the model does only intermittently. Adding
+the `not_booted_desktop` item both closed the gap and re-hardened difficulty: a perfect score
+now requires catching *two* independent, easily-missed conditions (write-protection and a
+booted desktop) instead of one, and across the captured trials no run caught both. Same lesson
+as Task 1's dtype items: a pool only measures the failure modes it contains.
+
+**Red-team (a second model).** A Codex pass surfaced two real issues, both fixed: (1) the
+harness ran pool items in a fixed sorted order (all passes first), so a verifier could ignore
+every bundle and just count invocations with persistent state to match the label sequence —
+now the harness **shuffles** item order each run (scoring is order-independent, so honest
+verifiers are unaffected); (2) `02_correct_alt` bound the web interface to `127.0.0.1`, which
+contradicts "remote monitoring" and would wrongly penalize a verifier that required a
+reachable bind — now any-interface. Accepted limitations it also raised: the screenshot check
+is intentionally "changed vs identical" rather than a pixel threshold (a threshold is the
+over-specification the instruction deliberately avoids), and the cmdline/port checks are
+outcome-level (port number, snapshot/monitor presence) rather than full QEMU-arg or
+service-identity parsing — deeper parsing would trade determinism and the outcome framing for
+brittleness, and no pool item depends on it.
 
 ## Appendix — reproduce
 

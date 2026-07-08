@@ -1,0 +1,99 @@
+{
+    "id": "79eb8c47-1beb-4fca-8004-819eafa1f960",
+    "started_at": "2026-07-08T03:49:11.497382",
+    "updated_at": "2026-07-08T03:51:46.269757",
+    "finished_at": "2026-07-08T03:51:46.269757",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 0.8333,
+                        "all_correct": 0.0,
+                        "f1": 0.75,
+                        "fn": 0.0,
+                        "fp": 2.0,
+                        "n": 12.0,
+                        "precision": 0.6,
+                        "recall": 1.0,
+                        "reward": 0.8333,
+                        "tn": 7.0,
+                        "tp": 3.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "0.8333": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "accuracy": {
+                        "0.8333": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "precision": {
+                        "0.6": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "recall": {
+                        "1.0": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "f1": {
+                        "0.75": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "all_correct": {
+                        "0": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "tp": {
+                        "3": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "fp": {
+                        "2": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "fn": {
+                        "0": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "tn": {
+                        "7": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    },
+                    "n": {
+                        "12": [
+                            "qemu-win311-setup-verifier__u7kwXvs"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 140791,
+        "n_cache_tokens": 89660,
+        "n_output_tokens": 15412,
+        "cost_usd": 0.2288535
+    }
+}

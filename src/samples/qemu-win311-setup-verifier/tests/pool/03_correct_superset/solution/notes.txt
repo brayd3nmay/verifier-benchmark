@@ -1,0 +1,1 @@
+Booted to desktop; VNC on :1; nginx up.
