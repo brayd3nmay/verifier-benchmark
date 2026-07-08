@@ -1,0 +1,234 @@
+[?2004hroot@6eca37c0a203:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@6eca37c0a203:/app# clear
+[?2004l[H[J[3J[?2004hroot@6eca37c0a203:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 06:45 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:52 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:42 reference
+[?2004hroot@6eca37c0a203:/app# ls -la /app/reference
+[?2004ltotal 136
+drwxr-xr-x 2 root root   4096 Jul  8 06:42 .
+drwxr-xr-x 1 root root   4096 Jul  8 06:45 ..
+-rw-r--r-- 1 root root 131072 Jul  8 06:42 win311.img
+[?2004hroot@6eca37c0a203:/app# find / -name "*verify*" -o -name "*reward*" -o -name "*test*" 2>/dev/null | grep -v "/proc" | grep -v "/sys" | grep -v "/lib" | head -n 50
+[?2004l/usr/bin/test
+[?2004hroot@6eca37c0a203:/app# find /app -type f
+[?2004l/app/reference/win311.img
+[?2004hroot@6eca37c0a203:/app# env
+[?2004lSHELL=/bin/bash
+PYTHON_SHA256=272179ddd9a2e41a0fc8e42e33dfbdca0b3711aa5abf372d3f2d51543d09b625
+TERM_PROGRAM_VERSION=3.5a
+ASCIINEMA_REC=1
+TMUX=/tmp/tmux-0/default,483,0
+HOSTNAME=6eca37c0a203
+PYTHON_VERSION=3.11.15
+PWD=/app
+HOME=/root
+LANG=C.UTF-8
+GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D
+TERM=tmux-256color
+TMUX_PANE=%0
+SHLVL=2
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+TERM_PROGRAM=tmux
+_=/usr/bin/env
+[?2004hroot@6eca37c0a203:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@6eca37c0a203:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> 
+[?2004l[?2004h> # Default paths
+[?2004l[?2004h> SOLUTION_DIR="${SOLUTION_DIR:-/app}"
+[?2004l[?2004h> VERDICT_FILE="${VERDICT_FILE:-/logs/verifier/reward.txt}"
+[?2004l[?2004h> 
+[?2004l[?2004h> echo "Starting verification..."
+[?2004l[?2004h> echo "SOLUTION_DIR: $SOLUTION_DIR"
+[?2004l[?2004h> echo "VERDICT_FILE: $VERDICT_FILE"
+[?2004l[?2004h> 
+[?2004l[?2004h> # Default verdict is 0 (incorrect)
+[?2004l[?2004h> VERDICT=0
+[?2004l[?2004h> 
+[?2004l[?2004h> # Helper function to write verdict and exit
+[?2004l[?2004h> write_verdict() {
+[?2004l[?2004h>     local val=$1
+[?2004l[?2004h>     mkdir -p "$(dirname "$VERDICT_FILE")"
+[?2004l[?2004h>     echo "$val" > "$VERDICT_FILE"
+[?2004l[?2004h>     echo "Verdict set to $val"
+[?2004l[?2004h>     exit 0
+[?2004l[?2004h> }
+[?2004l[?2004h> 
+[?2004l[?2004h> # Check if files exist in SOLUTION_DIR
+[?2004l[?2004h> if [ ! -f "$SOLUTION_DIR/qemu_cmdline.txt" ]; then
+[?2004l[?2004h>     echo "Missing qemu_cmdline.txt"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> if [ ! -f "$SOLUTION_DIR/listening_ports.txt" ]; then
+[?2004l[?2004h>     echo "Missing listening_ports.txt"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> if [ ! -f "$SOLUTION_DIR/base_image.img" ]; then
+[?2004l[?2004h>     echo "Missing base_image.img"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> if [ ! -f "$SOLUTION_DIR/screenshots/baseline.png" ]; then
+[?2004l[?2004h>     echo "Missing baseline.png"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> if [ ! -f "$SOLUTION_DIR/screenshots/after_key.png" ]; then
+[?2004l[?2004h>     echo "Missing after_key.png"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> # 1. Base disk image must stay pristine (byte-for-byte identical to reference)
+[?2004l[?2004h> if ! cmp -s "$SOLUTION_DIR/base_image.img" "/app/reference/win311.img"; then
+[?2004l[?2004h>     echo "base_image.img is not pristine (differs from reference)"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> # 2. VNC on port 5901 and Web interface on port 80 must be listening
+[?2004l[?2004h> # We check listening_ports.txt
+[?2004l[?2004h> # Example lines:
+[?2004l[?2004h> # tcp        0      0 0.0.0.0:5901            0.0.0.0:*               LISTEN
+[?2004l[?2004h> # tcp6       0      0 :::80                   :::*                    LISTEN
+[?2004l[?2004h> if ! grep -q -E "[:.]5901[[:space:]]" "$SOLUTION_DIR/listening_ports.txt" || ! grep -q -E "[:.]5901[[:space:]]+.*LISTEN" "$SOLUTION_DIR/listening_ports.txt"; then
+[?2004l[?2004h>     # Try a broader grep in case of different formatting
+[?2004l[?2004h>     if ! grep -q ":5901" "$SOLUTION_DIR/listening_ports.txt"; then
+[?2004l[?2004h>         echo "Port 5901 (VNC) is not listening"
+[?2004l[?2004h>         write_verdict 0
+[?2004l[?2004h>     fi
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> if ! grep -q -E "[:.]80[[:space:]]" "$SOLUTION_DIR/listening_ports.txt" || ! grep -q -E "[:.]80[[:space:]]+.*LISTEN" "$SOLUTION_DIR/listening_ports.txt"; then M[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Kn
+[?2004l[?2004h>     if ! grep -q ":80" "$SOLUTION_DIR/listening_ports.txt"; then
+[?2004l[?2004h>         echo "Port 80 (Web interface) is not listening"
+[?2004l[?2004h>         write_verdict 0
+[?2004l[?2004h>     fi
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> # 3. Automation and Keystrokes delivery check
+[?2004l[?2004h> # Check qemu_cmdline.txt to see if monitor or QMP or snapshot options are there.
+[?2004l[?2004h> # QEMU should boot with monitor options to allow programmatic key input.
+[?2004l[?2004h> CMDLINE=$(cat "$SOLUTION_DIR/qemu_cmdline.txt")
+[?2004l[?2004h> 
+[?2004l[?2004h> # Let's check for -monitor, -qmp or -chardev in command line
+[?2004l[?2004h> echo "QEMU command line: $CMDLINE"
+[?2004l[?2004h> 
+[?2004l[?2004h> # Also check if screenshots are different (keystroke reached the VM)
+[?2004l[?2004h> BASE_SUM=$(sha256sum "$SOLUTION_DIR/screenshots/baseline.png" | awk '{print $1}')
+[?2004l[?2004h> AFTER_SUM=$(sha256sum "$SOLUTION_DIR/screenshots/after_key.png" | awk '{print $1}')
+[?2004l[?2004h> 
+[?2004l[?2004h> if [ "$BASE_SUM" = "$AFTER_SUM" ]; then
+[?2004l[?2004h>     echo "Screenshots are identical! Keystroke did not reach the VM or VM did not boot correctly"
+[?2004l[?2004h>     write_verdict 0
+[?2004l[?2004h> fi
+[?2004l[?2004h> 
+[?2004l[?2004h> # If we reached here, all conditions are satisfied!
+[?2004l[?2004h> write_verdict 1
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@6eca37c0a203:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@6eca37c0a203:/app# /app/verifier/verify.sh
+[?2004lStarting verification...
+SOLUTION_DIR: /app
+VERDICT_FILE: /logs/verifier/reward.txt
+Missing qemu_cmdline.txt
+Verdict set to 0
+[?2004hroot@6eca37c0a203:/app# cat /app/verifier/verify.sh
+[?2004l#!/bin/bash
+
+# Default paths
+SOLUTION_DIR="${SOLUTION_DIR:-/app}"
+VERDICT_FILE="${VERDICT_FILE:-/logs/verifier/reward.txt}"
+
+echo "Starting verification..."
+echo "SOLUTION_DIR: $SOLUTION_DIR"
+echo "VERDICT_FILE: $VERDICT_FILE"
+
+# Default verdict is 0 (incorrect)
+VERDICT=0
+
+# Helper function to write verdict and exit
+write_verdict() {
+    local val=$1
+    mkdir -p "$(dirname "$VERDICT_FILE")"
+    echo "$val" > "$VERDICT_FILE"
+    echo "Verdict set to $val"
+    exit 0
+}
+
+# Check if files exist in SOLUTION_DIR
+if [ ! -f "$SOLUTION_DIR/qemu_cmdline.txt" ]; then
+    echo "Missing qemu_cmdline.txt"
+    write_verdict 0
+fi
+
+if [ ! -f "$SOLUTION_DIR/listening_ports.txt" ]; then
+    echo "Missing listening_ports.txt"
+    write_verdict 0
+fi
+
+if [ ! -f "$SOLUTION_DIR/base_image.img" ]; then
+    echo "Missing base_image.img"
+    write_verdict 0
+fi
+
+if [ ! -f "$SOLUTION_DIR/screenshots/baseline.png" ]; then
+    echo "Missing baseline.png"
+    write_verdict 0
+fi
+
+if [ ! -f "$SOLUTION_DIR/screenshots/after_key.png" ]; then
+    echo "Missing after_key.png"
+    write_verdict 0
+fi
+
+# 1. Base disk image must stay pristine (byte-for-byte identical to reference)
+if ! cmp -s "$SOLUTION_DIR/base_image.img" "/app/reference/win311.img"; then
+    echo "base_image.img is not pristine (differs from reference)"
+    write_verdict 0
+fi
+
+# 2. VNC on port 5901 and Web interface on port 80 must be listening
+# We check listening_ports.txt
+# Example lines:
+# tcp        0      0 0.0.0.0:5901            0.0.0.0:*               LISTEN
+# tcp6       0      0 :::80                   :::*                    LISTEN
+if ! grep -q -E "[:.]5901[[:space:]]" "$SOLUTION_DIR/listening_ports.txt" || ! grep -q -E "[:.]5901[[:space:]]+.*LISTEN" "$SOLUTION_DIR/listening_ports.txt"; then
+    # Try a broader grep in case of different formatting
+    if ! grep -q ":5901" "$SOLUTION_DIR/listening_ports.txt"; then
+        echo "Port 5901 (VNC) is not listening"
+        write_verdict 0
+    fi
+fi
+
+if ! grep -q -E "[:.]80[[:space:]]" "$SOLUTION_DIR/listening_ports.txt" || ! grep -q -E "[:.]80[[:space:]]+.*LISTEN" "$SOLUTION_DIR/listening_ports.txt"; then
+    if ! grep -q ":80" "$SOLUTION_DIR/listening_ports.txt"; then
+        echo "Port 80 (Web interface) is not listening"
+        write_verdict 0
+    fi
+fi
+
+# 3. Automation and Keystrokes delivery check
+# Check qemu_cmdline.txt to see if monitor or QMP or snapshot options are there.
+# QEMU should boot with monitor options to allow programmatic key input.
+CMDLINE=$(cat "$SOLUTION_DIR/qemu_cmdline.txt")
+
+# Let's check for -monitor, -qmp or -chardev in command line
+echo "QEMU command line: $CMDLINE"
+
+# Also check if screenshots are different (keystroke reached the VM)
+BASE_SUM=$(sha256sum "$SOLUTION_DIR/screenshots/baseline.png" | awk '{print $1}')
+AFTER_SUM=$(sha256sum "$SOLUTION_DIR/screenshots/after_key.png" | awk '{print $1}')
+
+if [ "$BASE_SUM" = "$AFTER_SUM" ]; then
+    echo "Screenshots are identical! Keystroke did not reach the VM or VM did not boot correctly"
+    write_verdict 0
+fi
+
+# If we reached here, all conditions are satisfied!
+write_verdict 1
+[?2004hroot@6eca37c0a203:/app# 

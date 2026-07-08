@@ -1,0 +1,16 @@
+{
+    "job_name": "2026-07-08__03-45-24",
+    "jobs_dir": "src/logs/qemu-win311-setup-verifier",
+    "quiet": true,
+    "agents": [
+        {
+            "name": "terminus-2",
+            "model_name": "gemini/gemini-3.5-flash"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "src/samples/qemu-win311-setup-verifier"
+        }
+    ]
+}

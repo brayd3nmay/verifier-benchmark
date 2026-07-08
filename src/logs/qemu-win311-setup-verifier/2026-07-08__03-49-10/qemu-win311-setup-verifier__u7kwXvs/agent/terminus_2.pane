@@ -1,0 +1,389 @@
+[?2004hroot@55aa5bb48301:/app# asciinema rec --stdin /logs/agent/recording.cast
+[?2004l[0;32masciinema: recording asciicast to /logs/agent/recording.cast[0m
+[0;32masciinema: press <ctrl-d> or type "exit" when you're done[0m
+[?2004hroot@55aa5bb48301:/app# clear
+[?2004l[H[J[3J[?2004hroot@55aa5bb48301:/app# ls -la /app
+[?2004ltotal 12
+drwxr-xr-x 1 root root 4096 Jul  8 06:45 .
+drwxr-xr-x 1 root root 4096 Jul  8 07:49 ..
+drwxr-xr-x 2 root root 4096 Jul  8 06:42 reference
+[?2004hroot@55aa5bb48301:/app# ls -la /app/reference
+[?2004ltotal 136
+drwxr-xr-x 2 root root   4096 Jul  8 06:42 .
+drwxr-xr-x 1 root root   4096 Jul  8 06:45 ..
+-rw-r--r-- 1 root root 131072 Jul  8 06:42 win311.img
+[?2004hroot@55aa5bb48301:/app# env
+[?2004lSHELL=/bin/bash
+PYTHON_SHA256=272179ddd9a2e41a0fc8e42e33dfbdca0b3711aa5abf372d3f2d51543d09b625
+TERM_PROGRAM_VERSION=3.5a
+ASCIINEMA_REC=1
+TMUX=/tmp/tmux-0/default,483,0
+HOSTNAME=55aa5bb48301
+PYTHON_VERSION=3.11.15
+PWD=/app
+HOME=/root
+LANG=C.UTF-8
+GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D
+TERM=tmux-256color
+TMUX_PANE=%0
+SHLVL=2
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+TERM_PROGRAM=tmux
+_=/usr/bin/env
+[?2004hroot@55aa5bb48301:/app# python3 -c "import PIL; print(PIL.__version__)"
+[?2004l11.0.0
+[?2004hroot@55aa5bb48301:/app# which compare identify
+[?2004l[?2004hroot@55aa5bb48301:/app# mkdir -p /app/verifier
+[?2004l[?2004hroot@55aa5bb48301:/app# cat << 'EOF' > /app/verifier/verify.py
+[?2004ldict(0)
+
+    # Check for programmatic i[?2004h> import os
+[?2004lt suppo[?2004h> import sys
+[?2004lmonitor[?2004h> import shlex
+[?2004l[?2004h> from PIL import Image
+[?2004l[?2004h> 
+[?2004l[?2004h> def main():
+[?2004l[?2004h>     solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+[?2004lmp[?2004h>     verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Ensure the directory of verdict_file exists
+[?2004l[?2004h>     verdict_dir = os.path.dirname(verdict_file)
+[?2004lot [?2004h>     if verdict_dir and not os.path.exists(verdict_dir):
+[?2004l[?2004h>         os.makedirs(verdict_dir, exist_ok=True)
+[?2004l[?2004h> 
+[?2004l[?2004h>     def write_verdict(val):
+[?2004l[?2004h>         with open(verdict_file, 'w') as f:
+[?2004l[?2004h>             f.write(str(val) + '\n')
+[?2004l[?2004h>         print(f"VERDICT WRITTEN: {val}")
+[?2004l[?2004h>         sys.exit(0)
+[?2004l command line")
+        write_verdict(0)
+
+    # 5. Screenshot Comparison (Baseline vs After Key)
+    baseline_path = os.path.join(solution_dir, 'screenshots/baseline.png')
+    after_key_path = os.path.join(so[?2004h> 
+[?2004l[?2004h>     # List of expected files
+[?2004l[?2004h>     expected_files = [
+[?2004l[?2004h>         'qemu_cmdline.txt',
+[?2004l[?2004h>         'listening_ports.txt',
+[?2004l[?2004h>         'base_image.img',
+[?2004l[?2004h>         'screenshots/baseline.png',
+[?2004l[?2004h>         'screenshots/after_key.png'
+[?2004l[?2004h>     ]
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 1. Existence Check
+[?2004l      img_baseline = Image.open(baseline_path)
+        img_after = Image.open(after_key_path)
+
+        if img_baseline.size != img_after.size:
+            different = True
+        else:
+    [?2004h>     for f in expected_files:
+[?2004l[?2004h>         path = os.path.join(solution_dir, f)
+[?2004lfe[?2004h>         if not os.path.exists(path):
+[?2004lmpare[?2004h>             print(f"File missing: {path}")
+[?2004l[?2004h>             write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 2. Pristine Base Image Check (Byte-for-byte identical)
+[?2004l[?2004h>     ref_image = '/app/reference/win311.img'
+[?2004l[?2004h>     base_image = os.path.join(solution_dir, 'base_image.img')
+[?2004l[?2004h>     if not os.path.exists(ref_image):
+[?2004l[?2004h>         print(f"Reference image missing: {ref_image}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         if os.path.getsize(ref_image) != os.path.getsize(base_image):
+[?2004l[?2004h>             print("Base image size mismatch")
+[?2004l[?2004h>             write_verdict(0)
+[?2004l[?2004h> 
+[?2004l
+[?2004h>         with open(ref_image, 'rb') as f1, open(base_image, 'rb') as f2:
+[?2004l[?2004h>             while True:
+[?2004l[?2004h>                 b1 = f1.read(65536)
+[?2004l[?2004h>                 b2 = f2.read(65536)
+[?2004l[?2004h>                 if b1 != b2:
+[?2004l[?2004h>                     print("Base image contents mismatch (not pristine)")
+[?2004l[?2004h>                     write_verdict(0)
+[?2004l[?2004h>                 if not b1:
+[?2004l[?2004h>                     break
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error comparing images: {e}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 3. Listening Ports Check
+[?2004l[?2004h>     listening_ports_file = os.path.join(solution_dir, 'listening_ports.txt')
+[?2004l[?2004h>     has_5901 = False
+[?2004l[?2004h>     has_80 = False
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(listening_ports_file, 'r') as f:
+[?2004l[?2004h>             for line in f:
+[?2004l[?2004h>                 parts = line.strip().split()
+[?2004l[?2004h>                 if len(parts) >= 6 and parts[0] in ('tcp', 'tcp6'):
+[?2004l[?2004h>                     local_addr = parts[3]
+[?2004l[?2004h>                     state = parts[5]
+[?2004l[?2004h>                     if state == 'LISTEN':
+[?2004l[?2004h>                         port = local_addr.split(':')[-1]
+[?2004l[?2004h>                         if port == '5901':
+[?2004l[?2004h>                             has_5901 = True
+[?2004l[?2004h>                         elif port == '80':
+[?2004l[?2004h>                             has_80 = True
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading/parsing listening ports: {e}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not has_5901:
+[?2004l[?2004h>         print("Port 5901 (VNC) is not listening on TCP")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h>     if not has_80:
+[?2004l[?2004h>         print("Port 80 (HTTP) is not listening on TCP")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 4. QEMU Command Line Check
+[?2004l[?2004h>     cmd_line_file = os.path.join(solution_dir, 'qemu_cmdline.txt')
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         with open(cmd_line_file, 'r') as f:
+[?2004l[?2004h>             cmd_content = f.read().strip()
+[?2004l[?2004h>         try:
+[?2004l[?2004h>             args = shlex.split(cmd_content)
+[?2004l[?2004h>         except Exception:
+[?2004l[?2004h>             args = cmd_content.split()
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error reading QEMU command line: {e}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check for pristine/read-only enforcement
+[?2004l[?2004h>     has_base_image = False
+[?2004l[?2004h>     for arg in args:
+[?2004l[?2004h>         if 'base_image.img' in arg:
+[?2004l[?2004h>             has_base_image = True
+[?2004l[?2004h>             break
+[?2004l[?2004h> 
+[?2004l[?2004h>     if has_base_image:
+[?2004l[?2004h>         is_pristine_enforced = False
+[?2004l[?2004h>         if any(arg == '-snapshot' for arg in args):
+[?2004l[?2004h>             is_pristine_enforced = True
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             for arg in args:
+[?2004l[?2004h>                 if 'snapshot=on' in arg or 'read-only=on' in arg or 'readonly=on' in arg:
+[?2004l[?2004h>                     is_pristine_enforced = True
+[?2004l[?2004h>                     break
+[?2004l[?2004h>         if not is_pristine_enforced:
+[?2004l[?2004h>             print("Base image is directly used but snapshotting/read-only is not enforced on command line")
+[?2004l[?2004h>             write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # Check for programmatic input support (monitor or QMP)
+[?2004l[?2004h>     has_monitor = False
+[?2004l[?2004h>     for arg in args:
+[?2004l[?2004h>         if arg in ('-monitor', '-qmp', '-mon', '-qmp-pretty'):
+[?2004l[?2004h>             has_monitor = True
+[?2004l[?2004h>         elif arg.startswith('-monitor') or arg.startswith('-qmp') or arg.startswith('-mon'):
+[?2004l[?2004h>             has_monitor = True
+[?2004l[?2004h> 
+[?2004l[?2004h>     if not has_monitor:
+[?2004l[?2004h>         print("No QEMU monitor or QMP option found in command line")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # 5. Screenshot Comparison (Baseline vs After Key)
+[?2004l[?2004h>     baseline_path = os.path.join(solution_dir, 'screenshots/baseline.png')
+[?2004l[?2004h>     after_key_path = os.path.join(solution_dir, 'screenshots/after_key.png')
+[?2004l[?2004h>     try:
+[?2004l[?2004h>         img_baseline = Image.open(baseline_path)
+[?2004l[?2004h>         img_after = Image.open(after_key_path)
+[?2004l[?2004h> 
+[?2004l[?2004h>         if img_baseline.size != img_after.size:
+[?2004l[?2004h>             different = True
+[?2004l[?2004h>         else:
+[?2004l[?2004h>             # Compare pixel-by-pixel
+[?2004l[?2004h>             # We can use ImageChops.difference or simply load data and compare
+[?2004l[?2004h>             from PIL import ImageChops
+[?2004l[?2004h>             diff = ImageChops.difference(img_baseline, img_after)
+[?2004l[?2004h>             different = diff.getbbox() is not None
+[?2004l[?2004h> 
+[?2004l[?2004h>         if not different:
+[?2004l[?2004h>             print("Screenshots are identical — keystroke did not reach VM or cause any visible change")
+[?2004l[?2004h>             write_verdict(0)
+[?2004l[?2004h>     except Exception as e:
+[?2004l[?2004h>         print(f"Error comparing screenshots: {e}")
+[?2004l[?2004h>         write_verdict(0)
+[?2004l[?2004h> 
+[?2004l[?2004h>     # All checks passed
+[?2004l[?2004h>     print("All checks passed successfully!")
+[?2004l[?2004h>     write_verdict(1)
+[?2004l[?2004h> 
+[?2004l[?2004h> if __name__ == '__main__':
+[?2004l[?2004h>     main()
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@55aa5bb48301:/app# python3 -m py_compile /app/verifier/verify.py
+[?2004l[?2004hroot@55aa5bb48301:/app# cat << 'EOF' > /app/verifier/verify.sh
+[?2004l[?2004h> #!/bin/bash
+[?2004l[?2004h> python3 /app/verifier/verify.py
+[?2004l[?2004h> EOF
+[?2004l[?2004hroot@55aa5bb48301:/app# chmod +x /app/verifier/verify.sh
+[?2004l[?2004hroot@55aa5bb48301:/app# cat /app/verifier/verify.sh
+[?2004l#!/bin/bash
+python3 /app/verifier/verify.py
+[?2004hroot@55aa5bb48301:/app# cat /app/verifier/verify.py
+[?2004limport os
+import sys
+import shlex
+from PIL import Image
+
+def main():
+    solution_dir = os.environ.get('SOLUTION_DIR', '/app')
+    verdict_file = os.environ.get('VERDICT_FILE', '/logs/verifier/reward.txt')
+
+    # Ensure the directory of verdict_file exists
+    verdict_dir = os.path.dirname(verdict_file)
+    if verdict_dir and not os.path.exists(verdict_dir):
+        os.makedirs(verdict_dir, exist_ok=True)
+
+    def write_verdict(val):
+        with open(verdict_file, 'w') as f:
+            f.write(str(val) + '\n')
+        print(f"VERDICT WRITTEN: {val}")
+        sys.exit(0)
+
+    # List of expected files
+    expected_files = [
+        'qemu_cmdline.txt',
+        'listening_ports.txt',
+        'base_image.img',
+        'screenshots/baseline.png',
+        'screenshots/after_key.png'
+    ]
+
+    # 1. Existence Check
+    for f in expected_files:
+        path = os.path.join(solution_dir, f)
+        if not os.path.exists(path):
+            print(f"File missing: {path}")
+            write_verdict(0)
+
+    # 2. Pristine Base Image Check (Byte-for-byte identical)
+    ref_image = '/app/reference/win311.img'
+    base_image = os.path.join(solution_dir, 'base_image.img')
+    if not os.path.exists(ref_image):
+        print(f"Reference image missing: {ref_image}")
+        write_verdict(0)
+
+    try:
+        if os.path.getsize(ref_image) != os.path.getsize(base_image):
+            print("Base image size mismatch")
+            write_verdict(0)
+
+        with open(ref_image, 'rb') as f1, open(base_image, 'rb') as f2:
+            while True:
+                b1 = f1.read(65536)
+                b2 = f2.read(65536)
+                if b1 != b2:
+                    print("Base image contents mismatch (not pristine)")
+                    write_verdict(0)
+                if not b1:
+                    break
+    except Exception as e:
+        print(f"Error comparing images: {e}")
+        write_verdict(0)
+
+    # 3. Listening Ports Check
+    listening_ports_file = os.path.join(solution_dir, 'listening_ports.txt')
+    has_5901 = False
+    has_80 = False
+    try:
+        with open(listening_ports_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 6 and parts[0] in ('tcp', 'tcp6'):
+                    local_addr = parts[3]
+                    state = parts[5]
+                    if state == 'LISTEN':
+                        port = local_addr.split(':')[-1]
+                        if port == '5901':
+                            has_5901 = True
+                        elif port == '80':
+                            has_80 = True
+    except Exception as e:
+        print(f"Error reading/parsing listening ports: {e}")
+        write_verdict(0)
+
+    if not has_5901:
+        print("Port 5901 (VNC) is not listening on TCP")
+        write_verdict(0)
+    if not has_80:
+        print("Port 80 (HTTP) is not listening on TCP")
+        write_verdict(0)
+
+    # 4. QEMU Command Line Check
+    cmd_line_file = os.path.join(solution_dir, 'qemu_cmdline.txt')
+    try:
+        with open(cmd_line_file, 'r') as f:
+            cmd_content = f.read().strip()
+        try:
+            args = shlex.split(cmd_content)
+        except Exception:
+            args = cmd_content.split()
+    except Exception as e:
+        print(f"Error reading QEMU command line: {e}")
+        write_verdict(0)
+
+    # Check for pristine/read-only enforcement
+    has_base_image = False
+    for arg in args:
+        if 'base_image.img' in arg:
+            has_base_image = True
+            break
+
+    if has_base_image:
+        is_pristine_enforced = False
+        if any(arg == '-snapshot' for arg in args):
+            is_pristine_enforced = True
+        else:
+            for arg in args:
+                if 'snapshot=on' in arg or 'read-only=on' in arg or 'readonly=on' in arg:
+                    is_pristine_enforced = True
+                    break
+        if not is_pristine_enforced:
+            print("Base image is directly used but snapshotting/read-only is not enforced on command line")
+            write_verdict(0)
+
+    # Check for programmatic input support (monitor or QMP)
+    has_monitor = False
+    for arg in args:
+        if arg in ('-monitor', '-qmp', '-mon', '-qmp-pretty'):
+            has_monitor = True
+        elif arg.startswith('-monitor') or arg.startswith('-qmp') or arg.startswith('-mon'):
+            has_monitor = True
+
+    if not has_monitor:
+        print("No QEMU monitor or QMP option found in command line")
+        write_verdict(0)
+
+    # 5. Screenshot Comparison (Baseline vs After Key)
+    baseline_path = os.path.join(solution_dir, 'screenshots/baseline.png')
+    after_key_path = os.path.join(solution_dir, 'screenshots/after_key.png')
+    try:
+        img_baseline = Image.open(baseline_path)
+        img_after = Image.open(after_key_path)
+
+        if img_baseline.size != img_after.size:
+            different = True
+        else:
+            # Compare pixel-by-pixel
+            # We can use ImageChops.difference or simply load data and compare
+            from PIL import ImageChops
+            diff = ImageChops.difference(img_baseline, img_after)
+            different = diff.getbbox() is not None
+
+        if not different:
+            print("Screenshots are identical — keystroke did not reach VM or cause any visible change")
+            write_verdict(0)
+    except Exception as e:
+        print(f"Error comparing screenshots: {e}")
+        write_verdict(0)
+
+    # All checks passed
+    print("All checks passed successfully!")
+    write_verdict(1)
+
+if __name__ == '__main__':
+    main()
+[?2004hroot@55aa5bb48301:/app# 
