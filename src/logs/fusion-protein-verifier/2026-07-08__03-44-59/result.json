@@ -1,0 +1,99 @@
+{
+    "id": "aa49a026-0c78-4e0c-94de-55b9e8ba42f0",
+    "started_at": "2026-07-08T03:45:00.399956",
+    "updated_at": "2026-07-08T03:57:26.851497",
+    "finished_at": "2026-07-08T03:57:26.851497",
+    "n_total_trials": 1,
+    "stats": {
+        "n_completed_trials": 1,
+        "n_errored_trials": 0,
+        "n_running_trials": 0,
+        "n_pending_trials": 0,
+        "n_cancelled_trials": 0,
+        "n_retries": 0,
+        "evals": {
+            "terminus-2__gemini-3.5-flash__adhoc": {
+                "n_trials": 1,
+                "n_errors": 0,
+                "metrics": [
+                    {
+                        "accuracy": 0.8,
+                        "all_correct": 0.0,
+                        "f1": 0.0,
+                        "fn": 4.0,
+                        "fp": 0.0,
+                        "n": 20.0,
+                        "precision": 1.0,
+                        "recall": 0.0,
+                        "reward": 0.8,
+                        "tn": 16.0,
+                        "tp": 0.0
+                    }
+                ],
+                "pass_at_k": {},
+                "reward_stats": {
+                    "reward": {
+                        "0.8": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "accuracy": {
+                        "0.8": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "precision": {
+                        "1.0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "recall": {
+                        "0.0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "f1": {
+                        "0.0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "all_correct": {
+                        "0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "tp": {
+                        "0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "fp": {
+                        "0": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "fn": {
+                        "4": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "tn": {
+                        "16": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    },
+                    "n": {
+                        "20": [
+                            "fusion-protein-verifier__etXZp3K"
+                        ]
+                    }
+                },
+                "exception_stats": {}
+            }
+        },
+        "n_input_tokens": 3223581,
+        "n_cache_tokens": 2688872,
+        "n_output_tokens": 44923,
+        "cost_usd": 1.6097013000000002
+    }
+}

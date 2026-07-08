@@ -1,0 +1,23 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   Wrote verdict 1 to /tmp/pool_bqjkjmn9/verdict
+02_correct_alt        pass    pass     Y   Wrote verdict 1 to /tmp/pool_4ogwpd16/verdict
+03_correct_upper_edge pass    pass     Y   Wrote verdict 1 to /tmp/pool_u1480lhw/verdict
+04_wrong_order        fail    fail     Y   Wrote verdict 0 to /tmp/pool_3w7zsh1g/verdict
+05_junk_terminus      fail    fail     Y   Wrote verdict 0 to /tmp/pool_jm_fh17o/verdict
+06_terminal_linker    fail    fail     Y   Wrote verdict 0 to /tmp/pool_vfou81jh/verdict
+07_linker_nongs       fail    fail     Y   Wrote verdict 0 to /tmp/pool_yaoc1rs3/verdict
+08_linker_too_short   fail    fail     Y   Wrote verdict 0 to /tmp/pool_2fpl5l13/verdict
+09_missing_linker     fail    fail     Y   Wrote verdict 0 to /tmp/pool_2l5jd4k5/verdict
+10_gc_violation       fail    fail     Y   Wrote verdict 0 to /tmp/pool_2l0ms7t4/verdict
+11_gc_near_miss       fail    fail     Y   Wrote verdict 0 to /tmp/pool_ejioowy2/verdict
+12_wrong_protein      fail    fail     Y   Wrote verdict 0 to /tmp/pool_30q4du00/verdict
+13_non_atcg           fail    fail     Y   Wrote verdict 0 to /tmp/pool_jqnc8gez/verdict
+14_multiline          fail    fail     Y   Wrote verdict 0 to /tmp/pool_17mfwg83/verdict
+15_nop                fail    fail     Y   Wrote verdict 0 to /tmp/pool_c_pl_xhe/verdict
+16_logs_no_files      fail    fail     Y   Wrote verdict 0 to /tmp/pool_s8lmgvxx/verdict
+17_correct_pure_linkerspass    pass     Y   Wrote verdict 1 to /tmp/pool_aicsicxy/verdict
+18_frameshift         fail    fail     Y   Wrote verdict 0 to /tmp/pool_j3lym4oz/verdict
+19_linker_too_long    fail    fail     Y   Wrote verdict 0 to /tmp/pool_oq8ajw4w/verdict
+20_wrong_molecule_binderfail    fail     Y   Wrote verdict 0 to /tmp/pool_apnruo7i/verdict
+
+TP=4 FP=0 FN=0 TN=16  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000
