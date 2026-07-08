@@ -1,0 +1,16 @@
+period,severity,count,pct
+today,ERROR,370,0.0
+today,WARNING,463,0.0
+today,INFO,1433,0.0
+last_7_days,ERROR,2969,0.0
+last_7_days,WARNING,4020,0.0
+last_7_days,INFO,12203,0.0
+last_30_days,ERROR,9594,0.0
+last_30_days,WARNING,12847,0.0
+last_30_days,INFO,38702,0.0
+month_to_date,ERROR,4682,0.0
+month_to_date,WARNING,6327,0.0
+month_to_date,INFO,19420,0.0
+total,ERROR,14160,0.0
+total,WARNING,18772,0.0
+total,INFO,56621,0.0

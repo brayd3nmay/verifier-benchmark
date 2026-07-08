@@ -1,0 +1,1 @@
+ARS run: sampled N(0,1) and Exp(1); all self-tests passed.

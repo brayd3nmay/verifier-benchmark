@@ -1,0 +1,13 @@
+{
+  "reward": 1.0,
+  "accuracy": 1.0,
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "all_correct": 1,
+  "tp": 5,
+  "fp": 0,
+  "fn": 0,
+  "tn": 7,
+  "n": 12
+}

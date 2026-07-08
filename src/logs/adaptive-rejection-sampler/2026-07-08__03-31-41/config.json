@@ -1,0 +1,14 @@
+{
+    "jobs_dir": "src/logs/adaptive-rejection-sampler",
+    "agents": [
+        {
+            "name": "terminus-2",
+            "model_name": "gemini/gemini-3.5-flash"
+        }
+    ],
+    "tasks": [
+        {
+            "path": "src/samples/adaptive-rejection-sampler"
+        }
+    ]
+}

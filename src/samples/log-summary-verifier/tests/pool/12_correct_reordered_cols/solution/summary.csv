@@ -1,0 +1,16 @@
+count,period,severity
+370,today,ERROR
+463,today,WARNING
+1433,today,INFO
+2969,last_7_days,ERROR
+4020,last_7_days,WARNING
+12203,last_7_days,INFO
+9594,last_30_days,ERROR
+12847,last_30_days,WARNING
+38702,last_30_days,INFO
+4682,month_to_date,ERROR
+6327,month_to_date,WARNING
+19420,month_to_date,INFO
+14160,total,ERROR
+18772,total,WARNING
+56621,total,INFO
