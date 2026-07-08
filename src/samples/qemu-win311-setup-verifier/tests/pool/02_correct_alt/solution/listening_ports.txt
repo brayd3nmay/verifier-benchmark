@@ -1,0 +1,4 @@
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name
+tcp6       0      0 :::80                   :::*                    LISTEN      55/nginx
+tcp6       0      0 :::5901                 :::*                    LISTEN      42/qemu

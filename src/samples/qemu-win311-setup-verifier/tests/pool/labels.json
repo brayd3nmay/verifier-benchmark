@@ -1,0 +1,14 @@
+{
+  "01_oracle": "pass",
+  "02_correct_alt": "pass",
+  "03_correct_superset": "pass",
+  "04_wrong_vnc_port": "fail",
+  "05_port80_substring_trap": "fail",
+  "06_no_snapshot": "fail",
+  "07_wrong_image": "fail",
+  "08_no_monitor": "fail",
+  "09_no_screen_response": "fail",
+  "12_not_booted_desktop": "fail",
+  "10_logs_no_evidence": "fail",
+  "11_nop": "fail"
+}

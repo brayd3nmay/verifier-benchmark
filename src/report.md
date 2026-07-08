@@ -9,7 +9,7 @@ deterministically, against a hidden pool of labeled solutions — correct ones m
 adversarial ones must fail. No LLM judge: the judgment happened once, offline, when we
 labeled the pool.
 
-Scope note: this submission contains **four fully-built, hardened tasks** — two hard, two
+Scope note: this submission contains **five fully-built, hardened tasks** — three hard, two
 that the difficulty gate correctly flags as easy:
 
 - `samples/multi-source-data-verifier` — the **difficulty exemplar**: a *dirty-data ETL*
@@ -21,6 +21,10 @@ that the difficulty gate correctly flags as easy:
   different: the graded artifact is **stochastic code**, so a correct verifier must *run*
   each candidate and judge its behavior statistically, not diff it against a fixed output.
   `gemini-3.5-flash` pass@3 = **0%** (3 × 0.909).
+- `samples/qemu-win311-setup-verifier` — a third hard archetype: a *systems/virtualization*
+  task (grade a captured evidence bundle of a QEMU Windows 3.11 setup). `gemini-3.5-flash`
+  pass@3 = **0%** (mean 0.81). Shows the difficulty comes from the method, not one lucky
+  dataset (§8).
 - `samples/log-summary-verifier` — an **honest contrast**. Same method, a different
   underlying task (date-ranged log-severity counting). `gemini-3.5-flash` pass@3 = **100%**
   (6 × 1.0). It is *not* a < 30% task, and I am not dressing it up as one.
@@ -48,7 +52,7 @@ Why this is the interesting slice:
   good our agents are at creating verifiers." Automate it and RL environments get cheap.
 - **It's genuine DS/DE work.** Writing data-quality checks, reconciliation tests, and
   contract enforcement is what data engineers actually do; the underlying domains here
-  (multi-source ETL merge; log aggregation; numerical sampling) are production-style and
+  (multi-source ETL merge; log aggregation; numerical sampling; VM setup) are production-style and
   in-scope.
 - **The metric is clean.** Precision/recall against a labeled pool — no LLM-as-judge, fully
   deterministic and reproducible.
@@ -138,6 +142,7 @@ three independent runs — a *systematic* capability gap, not variance.
 | --- | --- | --- | --- | --- |
 | `multi-source-data-verifier` | 1.0 | **0%** | 0.818 | coerces declared types |
 | `adaptive-rejection-sampler` | 1.0 | **0%** | 0.909 | checks the distribution, not randomness |
+| `qemu-win311-setup-verifier` | 1.0 | **0%** | 0.81 | half-checks decomposed outcomes (§8) |
 | `log-summary-verifier` | 1.0 | **100%** | 1.000 | — (easy target; kept as control) |
 | `video-jump-verifier` | 1.0 | **100%** | 0.909 | — (gate-rejected; §7) |
 
@@ -360,9 +365,85 @@ above and a manual pass: no shortcut verifier can score 1.0, because getting all
 right requires simultaneously running both videos, enforcing the integer type, checking
 imports, and rejecting no-output candidates.)*
 
+## 8. `qemu-win311-setup-verifier` — a systems/virtualization domain
+
+This task (`samples/qemu-win311-setup-verifier`) applies the same verifier-writing
+frame to a **systems/virtualization** domain, to show the difficulty comes from the method,
+not one lucky dataset. The underlying task is terminal-bench-2's `install-windows-3.11`: run
+Windows 3.11 in QEMU with VNC (5901), a web interface (80), the base disk image kept
+immutable, and a monitor socket for programmatic keyboard input.
+
+**The reframe.** That underlying task is *live-runtime* — its original verifier introspects a
+running machine (`pgrep`, `/proc/PID/cmdline`, `netstat`, a live monitor socket, VNC pixel
+diffs). That doesn't fit a static, deterministic pool. So each candidate "solution" is
+reframed as a captured **evidence bundle** of a setup attempt (`qemu_cmdline.txt`,
+`listening_ports.txt`, `base_image.img`, before/after VNC screenshots), and the agent writes a
+verifier that grades the bundle. Grading stays fully deterministic and reuses the same
+clean-room harness. It's a deliberate reinterpretation (captured evidence, not a live system),
+noted as such.
+
+**Instruction discipline — outcomes, not a checklist.** The sharpest lesson from building this
+one: the instruction must state the *underlying task's outcomes* (VNC reachable on 5901; the
+base image stays pristine because the running VM can't write to it; a programmatically-sent
+keystroke reaches the VM), **not** the QEMU flags a verifier should grep for (`-snapshot`,
+`-monitor unix:`, a pixel threshold). Handing over the check-list turns verifier-writing into
+string-matching and destroys the task. The interesting checks then have to be *derived* from
+the outcomes — and a single outcome often decomposes into two checks the model must both find.
+
+**Difficulty profile vs `gemini-3.5-flash`.** Three trials of the same `terminus-2` /
+`gemini/gemini-3.5-flash` command (logs in `logs/qemu-win311-setup-verifier/`):
+
+| Trial | reward (accuracy) | all_correct | fp | items missed |
+| --- | --- | --- | --- | --- |
+| 1 | 0.917 (11/12) | 0 | 1 | `no_snapshot` |
+| 2 | 0.833 (10/12) | 0 | 2 | `no_snapshot`, `not_booted_desktop` |
+| 3 | 0.667 (8/12) | 0 | 4 | `no_snapshot`, `no_monitor`, `not_booted_desktop` |
+
+**pass@1 = 0%, pass@3 = 0%** at the 1.0 bar (oracle scores 1.0, so it's not impossible);
+mean reward 0.81. `no_snapshot` is missed in all three trials; `not_booted_desktop` in two.
+
+**Failure analysis — decomposed outcomes.** The recurring misses are the *second half* of an
+outcome the model half-checked:
+- **`no_snapshot`**: every verifier confirmed `base_image.img` byte-matches the reference (the
+  image is authentic) but most never checked snapshot mode — so a config where the running VM
+  would *write to* the base image sails past. "Kept pristine" = authentic **and** write-
+  protected; the model checks the first and forgets the second.
+- **`not_booted_desktop`**: verifiers checked that the screen *changed* after the keystroke but
+  not that the baseline screenshot *shows a booted desktop* — so a blank-screen "attempt"
+  passes. "Boots to the desktop and a key reaches it" = desktop present **and** screen
+  responded.
+
+These clear the "is it a task bug?" bar: the oracle scores 1.0 in the same environment; every
+failing item is anchored to an outcome stated in the instruction; the anti-cheat holds (a
+label-reading verifier is denied and collapses to 0.27). It's a genuine capability gap —
+the model verifies the obvious signal but doesn't decompose an outcome into all the conditions
+it implies.
+
+**The road to it (honest iteration).** The first pool (11 items) missed a coverage gap: the
+instruction requires "boots to the desktop," but nothing tested it. `gemini-3.5-flash` wrote a
+rigorous verifier and hit **1.0 on 1 of 3** trials (pass@3 would have been non-zero) — the
+perfect run happened to check snapshot mode, which the model does only intermittently. Adding
+the `not_booted_desktop` item both closed the gap and re-hardened difficulty: a perfect score
+now requires catching *two* independent, easily-missed conditions (write-protection and a
+booted desktop) instead of one, and across the captured trials no run caught both. Same lesson
+as the merge task's dtype items: a pool only measures the failure modes it contains.
+
+**Red-team (a second model).** A Codex pass surfaced two real issues, both fixed: (1) the
+harness ran pool items in a fixed sorted order (all passes first), so a verifier could ignore
+every bundle and just count invocations with persistent state to match the label sequence —
+now the harness **shuffles** item order each run (scoring is order-independent, so honest
+verifiers are unaffected); (2) `02_correct_alt` bound the web interface to `127.0.0.1`, which
+contradicts "remote monitoring" and would wrongly penalize a verifier that required a
+reachable bind — now any-interface. Accepted limitations it also raised: the screenshot check
+is intentionally "changed vs identical" rather than a pixel threshold (a threshold is the
+over-specification the instruction deliberately avoids), and the cmdline/port checks are
+outcome-level (port number, snapshot/monitor presence) rather than full QEMU-arg or
+service-identity parsing — deeper parsing would trade determinism and the outcome framing for
+brittleness, and no pool item depends on it.
+
 ## Appendix — reproduce
 
-`PLAYBOOK.md` (repo root) is the full SOP for all four tasks: design the underlying task,
+`PLAYBOOK.md` (repo root) is the full SOP for all five tasks: design the underlying task,
 hand-compute the canonical answer, design the anchored pool (including the discriminating
 dtype items), write the situation-voice instruction and the verifier contract, wire the
 separate clean-room verifier env with `nobody`-sandboxed grading, write the oracle, and run
@@ -392,12 +473,12 @@ Raw notes to self; not yet report-ready.
 - **Producer + verifier-maker pairing is UNTESTED.** It's the scale story but I haven't run
   it. Either pilot it once (run a producer, harvest, label) so it's demonstrated, or clearly
   label it as proposed.
-- **Brief wants 5–10 tasks; four are built (two hard: ETL merge + ARS; two easy controls:
-  log-summary, video-jump).** Be upfront. The playbook is the recipe; realistically build a
-  few more hard targets (dirty-data clean, a nested-JSON report with typed fields) — things
-  that clear the §4.1 gate — so the difficulty curve is a real curve. The two hard archetypes
-  so far (deterministic data vs stochastic code) already probe genuinely different
-  verification skills.
+- **Brief wants 5–10 tasks; five are built (three hard: ETL merge, ARS, QEMU setup; two easy
+  controls: log-summary, video-jump).** Be upfront. The playbook is the recipe; realistically
+  build a few more hard targets (dirty-data clean, a nested-JSON report with typed fields) —
+  things that clear the §4.1 gate — so the difficulty curve is a real curve. The three hard
+  archetypes so far (deterministic data vs stochastic code vs captured system evidence)
+  already probe genuinely different verification skills.
 - **The "original verifier's blind spots → pool items" trick is the most generalizable
   insight** and deserves to be foregrounded, maybe promoted out of the appendix — it's how
   you make adversarial items cheaply for any underlying task.
