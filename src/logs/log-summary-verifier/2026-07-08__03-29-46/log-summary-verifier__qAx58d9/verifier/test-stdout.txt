@@ -1,0 +1,15 @@
+item                  label   verdict  ok  note
+01_oracle             pass    pass     Y   All checks passed!
+02_correct_alt        pass    pass     Y   All checks passed!
+03_correct_superset   pass    pass     Y   All checks passed!
+04_wrong_values       fail    fail     Y   Count mismatch for last_30_days, ERROR: expected 9594, got 9694
+05_near_miss          fail    fail     Y   Count mismatch for last_7_days, ERROR: expected 2969, got 2970
+06_error_trap         fail    fail     Y   Count mismatch for today, ERROR: expected 370, got 414
+07_logs_no_files      fail    fail     Y   summary.csv not found at /tmp/pool_9scjfpy6/solution/summary.csv
+08_wrong_shape        fail    fail     Y   Missing required columns in header: ['period', 'ERROR', 'WARNING', 'INFO']
+09_nop                fail    fail     Y   summary.csv not found at /tmp/pool_r2wsduqj/solution/summary.csv
+10_count_as_float     fail    fail     Y   Invalid count format: 370.0
+11_correct_quoted     pass    pass     Y   All checks passed!
+12_correct_reordered_colspass    pass     Y   All checks passed!
+
+TP=5 FP=0 FN=0 TN=7  accuracy=1.000 precision=1.000 recall=1.000 f1=1.000

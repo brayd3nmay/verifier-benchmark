@@ -1,0 +1,14 @@
+{
+  "01_oracle": "pass",
+  "02_correct_alt": "pass",
+  "03_correct_superset": "pass",
+  "04_wrong_values": "fail",
+  "05_near_miss": "fail",
+  "06_error_trap": "fail",
+  "07_logs_no_files": "fail",
+  "08_wrong_shape": "fail",
+  "09_nop": "fail",
+  "10_count_as_float": "fail",
+  "11_correct_quoted": "pass",
+  "12_correct_reordered_cols": "pass"
+}
